@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "target": "ES2015",
+    "outDir": "./dist",
+    "allowJs": true,
+    "module": "commonjs",
+    "sourceMap": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "skipLibCheck": true,
+    "strict": true,
+  },
+  "include": [
+    "src/**/*",
+  ],
+}
