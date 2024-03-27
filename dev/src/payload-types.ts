@@ -16,7 +16,9 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  globals: {};
+  globals: {
+    openingTimes: OpeningTime;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -41,13 +43,25 @@ export interface User {
  */
 export interface Appointment {
   id: string;
-  customer?: (string | null) | Customer;
+  appointmentType: 'appointment' | 'blockout';
   host?: (string | null) | Host;
+  customer?: (string | null) | Customer;
   services?: (string | Service)[] | null;
+  title?: string | null;
   start?: string | null;
   end?: string | null;
-  title?: string | null;
-  appointmentType?: ('appointment' | 'blockout') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hosts".
+ */
+export interface Host {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  prefferedName?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -71,18 +85,6 @@ export interface Customer {
   loginAttempts?: number | null;
   lockUntil?: string | null;
   password: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "hosts".
- */
-export interface Host {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  prefferedName?: string | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -134,6 +136,50 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "openingTimes".
+ */
+export interface OpeningTime {
+  id: string;
+  monday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  tuesday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  wednesday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  thursday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  friday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  saturday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  sunday?: {
+    isOpen?: boolean | null;
+    opening: string;
+    closing: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 
 
