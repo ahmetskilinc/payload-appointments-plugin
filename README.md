@@ -7,7 +7,10 @@ This plugin allows you to add appointment scheduling capabilities to your payloa
 - Authentication on Customers collection.
 
 ![Appointments List day](./images/appointments-list-day.png)
+
 ![Appointments List week](./images/appointments-list-week.png)
+
+![Collections](./images/collections.png)
 
 ## Installation
 
