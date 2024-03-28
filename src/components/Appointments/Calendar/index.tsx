@@ -1,4 +1,4 @@
-import React, { useMemo, useReducer, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
 	Components,
 	Calendar as ReactBigCalendar,
