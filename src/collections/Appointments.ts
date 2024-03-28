@@ -2,7 +2,8 @@ import { CollectionConfig, FieldHook } from "payload/types";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
 import { getAppointmentsForDayAndHost } from "../utilities/GetAppointmentsForDay";
 import { setEndDateTime } from "../hooks/setEndDateTime";
-import endDateFieldComponent from "../components/EndDateFieldComponent";
+import EndDateField from "../components/EndDateField";
+import HostsSelectField from "../components/HostsSelectField";
 
 const Appointments: CollectionConfig = {
 	slug: "appointments",
@@ -23,7 +24,6 @@ const Appointments: CollectionConfig = {
 			handler: async (req, res): Promise<void> => {
 				const { availableSlotsForDate, filteredSlots } =
 					await getAppointmentsForDayAndHost(req);
-				const {}: string[] = [];
 				res.json({
 					availableSlots: filteredSlots,
 					allSlots: availableSlotsForDate,
@@ -50,7 +50,7 @@ const Appointments: CollectionConfig = {
 		},
 		{
 			type: "relationship",
-			relationTo: "hosts",
+			relationTo: "users",
 			name: "host",
 			label: "Host",
 			admin: {
@@ -58,6 +58,9 @@ const Appointments: CollectionConfig = {
 					if (siblingData.appointmentType === "appointment") return true;
 					if (siblingData.appointmentType === "blockout") return true;
 					return false;
+				},
+				components: {
+					// Field: HostsSelectField,
 				},
 			},
 			required: true,
@@ -135,7 +138,7 @@ const Appointments: CollectionConfig = {
 							return false;
 						},
 						components: {
-							Field: endDateFieldComponent,
+							Field: EndDateField,
 						},
 					},
 					hooks: {

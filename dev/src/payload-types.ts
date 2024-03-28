@@ -12,7 +12,6 @@ export interface Config {
     appointments: Appointment;
     customers: Customer;
     services: Service;
-    hosts: Host;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -26,6 +25,10 @@ export interface Config {
  */
 export interface User {
   id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  takingAppointments?: boolean | null;
+  prefferedName?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -44,24 +47,12 @@ export interface User {
 export interface Appointment {
   id: string;
   appointmentType: 'appointment' | 'blockout';
-  host?: (string | null) | Host;
+  host?: (string | null) | User;
   customer?: (string | null) | Customer;
   services?: (string | Service)[] | null;
   title?: string | null;
   start?: string | null;
   end?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "hosts".
- */
-export interface Host {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  prefferedName?: string | null;
   updatedAt: string;
   createdAt: string;
 }

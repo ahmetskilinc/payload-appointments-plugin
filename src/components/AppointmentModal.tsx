@@ -1,14 +1,12 @@
-import React from "react";
 import { Modal } from "@faceless-ui/modal";
 import { Button } from "payload/components";
 import { Form, FormSubmit, RenderFields, fieldTypes } from "payload/components/forms";
-
-import { Appointment } from "../types";
-import { useAppointments } from "../providers/AppointmentsProvider";
-
-import "./AppointmentModal.scss";
+import React from "react";
 import Appointments from "../collections/Appointments";
-const baseClass = "add-appointment";
+import { useAppointments } from "../providers/AppointmentsProvider";
+import "./AppointmentModal.scss";
+
+const baseClass = "add-edit-appointment";
 
 export const AppointmentModal = () => {
 	const { addAppointment, modalProps, editAppointment, removeAppointment, toggleModal } =

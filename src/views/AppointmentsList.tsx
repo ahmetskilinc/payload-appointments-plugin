@@ -5,11 +5,11 @@ import { DefaultTemplate } from "payload/components/templates";
 import { usePayloadAPI, useStepNav } from "payload/components/hooks";
 import Appointments from "../collections/Appointments";
 import { useConfig } from "payload/components/utilities";
-import Hosts from "../collections/Hosts";
 import "../components/Appointments/Calendar/styles.scss";
 import { AppointmentProvider } from "../providers/AppointmentsProvider";
 import { AppointmentModal } from "../components/AppointmentModal";
-import { ModalProvider } from "@faceless-ui/modal";
+import { Redirect } from "react-router-dom";
+import { User } from "../types";
 
 const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {
 	const { setStepNav } = useStepNav();
@@ -22,8 +22,11 @@ const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {
 		]);
 	}, [setStepNav]);
 
+	if (!user) return null;
+
 	const {
 		routes: { api },
+		admin,
 		serverURL,
 	} = useConfig();
 
@@ -35,24 +38,25 @@ const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {
 
 	const [
 		{
-			data: { docs: hosts },
+			data: { docs: users },
 		},
-	] = usePayloadAPI(`${serverURL}${api}/${Hosts.slug}`);
+	] = usePayloadAPI(`${serverURL}${api}/${admin.user}`);
 
 	return (
-		<ModalProvider>
-			<AppointmentProvider>
-				<DefaultTemplate>
-					<div className="collection-list appointments-calendar-view">
-						<h1>Appointments List</h1>
-						{hosts && appointments ? (
-							<Calendar resources={hosts} events={appointments} />
-						) : null}
-					</div>
-					<AppointmentModal />
-				</DefaultTemplate>
-			</AppointmentProvider>
-		</ModalProvider>
+		<AppointmentProvider>
+			<DefaultTemplate>
+				<div className="collection-list appointments-calendar-view">
+					<h1>Appointments List</h1>
+					{users && appointments ? (
+						<Calendar
+							resources={users.filter((user: User) => user.takingAppointments)}
+							events={appointments}
+						/>
+					) : null}
+				</div>
+				{/* <AppointmentModal /> */}
+			</DefaultTemplate>
+		</AppointmentProvider>
 	);
 };
 

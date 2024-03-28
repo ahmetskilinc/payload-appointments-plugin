@@ -7,7 +7,7 @@ import {
 } from "react-big-calendar";
 import moment from "moment";
 import "./styles.scss";
-import type { Appointment as AppointmentType, Host, BigCalendarAppointment } from "../../../types";
+import type { Appointment as AppointmentType, BigCalendarAppointment, User } from "../../../types";
 import Appointment from "./Appointment";
 import Blockout from "./Blockout";
 import { useAppointments } from "../../../providers/AppointmentsProvider";
@@ -15,7 +15,7 @@ import { useAppointments } from "../../../providers/AppointmentsProvider";
 const localizer = momentLocalizer(moment);
 
 const Calendar: React.FC<{
-	resources: Host[];
+	resources: User[];
 	events: AppointmentType[];
 }> = ({ resources, events }) => {
 	const [date, setDate] = useState<Date>(moment().toDate());
@@ -36,7 +36,7 @@ const Calendar: React.FC<{
 		openModal({ type: "add", slotInfo });
 	};
 
-	const components: Components<BigCalendarAppointment, Host> = useMemo(
+	const components: Components<BigCalendarAppointment, User> = useMemo(
 		() => ({
 			event: ({ event }) => {
 				if (event.appointmentType === "appointment") return <Appointment event={event} />;

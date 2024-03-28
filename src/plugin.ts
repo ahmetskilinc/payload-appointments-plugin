@@ -5,7 +5,6 @@ import { extendWebpackConfig } from "./webpack";
 import Appointments from "./collections/Appointments";
 import Customers from "./collections/Customers";
 import Services from "./collections/Services";
-import Hosts from "./collections/Hosts";
 import AppointmentsList from "./views/AppointmentsList";
 import BeforeNavLinks from "./components/Appointments/BeforeNavLinks";
 import AppointmentsListMe from "./views/AppointmentsListMe";
@@ -50,13 +49,46 @@ export const appointments =
 			},
 		};
 
-		config.collections = [
-			...(config.collections || []),
-			Appointments,
-			Customers,
-			Services,
-			Hosts,
-		];
+		config.collections = [...(config.collections || []), Appointments, Customers, Services];
+
+		if (config.collections !== undefined) {
+			const userCollection = config.collections.find(
+				collection => collection.slug === incomingConfig.admin?.user,
+			);
+			if (userCollection) {
+				userCollection.fields = [
+					...userCollection.fields,
+					{
+						name: "firstName",
+						type: "text",
+						label: "First name",
+					},
+					{
+						name: "lastName",
+						type: "text",
+						label: "Last name",
+					},
+					{
+						name: "takingAppointments",
+						type: "checkbox",
+						label: "Taking appointments?",
+						defaultValue: false,
+					},
+					{
+						name: "prefferedName",
+						type: "text",
+						label: "Preffered name",
+						required: true,
+						admin: {
+							condition: siblingData => {
+								if (siblingData.takingAppointments) return true;
+								return false;
+							},
+						},
+					},
+				];
+			}
+		}
 
 		config.endpoints = [
 			...(config.endpoints || []),

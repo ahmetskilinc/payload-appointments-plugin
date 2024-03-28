@@ -15,8 +15,9 @@ This plugin allows you to add appointment scheduling capabilities to your payloa
   - [x] Appointment type, Host, Customer, Services, Title, Start date/time, End date/time
   - [x] Appointment type is appointment or blockout (lunch, break, interview, meeting, day off? etc.)
   - [x] Endpoint for getting available time slots 
-- [ ] Hosts collection for staff that provide services
-  - [x] Firstname, lastname, preffered name
+- [ ] Add new properties/attributes to default auth collection
+  - [x] Taking appointments checkbox
+  - [x] Preffered name
 - [ ] Services collection for ...services
   - [x] Title
   - [x] Description

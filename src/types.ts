@@ -16,7 +16,7 @@ export type OpeningTimes = {
 export interface Appointment {
 	id: string;
 	customer: Customer;
-	host: Host;
+	host: User;
 	services: Service[];
 	title?: string;
 	start: string;
@@ -31,17 +31,19 @@ export type BigCalendarAppointment = {
 	hostId: string;
 	id: string;
 	customer: Customer;
-	host: Host;
+	host: User;
 	services: Service[];
 	title?: string;
 	appointmentType: "appointment" | "blockout";
 };
 
-export interface Host {
+export interface User {
 	id: string;
-	firstName: string;
-	lastName: string;
-	prefferedName: string;
+	firstName?: string | null;
+	lastName?: string | null;
+	takingAppointments?: boolean | null;
+	prefferedName?: string | null;
+	email: string;
 }
 
 export interface Service {
