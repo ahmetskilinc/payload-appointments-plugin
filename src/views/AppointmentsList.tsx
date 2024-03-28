@@ -8,7 +8,6 @@ import { useConfig } from "payload/components/utilities";
 import "../components/Appointments/Calendar/styles.scss";
 import { AppointmentProvider } from "../providers/AppointmentsProvider";
 import { AppointmentModal } from "../components/AppointmentModal";
-import { Redirect } from "react-router-dom";
 import { User } from "../types";
 
 const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {

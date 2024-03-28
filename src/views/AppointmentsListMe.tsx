@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Calendar from "../components/Appointments/Calendar";
 import { DefaultTemplate } from "payload/components/templates";
 import { useStepNav } from "payload/components/hooks";
-import { Appointment, Host } from "../types";
+import { Appointment, User } from "../types";
 import moment from "moment";
 
 const AppointmentsListMe: AdminViewComponent = ({ user, canAccessAdmin }) => {
@@ -22,7 +22,7 @@ const AppointmentsListMe: AdminViewComponent = ({ user, canAccessAdmin }) => {
 	}, [setStepNav]);
 
 	const [appointments, setAppointments] = useState<Appointment[] | undefined>(undefined);
-	const [hosts, setHosts] = useState<Host[] | undefined>(undefined);
+	const [hosts, setHosts] = useState<User[] | undefined>(undefined);
 
 	const myHeaders = new Headers();
 	myHeaders.append("Content-Type", "application/json");
