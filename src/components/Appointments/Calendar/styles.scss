@@ -4,6 +4,9 @@
 	padding-left: var(--gutter-h) !important;
 	padding-right: var(--gutter-h) !important;
 	margin-bottom: var(--gutter-h) !important;
+	h1{
+		 font-size: 24px;
+	}
 }
 
 .rbc-time-content > * + * > *,
@@ -61,7 +64,7 @@
 	align-items: center;
 	justify-content: center;
 	height:36px;
-	background: transparent;
+	background-color: var(--theme-bg);
 }
 
 .rbc-allday-cell {
@@ -69,14 +72,14 @@
 }
 
 .rbc-day-slot.rbc-time-column {
-	background-color: transparent !important;
+	background-color: var(--theme-bg) !important;
 	.rbc-today {
-		background-color: transparent !important;
+		background-color: var(--theme-bg) !important;
 	}
 }
 
 .rbc-time-slot {
-	background-color: transparent;
+	// background-color: var(--theme-bg);
 	z-index:1;
 }
 
@@ -88,7 +91,7 @@
 }
 
 .rbc-time-gutter {
-	background-color: transparent !important;
+	background-color: var(--theme-bg) !important;
 }
 
 .rbc-time-content {
@@ -112,20 +115,20 @@
 }
 
 .rbc-calendar {
-	background-color: transparent !important;
-	height: calc(100vh - (75px + 58px + 25px + 12.5px  + var(--gutter-h)));
+	background-color: var(--theme-bg) !important;
+	height: calc(100vh - (75px + 27.59px + 25px + 12.5px  + var(--gutter-h)));
 	
 	@media only screen and (max-width: 1024px) {
-		height: calc(100vh - (46.15px + 5.769px + 53.08px + 23.077px + var(--gutter-h)));
+		height: calc(100vh - (46.15px + 27.59px + 5.769px + 23.077px + var(--gutter-h)));
 	}
 	
 	@media only screen and (max-width: 768px) {
-		height: calc(100vh - (46.15px + 33.164px + 23.077px + var(--gutter-h)));
+		height: calc(100vh - (46.15px + 27.59px + 23.077px + var(--gutter-h)));
 	}
 }
 
 .rbc-day-slot .rbc-event, .rbc-day-slot .rbc-background-event {
-	background-color: transparent !important;
+	background-color: var(--theme-bg) !important;
 	cursor: auto !important;
 	pointer-events: auto !important;
 }
