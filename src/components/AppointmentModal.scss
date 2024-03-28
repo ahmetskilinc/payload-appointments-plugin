@@ -1,0 +1,38 @@
+@import '~payload/scss';
+
+.add-appointment {
+	@include blur-bg;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	z-index: 9999;
+
+	&__wrapper {
+		z-index: 1;
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: var(--base);
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		gap: var(--base);
+
+		> * {
+			margin: 0;
+		}
+	}
+
+	&__controls {
+		display: flex;
+		gap: var(--base);
+		margin-top: base(1);
+
+		.btn {
+			margin: 0;
+		}
+	}
+}

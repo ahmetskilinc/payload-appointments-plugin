@@ -10,25 +10,16 @@ import "./styles.scss";
 import type { Appointment as AppointmentType, Host, BigCalendarAppointment } from "../../../types";
 import Appointment from "./Appointment";
 import Blockout from "./Blockout";
-import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
-import { useDocumentDrawer } from "payload/components/elements";
-import Appointments from "../../../collections/Appointments";
+import { useAppointments } from "../../../providers/AppointmentsProvider";
 
 const localizer = momentLocalizer(moment);
-// const DragAndDropCalendar = withDragAndDrop(ReactBigCalendar);
-
-const initialParams = {
-	depth: 100,
-};
 
 const Calendar: React.FC<{
 	resources: Host[];
 	events: AppointmentType[];
-	setAppointmentsParams?: React.Dispatch<unknown>;
-	setHostsParams?: React.Dispatch<unknown>;
-}> = ({ resources, events, setAppointmentsParams, setHostsParams }) => {
+}> = ({ resources, events }) => {
 	const [date, setDate] = useState<Date>(moment().toDate());
-	const [cacheBust, dispatchCacheBust] = useReducer(state => state + 1, 0);
+	const { openModal } = useAppointments();
 
 	const remapAppointments = () => {
 		return events.map(doc => {
@@ -41,38 +32,14 @@ const Calendar: React.FC<{
 		});
 	};
 
-	const [DocumentDrawer, DocumentDrawerToggler, { closeDrawer, openDrawer }] = useDocumentDrawer({
-		collectionSlug: Appointments.slug,
-	});
-
-	const updateRelationship = React.useCallback(
-		({}) => {
-			setAppointmentsParams!({
-				...initialParams,
-				cacheBust,
-			});
-			closeDrawer();
-			dispatchCacheBust();
-		},
-		[cacheBust, setAppointmentsParams, closeDrawer],
-	);
-
 	const handleSlotSelect = (slotInfo: SlotInfo) => {
-		console.log(slotInfo);
-		openDrawer();
+		openModal({ type: "add", slotInfo });
 	};
 
 	const components: Components<BigCalendarAppointment, Host> = useMemo(
 		() => ({
 			event: ({ event }) => {
-				if (event.appointmentType === "appointment")
-					return (
-						<Appointment
-							event={event}
-							setAppointmentsParams={setAppointmentsParams}
-							setHostsParams={setHostsParams}
-						/>
-					);
+				if (event.appointmentType === "appointment") return <Appointment event={event} />;
 				if (event.appointmentType === "blockout") return <Blockout event={event} />;
 				return null;
 			},
@@ -90,7 +57,7 @@ const Calendar: React.FC<{
 					endAccessor="end"
 					defaultView="day"
 					views={["week", "day"]}
-					step={30}
+					step={15}
 					defaultDate={date}
 					titleAccessor="title"
 					resourceAccessor="hostId"
@@ -104,7 +71,6 @@ const Calendar: React.FC<{
 					onSelectSlot={handleSlotSelect}
 				/>
 			) : null}
-			<DocumentDrawer onSave={updateRelationship} />
 		</React.Fragment>
 	);
 };
