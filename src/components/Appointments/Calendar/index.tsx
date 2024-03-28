@@ -81,7 +81,7 @@ const Calendar: React.FC<{
 	);
 
 	return (
-		<div className="rbc-calendar-container">
+		<React.Fragment>
 			{remapAppointments() && resources ? (
 				<ReactBigCalendar
 					localizer={localizer}
@@ -105,7 +105,7 @@ const Calendar: React.FC<{
 				/>
 			) : null}
 			<DocumentDrawer onSave={updateRelationship} />
-		</div>
+		</React.Fragment>
 	);
 };
 
