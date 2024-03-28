@@ -1,6 +1,6 @@
 {
 	"name": "payload-appointments-plugin",
-	"version": "0.0.1-beta",
+	"version": "0.0.2-beta",
 	"repository": "git@github.com:ahmetskilinc/payload-appointments-plugin.git",
 	"description": "An appointment scheduling plugin for Payload CMS",
 	"main": "dist/index.js",
@@ -31,11 +31,11 @@
 		"@payloadcms/eslint-config": "^1.1.1",
 		"@swc/jest": "^0.2.36",
 		"@types/jest": "^29.5.12",
-		"@types/node": "^20.11.27",
+		"@types/node": "^20.11.30",
 		"@types/react-big-calendar": "^1.8.9",
 		"@types/react-router-dom": "^5.3.3",
-		"@typescript-eslint/eslint-plugin": "7.2.0",
-		"@typescript-eslint/parser": "7.2.0",
+		"@typescript-eslint/eslint-plugin": "7.4.0",
+		"@typescript-eslint/parser": "7.4.0",
 		"dotenv": "^16.4.5",
 		"eslint": "^8.57.0",
 		"eslint-config-airbnb-base": "^15.0.0",
@@ -46,8 +46,8 @@
 		"payload": "^2.11.2",
 		"prettier": "^3.2.5",
 		"react": "^18.2.0",
-		"typescript": "^5.4.2",
-		"webpack": "^5.90.3"
+		"typescript": "^5.4.3",
+		"webpack": "^5.91.0"
 	},
 	"dependencies": {
 		"@react-email/components": "0.0.15",
