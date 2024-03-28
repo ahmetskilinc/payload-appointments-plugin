@@ -6,6 +6,31 @@ This plugin allows you to add appointment scheduling capabilities to your payloa
 - Opening times global.
 - Authentication on Customers collection.
 
+![Appointments List day](./images/appointments-list-day.png)
+![Appointments List week](./images/appointments-list-week.png)
+
+## Installation
+
+#### 1. install
+
+`npm i payload-appointments-plugin`
+
+#### 2. add to config
+
+```typescript
+import appointments from "payload-appointments-plugin";
+
+export default buildConfig({
+	/* ... */
+	plugins: [appointments()],
+	/* ... */
+});
+```
+
+#### 3. add email config
+
+follow instructions on [PayloadCMS Email Docs](https://payloadcms.com/docs/email/overview)
+
 ## todo?
 
 - [ ] Customers collection
