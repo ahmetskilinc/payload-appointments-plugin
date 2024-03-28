@@ -4,7 +4,7 @@ import Users from "./collections/Users";
 import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { webpackBundler } from "@payloadcms/bundler-webpack";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
-import { appointments } from "../../src";
+import appointments from "../../src";
 
 export default buildConfig({
 	admin: {
