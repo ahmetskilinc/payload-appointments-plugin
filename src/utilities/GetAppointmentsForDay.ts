@@ -1,18 +1,34 @@
 import { PayloadRequest } from "payload/types";
-import { Appointment, OpeningTimes } from "../types";
+import { Appointment, OpeningTimes, Service } from "../types";
 
 import Moment from "moment";
 import { extendMoment } from "moment-range";
 
-//localhost:3000/api/appointments/get-slots?services=65f3368a5f3445326e484b9e,65f336925f3445326e484bab&host=65f9f33c3716497d441e47a7&day=2024-03-24T09:00:00.000Z
+//localhost:3000/api/appointments/get-slots?services=65f3368a5f3445326e484b9e,65f336925f3445326e484bab&host=65f1dfbab8d2f965a8125071&day=2024-03-24T09:00:00.000Z
+
+//localhost:3000/api/appointments/get-slots?services={SERVICE IDS}&host={HOST ID}&day={DATE STRING FORMATTED: 2024-03-24T09:00:00.000Z}
 
 // @ts-expect-error
 const moment = extendMoment(Moment);
 
 export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
 	const day = req.query.day;
-	console.log("day:", moment(day).format("YYYY-MM-DD"));
-	const slotInterval = 35;
+	const durations = await Promise.all(
+		await req.payload
+			.find({
+				collection: "services",
+			})
+			.then((res: { docs: Service[] }) => {
+				return res.docs.filter(obj => req.query.services.includes(obj.id));
+			}),
+	).catch((error: any) => {
+		console.error(error);
+		return [];
+	});
+
+	let slotInterval = 0;
+	durations.forEach(el => (slotInterval += el.duration));
+
 	const openingTimes: OpeningTimes = await req.payload
 		.findGlobal({
 			slug: "openingTimes",
@@ -28,7 +44,7 @@ export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
 	let endTime = moment(closeTime);
 
 	const availableSlotsForDate = curateSlots(slotInterval, startTime, endTime);
-	const filteredSlots = await filterSlotsForHost(req, day, availableSlotsForDate);
+	const filteredSlots = await filterSlotsForHost(req, day, availableSlotsForDate, slotInterval);
 
 	return { filteredSlots, availableSlotsForDate };
 };
@@ -50,9 +66,9 @@ const filterSlotsForHost = async (
 	req: PayloadRequest,
 	day: string,
 	availableSlotsForDate: string[],
+	slotInterval: number,
 ) => {
 	const allAvailableSlots: string[] = [];
-
 	await req.payload
 		.find({
 			collection: "appointments",
@@ -61,13 +77,15 @@ const filterSlotsForHost = async (
 				"host.id": {
 					equals: req.query.host,
 				},
+				start: {
+					greater_than: moment().startOf("day").add(-1, "day").toString(),
+				},
 			},
 		})
 		.then((res: { docs: Appointment[] }) => {
 			return availableSlotsForDate.forEach(newAppointmentStartTime => {
 				if (
 					res.docs.some(doc => {
-						console.log("day in some:", moment(day).format("YYYY-MM-DD"));
 						return (
 							moment(day).format("YYYY-MM-DD") ===
 							moment(doc.start).format("YYYY-MM-DD")
@@ -76,7 +94,7 @@ const filterSlotsForHost = async (
 				) {
 					const newAppointmentSlot = moment.range(
 						moment(newAppointmentStartTime, "HH:mm"),
-						moment(newAppointmentStartTime, "HH:mm").add(35, "minutes"),
+						moment(newAppointmentStartTime, "HH:mm").add(slotInterval, "minutes"),
 					);
 
 					if (
