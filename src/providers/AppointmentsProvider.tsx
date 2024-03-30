@@ -1,7 +1,6 @@
 import { Appointment } from "../types";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useModal } from "@faceless-ui/modal";
-import { toast } from "react-toastify";
 import { SlotInfo } from "react-big-calendar";
 
 type ModalProps = {
@@ -49,7 +48,7 @@ export const AppointmentProvider: React.FC<{
 
 	const { toggleModal } = useModal();
 
-	const openModal = ({ type, slotInfo, appointment }: ModalProps) => {
+	const openModal = ({ type, slotInfo }: ModalProps) => {
 		setModalProps({
 			props: {
 				type,
@@ -60,12 +59,12 @@ export const AppointmentProvider: React.FC<{
 		toggleModal("add-edit-appointment");
 	};
 
-	const addAppointment = async (appointment: Appointment) => {
+	const addAppointment = async () => {
 		await updateAppointment();
 		toggleModal("add-edit-appointment");
 	};
 
-	const editAppointment = async (appointment: Appointment) => {
+	const editAppointment = async () => {
 		await updateAppointment();
 		toggleModal("add-edit-appointment");
 	};
