@@ -1,6 +1,6 @@
 {
 	"name": "payload-appointments-plugin",
-	"version": "0.0.4-beta-2",
+	"version": "0.0.4-beta-3",
 	"repository": "git@github.com:ahmetskilinc/payload-appointments-plugin.git",
 	"description": "An appointment scheduling plugin for Payload CMS",
 	"main": "dist/index.js",
