@@ -46,6 +46,7 @@ follow instructions on [PayloadCMS Email Docs](https://payloadcms.com/docs/email
 - [ ] Add new properties/attributes to default auth collection
   - [x] Taking appointments checkbox
   - [x] Preffered name
+  - [ ] Calendar subscription
 - [ ] Services collection for ...services
   - [x] Title
   - [x] Description
@@ -55,7 +56,9 @@ follow instructions on [PayloadCMS Email Docs](https://payloadcms.com/docs/email
   - [x] Email config (Will need to be added by the dev)
   - [ ] React email templates
     - [x] Appointment created email
+      - [ ] Add iCal link/file to email
     - [x] Appointment updated email
+      - [ ] Add iCal link/file to email
     - [ ] Customer signed up email
     - [ ] Forgot password email
 - [ ] Custom payload views
