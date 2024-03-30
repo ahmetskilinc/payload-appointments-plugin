@@ -41,20 +41,20 @@ export const AppointmentModal = () => {
 					<div className={`${baseClass}__controls`}>
 						{modalProps.props.type === "edit" ? (
 							<>
-								<FormSubmit>Update title</FormSubmit>
+								<FormSubmit>Update appointment</FormSubmit>
 								<Button buttonStyle="error" onClick={() => toggleModal()}>
 									Cancel
 								</Button>
 							</>
 						) : modalProps.props.type === "remove" ? (
 							<Button
-								buttonStyle="primary"
+								buttonStyle="error"
 								onClick={() => removeAppointment(modalProps.props.appointment?.id!)}
 							>
-								Remove phase
+								Remove appointment
 							</Button>
 						) : (
-							<FormSubmit>Add phase</FormSubmit>
+							<FormSubmit>Add appointment</FormSubmit>
 						)}
 					</div>
 				</Form>
