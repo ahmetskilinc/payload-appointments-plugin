@@ -53,7 +53,7 @@ const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {
 						/>
 					) : null}
 				</div>
-				{/* <AppointmentModal /> */}
+				<AppointmentModal />
 			</DefaultTemplate>
 		</AppointmentProvider>
 	);
