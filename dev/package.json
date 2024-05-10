@@ -17,21 +17,21 @@
 	},
 	"dependencies": {
 		"@payloadcms/bundler-webpack": "^1.0.6",
-		"@payloadcms/db-mongodb": "^1.4.3",
-		"@payloadcms/plugin-cloud": "^3.0.0",
-		"@payloadcms/richtext-lexical": "^0.7.0",
+		"@payloadcms/db-mongodb": "^1.5.1",
+		"@payloadcms/plugin-cloud": "^3.0.1",
+		"@payloadcms/richtext-lexical": "^0.10.0",
 		"cross-env": "^7.0.3",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
 		"nodemailer": "^6.9.13",
-		"payload": "^2.11.2"
+		"payload": "^2.16.1"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.21",
-		"@types/nodemailer": "^6.4.14",
+		"@types/nodemailer": "^6.4.15",
 		"copyfiles": "^2.4.1",
 		"nodemon": "^3.1.0",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.4.3"
+		"typescript": "^5.4.5"
 	}
 }
