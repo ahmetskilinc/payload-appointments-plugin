@@ -9,6 +9,7 @@ import AppointmentsList from "./views/AppointmentsList";
 import BeforeNavLinks from "./components/Appointments/BeforeNavLinks";
 import AppointmentsListMe from "./views/AppointmentsListMe";
 import OpeningTimes from "./globals/OpeningTimes";
+import { onInitExtension } from "./onInitExtension";
 
 export const appointments =
 	(pluginOptions?: PluginTypes): Plugin =>
@@ -106,6 +107,12 @@ export const appointments =
 
 		config.hooks = {
 			...(config.hooks || {}),
+		};
+
+		config.onInit = async payload => {
+			if (incomingConfig.onInit) await incomingConfig.onInit(payload);
+			// Add additional onInit code by using the onInitExtension function
+			onInitExtension(payload, pluginOptions);
 		};
 
 		return config;

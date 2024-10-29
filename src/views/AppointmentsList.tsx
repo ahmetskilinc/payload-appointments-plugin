@@ -37,18 +37,22 @@ const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {
 
 	const [
 		{
-			data: { docs: users },
+			data: { docs: admins },
 		},
 	] = usePayloadAPI(`${serverURL}${api}/${admin.user}`);
+
+	const takingAppointments = admins?.filter(
+		(user: User) => user.takingAppointments
+	);
 
 	return (
 		<AppointmentProvider>
 			<DefaultTemplate>
 				<div className="collection-list appointments-calendar-view">
 					<h1>Appointments List</h1>
-					{users && appointments ? (
+					{takingAppointments && appointments ? (
 						<Calendar
-							resources={users.filter((user: User) => user.takingAppointments)}
+							resources={takingAppointments}
 							events={appointments}
 						/>
 					) : null}
