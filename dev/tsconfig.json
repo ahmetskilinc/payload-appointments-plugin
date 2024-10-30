@@ -1,34 +1,30 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "strict": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "jsx": "react",
-    "paths": {
-      "payload/generated-types": [
-        "./src/payload-types.ts"
-      ]
-    }
-  },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ],
-  "ts-node": {
-    "transpileOnly": true,
-    "swc": true
-  }
+	"compilerOptions": {
+		"target": "es5",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"allowJs": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"outDir": "./dist",
+		"rootDir": ".",
+		"jsx": "preserve",
+		"paths": {
+			"@payload-config": ["./src/payload.config.ts"],
+			"payload/generated-types": ["./src/payload-types.ts"]
+		},
+		"noEmit": true,
+		"incremental": true,
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"plugins": [
+			{
+				"name": "next"
+			}
+		]
+	},
+	"include": ["**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+	"exclude": ["node_modules", "dist", "build"]
 }

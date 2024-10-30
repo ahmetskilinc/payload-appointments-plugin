@@ -1,19 +1,16 @@
-import React, { useEffect, useState } from "react";
-import Select from "payload/dist/admin/components/forms/field-types/Select";
-import { Props } from "payload/dist/admin/components/forms/field-types/Select/types";
-import { useFormFields } from "payload/components/forms";
-import { Option } from "payload/types";
-import { usePayloadAPI } from "payload/components/hooks";
-import { useConfig } from "payload/components/utilities";
+import { SelectField, useConfig, usePayloadAPI } from "@payloadcms/ui";
+import { Option, SelectFieldClientProps } from "payload";
 import { User } from "../types";
 
-const HostsSelectField = ({ name, label, access, defaultValue, path, required }: Props) => {
+const HostsSelectField = ({ field }: SelectFieldClientProps) => {
 	// const options: Option[] = [];
 
 	const {
-		routes: { api },
-		admin,
-		serverURL,
+		config: {
+			routes: { api },
+			admin,
+			serverURL,
+		},
 	} = useConfig();
 
 	const [
@@ -29,17 +26,7 @@ const HostsSelectField = ({ name, label, access, defaultValue, path, required }:
 		};
 	});
 
-	return (
-		<Select
-			name={name}
-			label={label}
-			access={access}
-			defaultValue={defaultValue}
-			path={path}
-			options={options}
-			required={required}
-		/>
-	);
+	return <SelectField field={field} />;
 };
 
 export default HostsSelectField;

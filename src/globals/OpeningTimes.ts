@@ -1,13 +1,21 @@
-import type { GlobalConfig } from "payload/types";
+import type { GlobalConfig } from "payload";
 
 const timesOfDay = ["opening", "closing"];
-const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const daysOfWeek = [
+	"monday",
+	"tuesday",
+	"wednesday",
+	"thursday",
+	"friday",
+	"saturday",
+	"sunday",
+];
 
 const OpeningTimes: GlobalConfig = {
 	slug: "openingTimes",
 	access: { read: () => true },
 	admin: { group: "Booking" },
-	fields: daysOfWeek.map(day => ({
+	fields: daysOfWeek.map((day) => ({
 		type: "group",
 		name: day,
 		fields: [
@@ -19,8 +27,8 @@ const OpeningTimes: GlobalConfig = {
 			},
 			{
 				type: "row",
-				admin: { condition: siblingData => siblingData[day].isOpen },
-				fields: timesOfDay.map(time => ({
+				admin: { condition: (siblingData) => siblingData[day].isOpen },
+				fields: timesOfDay.map((time) => ({
 					label: `${time.charAt(0).toUpperCase() + time.slice(1)}`,
 					name: `${time}`,
 					type: "date",

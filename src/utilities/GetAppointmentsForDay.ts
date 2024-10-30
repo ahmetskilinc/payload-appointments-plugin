@@ -1,4 +1,4 @@
-import { PayloadRequest } from "payload/types";
+import { PayloadRequest } from "payload";
 import { Appointment, OpeningTimes, Service } from "../types";
 
 import Moment from "moment";
@@ -19,7 +19,9 @@ export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
 				collection: "services",
 			})
 			.then((res: { docs: Service[] }) => {
-				return res.docs.filter(obj => req.query.services.includes(obj.id));
+				return res.docs.filter((obj) =>
+					req.query.services.includes(obj.id),
+				);
 			}),
 	).catch((error: any) => {
 		console.error(error);
@@ -27,7 +29,7 @@ export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
 	});
 
 	let slotInterval = 0;
-	durations.forEach(el => (slotInterval += el.duration));
+	durations.forEach((el) => (slotInterval += el.duration));
 
 	const openingTimes: OpeningTimes = await req.payload
 		.findGlobal({
@@ -37,19 +39,30 @@ export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
 			return res;
 		});
 
-	const openTime = openingTimes[moment(day).format("dddd").toLowerCase()].opening;
-	const closeTime = openingTimes[moment(day).format("dddd").toLowerCase()].closing;
+	const openTime =
+		openingTimes[moment(day).format("dddd").toLowerCase()].opening;
+	const closeTime =
+		openingTimes[moment(day).format("dddd").toLowerCase()].closing;
 
 	let startTime = moment(openTime);
 	let endTime = moment(closeTime);
 
 	const availableSlotsForDate = curateSlots(slotInterval, startTime, endTime);
-	const filteredSlots = await filterSlotsForHost(req, day, availableSlotsForDate, slotInterval);
+	const filteredSlots = await filterSlotsForHost(
+		req,
+		day,
+		availableSlotsForDate,
+		slotInterval,
+	);
 
 	return { filteredSlots, availableSlotsForDate };
 };
 
-const curateSlots = (slotInterval: number, startTime: Moment.Moment, endTime: Moment.Moment) => {
+const curateSlots = (
+	slotInterval: number,
+	startTime: Moment.Moment,
+	endTime: Moment.Moment,
+) => {
 	let allTimes = [];
 	const originalStartTime = moment(startTime, "HH:mm");
 
@@ -78,14 +91,17 @@ const filterSlotsForHost = async (
 					equals: req.query.host,
 				},
 				start: {
-					greater_than: moment().startOf("day").add(-1, "day").toString(),
+					greater_than: moment()
+						.startOf("day")
+						.add(-1, "day")
+						.toString(),
 				},
 			},
 		})
 		.then((res: { docs: Appointment[] }) => {
-			return availableSlotsForDate.forEach(newAppointmentStartTime => {
+			return availableSlotsForDate.forEach((newAppointmentStartTime) => {
 				if (
-					res.docs.some(doc => {
+					res.docs.some((doc) => {
 						return (
 							moment(day).format("YYYY-MM-DD") ===
 							moment(doc.start).format("YYYY-MM-DD")
@@ -94,12 +110,18 @@ const filterSlotsForHost = async (
 				) {
 					const newAppointmentSlot = moment.range(
 						moment(newAppointmentStartTime, "HH:mm"),
-						moment(newAppointmentStartTime, "HH:mm").add(slotInterval, "minutes"),
+						moment(newAppointmentStartTime, "HH:mm").add(
+							slotInterval,
+							"minutes",
+						),
 					);
 
 					if (
-						res.docs.every(doc => {
-							const existingSlot = moment.range(moment(doc.start), moment(doc.end));
+						res.docs.every((doc) => {
+							const existingSlot = moment.range(
+								moment(doc.start),
+								moment(doc.end),
+							);
 							return !newAppointmentSlot.overlaps(existingSlot);
 						})
 					) {
@@ -112,5 +134,7 @@ const filterSlotsForHost = async (
 		});
 
 	const uniqueSlots = new Set(allAvailableSlots);
-	return Array.from(uniqueSlots).sort((a, b) => moment(a, "HH:mm").diff(moment(b, "HH:mm")));
+	return Array.from(uniqueSlots).sort((a, b) =>
+		moment(a, "HH:mm").diff(moment(b, "HH:mm")),
+	);
 };

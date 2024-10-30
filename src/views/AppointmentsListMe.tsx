@@ -1,12 +1,18 @@
-import { AdminViewComponent } from "payload/config";
+"use client";
+
+import { DefaultTemplate } from "@payloadcms/next/templates";
+import { useStepNav } from "@payloadcms/ui";
+import moment from "moment";
+import type { AdminViewProps } from "payload";
 import React, { useEffect, useState } from "react";
 import Calendar from "../components/Appointments/Calendar";
-import { DefaultTemplate } from "payload/components/templates";
-import { useStepNav } from "payload/components/hooks";
 import { Appointment, User } from "../types";
-import moment from "moment";
 
-const AppointmentsListMe: AdminViewComponent = ({ user, canAccessAdmin }) => {
+const AppointmentsListMe: React.FC<AdminViewProps> = ({
+	initPageResult,
+	params,
+	searchParams,
+}) => {
 	const { setStepNav } = useStepNav();
 
 	useEffect(() => {
@@ -21,17 +27,18 @@ const AppointmentsListMe: AdminViewComponent = ({ user, canAccessAdmin }) => {
 		]);
 	}, [setStepNav]);
 
-	const [appointments, setAppointments] = useState<Appointment[] | undefined>(undefined);
+	const [appointments, setAppointments] = useState<Appointment[] | undefined>(
+		undefined,
+	);
 	const [hosts, setHosts] = useState<User[] | undefined>(undefined);
 
 	const myHeaders = new Headers();
 	myHeaders.append("Content-Type", "application/json");
-	myHeaders.append("Cookie", "lng=en");
 
 	useEffect(() => {
 		fetch("http://localhost:3000/api/appointments")
-			.then(response => response.json())
-			.then(result => {
+			.then((response) => response.json())
+			.then((result) => {
 				const newApps = result.docs.map((doc: Appointment) => {
 					return {
 						...doc,
@@ -42,14 +49,23 @@ const AppointmentsListMe: AdminViewComponent = ({ user, canAccessAdmin }) => {
 				});
 				setAppointments(newApps);
 			})
-			.catch(error => {
+			.catch((error) => {
 				console.error(error);
 				setAppointments([]);
 			});
 	}, []);
 
 	return (
-		<DefaultTemplate>
+		<DefaultTemplate
+			i18n={initPageResult.req.i18n}
+			locale={initPageResult.locale}
+			params={params}
+			payload={initPageResult.req.payload}
+			permissions={initPageResult.permissions}
+			searchParams={searchParams}
+			user={initPageResult.req.user || undefined}
+			visibleEntities={initPageResult.visibleEntities}
+		>
 			<div
 				style={{
 					paddingLeft: "var(--gutter-h)",

@@ -1,3 +1,5 @@
+"use client";
+
 import { Appointment } from "../types";
 import React, { createContext, useContext, useState } from "react";
 import { useModal } from "@faceless-ui/modal";
@@ -10,7 +12,10 @@ type ModalProps = {
 };
 
 type AppointmentContextType = {
-	openModal: (props: { type: "edit" | "add" | "remove"; slotInfo?: SlotInfo }) => void;
+	openModal: (props: {
+		type: "edit" | "add" | "remove";
+		slotInfo?: SlotInfo;
+	}) => void;
 	removeAppointment: (id: string) => void;
 	editAppointment: (appointment: Appointment) => void;
 	addAppointment: (appointment: Appointment) => void;

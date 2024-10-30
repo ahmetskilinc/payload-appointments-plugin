@@ -1,4 +1,4 @@
-import { CollectionAfterChangeHook } from "payload/types";
+import { CollectionAfterChangeHook } from "payload";
 import { appointmentCreatedEmail } from "../utilities/AppointmentCreatedEmail";
 import { appointmentUpdatedEmail } from "../utilities/AppointmentUpdatedEmail";
 import { Appointment, Customer } from "../types";

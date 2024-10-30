@@ -1,4 +1,4 @@
-import { CollectionConfig, FieldHook } from "payload/types";
+import { CollectionConfig, FieldHook } from "payload";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
 import { getAppointmentsForDayAndHost } from "../utilities/GetAppointmentsForDay";
 import { setEndDateTime } from "../hooks/setEndDateTime";
@@ -18,18 +18,18 @@ const Appointments: CollectionConfig = {
 		afterChange: [sendCustomerEmail],
 	},
 	endpoints: [
-		{
-			path: "/get-slots",
-			method: "get",
-			handler: async (req, res): Promise<void> => {
-				const { availableSlotsForDate, filteredSlots } =
-					await getAppointmentsForDayAndHost(req);
-				res.json({
-					availableSlots: filteredSlots,
-					allSlots: availableSlotsForDate,
-				});
-			},
-		},
+		// {
+		// 	path: "/get-slots",
+		// 	method: "get",
+		// 	handler: async (req, res): Promise<void> => {
+		// 		const { availableSlotsForDate, filteredSlots } =
+		// 			await getAppointmentsForDayAndHost(req);
+		// 		res.json({
+		// 			availableSlots: filteredSlots,
+		// 			allSlots: availableSlotsForDate,
+		// 		});
+		// 	},
+		// },
 	],
 	fields: [
 		{
@@ -54,14 +54,15 @@ const Appointments: CollectionConfig = {
 			name: "host",
 			label: "Host",
 			admin: {
-				condition: siblingData => {
-					if (siblingData.appointmentType === "appointment") return true;
+				condition: (siblingData) => {
+					if (siblingData.appointmentType === "appointment")
+						return true;
 					if (siblingData.appointmentType === "blockout") return true;
 					return false;
 				},
-				components: {
-					// Field: HostsSelectField,
-				},
+				// components: {
+				// 	Field: HostsSelectField,
+				// },
 			},
 			required: true,
 		},
@@ -71,8 +72,9 @@ const Appointments: CollectionConfig = {
 			name: "customer",
 			label: "Customer",
 			admin: {
-				condition: siblingData => {
-					if (siblingData.appointmentType === "appointment") return true;
+				condition: (siblingData) => {
+					if (siblingData.appointmentType === "appointment")
+						return true;
 					return false;
 				},
 			},
@@ -86,7 +88,8 @@ const Appointments: CollectionConfig = {
 			hasMany: true,
 			admin: {
 				condition: (data, siblingData) => {
-					if (siblingData.appointmentType === "appointment") return true;
+					if (siblingData.appointmentType === "appointment")
+						return true;
 					return false;
 				},
 			},
@@ -116,8 +119,10 @@ const Appointments: CollectionConfig = {
 							pickerAppearance: "dayAndTime",
 						},
 						condition: (data, siblingData) => {
-							if (siblingData.appointmentType === "appointment") return true;
-							if (siblingData.appointmentType === "blockout") return true;
+							if (siblingData.appointmentType === "appointment")
+								return true;
+							if (siblingData.appointmentType === "blockout")
+								return true;
 							return false;
 						},
 					},
@@ -133,13 +138,15 @@ const Appointments: CollectionConfig = {
 							pickerAppearance: "dayAndTime",
 						},
 						condition: (data, siblingData) => {
-							if (siblingData.appointmentType === "appointment") return true;
-							if (siblingData.appointmentType === "blockout") return true;
+							if (siblingData.appointmentType === "appointment")
+								return true;
+							if (siblingData.appointmentType === "blockout")
+								return true;
 							return false;
 						},
-						components: {
-							Field: EndDateField,
-						},
+						// components: {
+						// 	Field: EndDateField,
+						// },
 					},
 					hooks: {
 						beforeValidate: [setEndDateTime],

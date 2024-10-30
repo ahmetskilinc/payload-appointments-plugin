@@ -1,63 +1,89 @@
-import { AdminViewComponent } from "payload/config";
-import React, { useEffect } from "react";
-import Calendar from "../components/Appointments/Calendar";
-import { DefaultTemplate } from "payload/components/templates";
-import { usePayloadAPI, useStepNav } from "payload/components/hooks";
+"use client";
+
+import { DefaultTemplate } from "@payloadcms/next/templates";
+import { useConfig, usePayloadAPI, useStepNav } from "@payloadcms/ui";
+import { useEffect } from "react";
+import type { AdminViewProps } from "payload";
 import Appointments from "../collections/Appointments";
-import { useConfig } from "payload/components/utilities";
+import { AppointmentModal } from "../components/AppointmentModal";
+import Calendar from "../components/Appointments/Calendar";
 import "../components/Appointments/Calendar/styles.scss";
 import { AppointmentProvider } from "../providers/AppointmentsProvider";
-import { AppointmentModal } from "../components/AppointmentModal";
 import { User } from "../types";
 
-const AppointmentsList: AdminViewComponent = ({ user, canAccessAdmin }) => {
-	const { setStepNav } = useStepNav();
+const AppointmentsList: React.FC<AdminViewProps> = ({
+	initPageResult,
+	params,
+	searchParams,
+}) => {
+	// const { setStepNav } = useStepNav();
 
-	useEffect(() => {
-		setStepNav([
-			{
-				label: "Appointments List",
-			},
-		]);
-	}, [setStepNav]);
+	// useEffect(() => {
+	// 	setStepNav([
+	// 		{
+	// 			label: "Appointments List",
+	// 		},
+	// 	]);
+	// }, [setStepNav]);
 
-	if (!user) return null;
+	// // const {
+	// // 	config: {
+	// // 		routes: { api: apiRoute },
+	// // 		admin,
+	// // 		serverURL,
+	// // 	},
+	// // } = useConfig();
 
-	const {
-		routes: { api },
-		admin,
-		serverURL,
-	} = useConfig();
+	// const {
+	// 	req: {
+	// 		payload: {
+	// 			config: {
+	// 				routes: { api: apiRoute },
+	// 				admin,
+	// 				serverURL,
+	// 			},
+	// 		},
+	// 	},
+	// } = initPageResult;
 
-	const [
-		{
-			data: { docs: appointments },
-		},
-	] = usePayloadAPI(`${serverURL}${api}/${Appointments.slug}`);
+	// const [
+	// 	{
+	// 		data: { docs: appointments },
+	// 	},
+	// ] = usePayloadAPI(`${serverURL}${apiRoute}/${Appointments.slug}`);
 
-	const [
-		{
-			data: { docs: admins },
-		},
-	] = usePayloadAPI(`${serverURL}${api}/${admin.user}`);
+	// const [
+	// 	{
+	// 		data: { docs: admins },
+	// 	},
+	// ] = usePayloadAPI(`${serverURL}${apiRoute}/${admin.user}`);
 
-	const takingAppointments = admins?.filter(
-		(user: User) => user.takingAppointments
-	);
+	// const takingAppointments = admins?.filter(
+	// 	(user: User) => user.takingAppointments,
+	// );
 
 	return (
 		<AppointmentProvider>
-			<DefaultTemplate>
+			<DefaultTemplate
+				i18n={initPageResult.req.i18n}
+				locale={initPageResult.locale}
+				params={params}
+				payload={initPageResult.req.payload}
+				permissions={initPageResult.permissions}
+				searchParams={searchParams}
+				user={initPageResult.req.user || undefined}
+				visibleEntities={initPageResult.visibleEntities}
+			>
 				<div className="collection-list appointments-calendar-view">
 					<h1>Appointments List</h1>
-					{takingAppointments && appointments ? (
+					{/* {takingAppointments && appointments ? (
 						<Calendar
 							resources={takingAppointments}
 							events={appointments}
 						/>
-					) : null}
+					) : null} */}
 				</div>
-				<AppointmentModal />
+				{/* <AppointmentModal /> */}
 			</DefaultTemplate>
 		</AppointmentProvider>
 	);

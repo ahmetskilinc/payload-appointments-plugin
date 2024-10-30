@@ -1,6 +1,6 @@
 import { Modal } from "@faceless-ui/modal";
-import { Button } from "payload/components";
-import { Form, FormSubmit, RenderFields, fieldTypes } from "payload/components/forms";
+import { Button } from "@payloadcms/ui";
+import { Form, FormSubmit, RenderFields } from "@payloadcms/ui";
 import React from "react";
 import Appointments from "../collections/Appointments";
 import { useAppointments } from "../providers/AppointmentsProvider";
@@ -9,8 +9,13 @@ import "./AppointmentModal.scss";
 const baseClass = "add-edit-appointment";
 
 export const AppointmentModal = () => {
-	const { addAppointment, modalProps, editAppointment, removeAppointment, toggleModal } =
-		useAppointments();
+	const {
+		addAppointment,
+		modalProps,
+		editAppointment,
+		removeAppointment,
+		toggleModal,
+	} = useAppointments();
 
 	async function submit(data: any) {
 		try {
@@ -36,20 +41,33 @@ export const AppointmentModal = () => {
 				</div>
 				<Form onSubmit={submit}>
 					{modalProps.props.type !== "remove" && (
-						<RenderFields fieldTypes={fieldTypes} fieldSchema={Appointments.fields} />
+						<RenderFields
+							fields={Appointments.fields}
+							forceRender
+							path=""
+							readOnly={false}
+							schemaPath=""
+						/>
 					)}
 					<div className={`${baseClass}__controls`}>
 						{modalProps.props.type === "edit" ? (
 							<>
 								<FormSubmit>Update appointment</FormSubmit>
-								<Button buttonStyle="error" onClick={() => toggleModal()}>
+								<Button
+									buttonStyle="error"
+									onClick={() => toggleModal()}
+								>
 									Cancel
 								</Button>
 							</>
 						) : modalProps.props.type === "remove" ? (
 							<Button
 								buttonStyle="error"
-								onClick={() => removeAppointment(modalProps.props.appointment?.id!)}
+								onClick={() =>
+									removeAppointment(
+										modalProps.props.appointment?.id!,
+									)
+								}
 							>
 								Remove appointment
 							</Button>

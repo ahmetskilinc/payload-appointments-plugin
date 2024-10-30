@@ -1,14 +1,10 @@
-import React from "react";
-import { Button, NavGroup } from "payload/components/elements";
-import { useConfig } from "payload/components/utilities";
+import { Button, NavGroup, useConfig } from "@payloadcms/ui";
 
-type Props = {};
-
-const BeforeNavLinks = (props: Props) => {
-	const currentPath = "";
-
+const BeforeNavLinks = () => {
 	const {
-		routes: { admin: adminRoute },
+		config: {
+			routes: { admin: adminRoute },
+		},
 	} = useConfig();
 
 	const links = [
@@ -24,8 +20,13 @@ const BeforeNavLinks = (props: Props) => {
 
 	return (
 		<NavGroup label="Appointments">
-			{links.map(link => (
-				<Button el="link" buttonStyle="none" to={adminRoute + link.url} key={link.url}>
+			{links.map((link) => (
+				<Button
+					el="link"
+					buttonStyle="none"
+					to={adminRoute + link.url}
+					key={link.url}
+				>
 					{link.title}
 				</Button>
 			))}

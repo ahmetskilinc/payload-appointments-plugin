@@ -1,22 +1,19 @@
 import {
 	Body,
 	Button,
-	Column,
 	Container,
 	Head,
 	Heading,
 	Hr,
 	Html,
 	Preview,
-	Row,
 	Section,
 	Tailwind,
 	Text,
 } from "@react-email/components";
 import { render } from "@react-email/render";
-import * as React from "react";
-import { Appointment } from "../types";
 import moment from "moment";
+import { Appointment } from "../types";
 
 interface Props {
 	doc?: Appointment;
@@ -34,9 +31,12 @@ export const Email = ({ doc }: Props) => (
 					</Section>
 					<Hr className="border-neutral-300 my-0" />
 					<Section className="p-6">
-						<Text className="mt-0">Hi {doc?.customer.firstName},</Text>
+						<Text className="mt-0">
+							Hi {doc?.customer.firstName},
+						</Text>
 						<Heading className="text-[18px]">
-							Your appointment with {doc?.host.firstName} has been updated
+							Your appointment with {doc?.host.firstName} has been
+							updated
 						</Heading>
 						<Container className="bg-neutral-200  p-6 rounded-sm my-6">
 							<Text className="m-0">
@@ -55,15 +55,22 @@ export const Email = ({ doc }: Props) => (
 							<Text>
 								Service{doc?.services.length! > 1}:{" "}
 								<span className="font-bold">
-									{doc?.services.map(service => service.title).join(", ")}
+									{doc?.services
+										.map((service) => service.title)
+										.join(", ")}
 								</span>
 							</Text>
 							<Text className="m-0">
-								Host: <span className="font-bold">{doc?.host.prefferedName}</span>
+								Host:{" "}
+								<span className="font-bold">
+									{doc?.host.prefferedName}
+								</span>
 							</Text>
 						</Container>
 						<Hr className="border-neutral-300" />
-						<Button href="https://linear.app">Reschedule</Button>{" "}
+						<Button href="https://linear.app">
+							Reschedule
+						</Button>{" "}
 						<Button href="https://linear.app">Cancel</Button>
 						<Hr className="border-neutral-300" />
 						<Text className="mb-0">
@@ -75,13 +82,13 @@ export const Email = ({ doc }: Props) => (
 					<Hr className="border-neutral-300 my-0" />
 					<Section className="p-6 bg-neutral-100 text-neutral-500 my-0 text-center">
 						<Text className="m-0 mb-2">
-							This email was intended for {doc?.customer.firstName}{" "}
-							{doc?.customer.lastName}. If you are not this person contact us
-							immediately.
+							This email was intended for{" "}
+							{doc?.customer.firstName} {doc?.customer.lastName}.
+							If you are not this person contact us immediately.
 						</Text>
 						<Text className="m-0">
-							Please contact us if you have any questions. (If you reply to this
-							email, we won't be able to see it.)
+							Please contact us if you have any questions. (If you
+							reply to this email, we won't be able to see it.)
 						</Text>
 					</Section>
 				</Container>
@@ -110,7 +117,9 @@ Email.PreviewProps = {
 			id: "2",
 		},
 		id: "3",
-		services: [{ title: "HAIRCUT", description: "", duration: 60, id: "2" }],
+		services: [
+			{ title: "HAIRCUT", description: "", duration: 60, id: "2" },
+		],
 	},
 } as Props;
 
