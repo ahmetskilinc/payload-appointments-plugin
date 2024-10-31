@@ -5,16 +5,21 @@
 
 This plugin allows you to add appointment scheduling capabilities to your payload app. It provides:
 
--   Customers, Hosts, Services and Appointments collections
+-   Services and Appointments collections.
 -   An Appointment schedule calendar view.
 -   Opening times global.
--   Authentication on Customers collection.
 
-![Appointments List day](./images/appointments-list-day.png)
+### Appointments Schedule View For Everyone
 
-![Appointments List week](./images/appointments-list-week.png)
+![Appointments List day](./images/appointments-schedule-day.png)
 
-![Collections](./images/collections.png)
+### Appointments Schedule View For Logged In User
+
+![Appointments List week](./images/appointments-schedule-me-day.png)
+
+### Dashboard View
+
+![Dashboard](./images/dashboard.png)
 
 ## Installation
 
@@ -22,7 +27,66 @@ This plugin allows you to add appointment scheduling capabilities to your payloa
 
 `npm i payload-appointments-plugin`
 
-#### 2. add to config
+#### 2. add fields to users collection
+
+```typescript
+const Users: CollectionConfig = {
+	// ...
+	fields: [
+		{
+			name: "firstName",
+			type: "text",
+			label: "First name",
+		},
+		{
+			name: "lastName",
+			type: "text",
+			label: "Last name",
+		},
+		{
+			name: "roles",
+			type: "select",
+			options: [
+				{
+					value: "admin",
+					label: "Admin",
+				},
+				{
+					value: "customer",
+					label: "Customer",
+				},
+			],
+		},
+		{
+			name: "takingAppointments",
+			type: "checkbox",
+			admin: {
+				condition: (siblingData) =>
+					["admin"].includes(siblingData.roles),
+				description: "Whether this user takes appointments or not.",
+			},
+			label: "Taking appointments?",
+			defaultValue: false,
+		},
+		{
+			name: "preferredNameAppointments",
+			type: "text",
+			label: "Preferred name",
+			required: true,
+			admin: {
+				condition: (siblingData) =>
+					Boolean(siblingData.takingAppointments),
+				description:
+					"Name to show in appointment schedule calendar and to customers when booking.",
+			},
+		},
+	],
+};
+
+export default Users;
+```
+
+#### 3. add to config
 
 ```typescript
 import appointments from "payload-appointments-plugin";
@@ -34,16 +98,13 @@ export default buildConfig({
 });
 ```
 
-#### 3. add email config
+#### 4. add email config
 
 follow instructions on [PayloadCMS Email Docs](https://payloadcms.com/docs/email/overview)
 
 ## todo?
 
--   [ ] Customers collection
-    -   [x] Auth on collection
-    -   [x] Firstname, lastname, username, dob, email, password
--   [ ] Appointments collection
+-   [x] Appointments collection
     -   [x] Appointment type, Host, Customer, Services, Title, Start date/time, End date/time
     -   [x] Appointment type is appointment or blockout (lunch, break, interview, meeting, day off? etc.)
     -   [x] Endpoint for getting available time slots
@@ -51,11 +112,12 @@ follow instructions on [PayloadCMS Email Docs](https://payloadcms.com/docs/email
     -   [x] Taking appointments checkbox
     -   [x] Preffered name
     -   [ ] Calendar subscription
--   [ ] Services collection for ...services
+-   [x] Services collection for ...services
     -   [x] Title
     -   [x] Description
     -   [x] Duration
-    -   [ ] Cost
+    -   [x] Cost/Price
+        -   [ ] Variable cost (per hour... etc.)
 -   [ ] Emails
     -   [x] Email config (Will need to be added by the dev)
     -   [ ] React email templates
@@ -66,14 +128,19 @@ follow instructions on [PayloadCMS Email Docs](https://payloadcms.com/docs/email
         -   [ ] Customer signed up email
         -   [ ] Forgot password email
 -   [ ] Custom payload views
-    -   [x] Appointments schedule view /appointments-schedule
+    -   [x] Appointments schedule view /appointments/schedule
+    -   [x] Appointments schedule view for loggined in user /appointments/schedule/me
+    -   [x] Charts /appointments/charts
+    -   [x] Marketing Campaigns /appointments/marketing-campaigns
+    -   [ ] ...more to come
 -   [ ] Endpoints
     -   [x] Get available timeslots for given date, services, host
 -   [ ] Calendar schedule view
+    -   [x] Ability to update appointment from calendar view
     -   [ ] Ability to add appointments by clicking/tapping slot in calendar
         -   [ ] Get start date and time from clicked slot
         -   [ ] Get host from clicked slot
--   [ ] Opening times global
+-   [x] Opening times global
     -   [x] Monday...Sunday
     -   [x] Set times for different days of week
     -   [x] Define if closed on that day
