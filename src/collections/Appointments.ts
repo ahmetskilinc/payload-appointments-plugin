@@ -1,9 +1,7 @@
-import { CollectionConfig, FieldHook } from "payload";
+import { CollectionConfig } from "payload";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
 import { getAppointmentsForDayAndHost } from "../utilities/GetAppointmentsForDay";
 import { setEndDateTime } from "../hooks/setEndDateTime";
-import EndDateField from "../components/EndDateField";
-import HostsSelectField from "../components/HostsSelectField";
 
 const Appointments: CollectionConfig = {
 	slug: "appointments",
@@ -12,7 +10,7 @@ const Appointments: CollectionConfig = {
 		plural: "Appointments",
 	},
 	admin: {
-		group: "Booking",
+		group: "Appointments",
 	},
 	hooks: {
 		afterChange: [sendCustomerEmail],
@@ -51,6 +49,16 @@ const Appointments: CollectionConfig = {
 		{
 			type: "relationship",
 			relationTo: "users",
+			filterOptions: ({ data }) => {
+				return {
+					roles: {
+						equals: "admin",
+					},
+					takingAppointments: {
+						equals: true,
+					},
+				};
+			},
 			name: "host",
 			label: "Host",
 			admin: {
@@ -60,17 +68,21 @@ const Appointments: CollectionConfig = {
 					if (siblingData.appointmentType === "blockout") return true;
 					return false;
 				},
-				// components: {
-				// 	Field: HostsSelectField,
-				// },
 			},
 			required: true,
 		},
 		{
 			type: "relationship",
-			relationTo: "customers",
+			relationTo: "users",
 			name: "customer",
 			label: "Customer",
+			filterOptions: ({ id }) => {
+				return {
+					roles: {
+						equals: "customer",
+					},
+				};
+			},
 			admin: {
 				condition: (siblingData) => {
 					if (siblingData.appointmentType === "appointment")
@@ -144,9 +156,6 @@ const Appointments: CollectionConfig = {
 								return true;
 							return false;
 						},
-						// components: {
-						// 	Field: EndDateField,
-						// },
 					},
 					hooks: {
 						beforeValidate: [setEndDateTime],

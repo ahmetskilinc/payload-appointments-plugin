@@ -1,5 +1,5 @@
 import React from "react";
-import { Appointment, BigCalendarAppointment } from "../../../types";
+import { Appointment, BigCalendarAppointment } from "../../types";
 import "./eventStyles.scss";
 
 const Blockout = ({ event }: { event: BigCalendarAppointment }) => {

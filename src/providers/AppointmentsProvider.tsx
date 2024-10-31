@@ -60,7 +60,7 @@ export const AppointmentProvider: React.FC<{
 				slotInfo,
 			},
 		});
-		console.log(type, slotInfo);
+		// console.log(type, slotInfo);
 		toggleModal("add-edit-appointment");
 	};
 

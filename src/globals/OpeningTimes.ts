@@ -14,7 +14,7 @@ const daysOfWeek = [
 const OpeningTimes: GlobalConfig = {
 	slug: "openingTimes",
 	access: { read: () => true },
-	admin: { group: "Booking" },
+	admin: { group: "Appointments" },
 	fields: daysOfWeek.map((day) => ({
 		type: "group",
 		name: day,

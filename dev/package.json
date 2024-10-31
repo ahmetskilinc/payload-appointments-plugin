@@ -15,12 +15,12 @@
 		"generate:importmap": "payload generate:importmap"
 	},
 	"dependencies": {
-		"@payloadcms/db-mongodb": "3.0.0-beta.120",
-		"@payloadcms/next": "3.0.0-beta.120",
-		"@payloadcms/richtext-lexical": "3.0.0-beta.120",
+		"@payloadcms/db-mongodb": "3.0.0-beta.122",
+		"@payloadcms/next": "3.0.0-beta.122",
+		"@payloadcms/richtext-lexical": "3.0.0-beta.122",
 		"next": "15.0.2",
 		"nodemailer": "^6.9.13",
-		"payload": "3.0.0-beta.120",
+		"payload": "3.0.0-beta.122",
 		"payload-appointments-plugin": "workspace:*",
 		"react": "19.0.0-rc-3edc000d-20240926",
 		"react-dom": "19.0.0-rc-3edc000d-20240926"

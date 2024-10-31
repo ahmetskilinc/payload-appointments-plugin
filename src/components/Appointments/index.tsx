@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo, useState } from "react";
 import {
 	Components,
@@ -7,10 +9,14 @@ import {
 } from "react-big-calendar";
 import moment from "moment";
 import "./styles.scss";
-import type { Appointment as AppointmentType, BigCalendarAppointment, User } from "../../../types";
+import type {
+	Appointment as AppointmentType,
+	BigCalendarAppointment,
+	User,
+} from "../../types";
 import Appointment from "./Appointment";
 import Blockout from "./Blockout";
-import { useAppointments } from "../../../providers/AppointmentsProvider";
+import { useAppointments } from "../../providers/AppointmentsProvider";
 
 const localizer = momentLocalizer(moment);
 
@@ -22,7 +28,7 @@ const Calendar: React.FC<{
 	const { openModal } = useAppointments();
 
 	const remapAppointments = () => {
-		return events.map(doc => {
+		return events.map((doc) => {
 			return {
 				...doc,
 				start: moment(doc.start).toDate(),
@@ -39,8 +45,10 @@ const Calendar: React.FC<{
 	const components: Components<BigCalendarAppointment, User> = useMemo(
 		() => ({
 			event: ({ event }) => {
-				if (event.appointmentType === "appointment") return <Appointment event={event} />;
-				if (event.appointmentType === "blockout") return <Blockout event={event} />;
+				if (event.appointmentType === "appointment")
+					return <Appointment event={event} />;
+				if (event.appointmentType === "blockout")
+					return <Blockout event={event} />;
 				return null;
 			},
 		}),
@@ -62,10 +70,10 @@ const Calendar: React.FC<{
 					titleAccessor="title"
 					resourceAccessor="hostId"
 					resourceIdAccessor="id"
-					resourceTitleAccessor="prefferedName"
+					resourceTitleAccessor="preferredNameAppointments"
 					resources={resources}
-					min={new Date(1970, 0, 0, 7, 0, 0, 0)}
-					max={new Date(1970, 0, 0, 21, 0, 0, 0)}
+					min={new Date(1970, 0, 0, 9, 0, 0, 0)}
+					max={new Date(1970, 0, 0, 19, 0, 0, 0)}
 					components={components}
 					selectable={true}
 					onSelectSlot={handleSlotSelect}

@@ -7,7 +7,7 @@ const Services: CollectionConfig = {
 		plural: "Services",
 	},
 	admin: {
-		group: "Booking",
+		group: "Appointments",
 		useAsTitle: "title",
 	},
 	access: {

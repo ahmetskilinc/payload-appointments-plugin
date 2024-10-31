@@ -1,3 +1,5 @@
+"use client";
+
 import { Modal } from "@faceless-ui/modal";
 import { Button } from "@payloadcms/ui";
 import { Form, FormSubmit, RenderFields } from "@payloadcms/ui";
@@ -41,13 +43,14 @@ export const AppointmentModal = () => {
 				</div>
 				<Form onSubmit={submit}>
 					{modalProps.props.type !== "remove" && (
-						<RenderFields
-							fields={Appointments.fields}
-							forceRender
-							path=""
-							readOnly={false}
-							schemaPath=""
-						/>
+						// <RenderFields
+						// 	fields={Appointments.fields}
+						// 	forceRender
+						// 	path=""
+						// 	readOnly={false}
+						// 	schemaPath=""
+						// />
+						<p>hello world</p>
 					)}
 					<div className={`${baseClass}__controls`}>
 						{modalProps.props.type === "edit" ? (

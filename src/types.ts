@@ -1,4 +1,8 @@
-export interface PluginTypes {}
+export interface PluginTypes {
+	showDashboardCards?: boolean;
+	showNavItems?: boolean;
+	overrides?: {}; // TODO: ADD OVERRIDES FOR COLLECTIONS
+}
 
 export type OpeningTimes = {
 	[key: string]: {
@@ -15,7 +19,7 @@ export type OpeningTimes = {
 
 export interface Appointment {
 	id: string;
-	customer: Customer;
+	customer: User;
 	host: User;
 	services: Service[];
 	title?: string;
@@ -30,7 +34,7 @@ export type BigCalendarAppointment = {
 	end: Date;
 	hostId: string;
 	id: string;
-	customer: Customer;
+	customer: User;
 	host: User;
 	services: Service[];
 	title?: string;
@@ -41,8 +45,11 @@ export interface User {
 	id: string;
 	firstName?: string | null;
 	lastName?: string | null;
+	roles?: ("admin" | "customer") | null;
 	takingAppointments?: boolean | null;
-	prefferedName?: string | null;
+	preferredNameAppointments?: string | null;
+	updatedAt: string;
+	createdAt: string;
 	email: string;
 }
 
@@ -51,13 +58,4 @@ export interface Service {
 	title: string;
 	description: string | null;
 	duration: number;
-}
-
-export interface Customer {
-	id: string;
-	email: string;
-	username: string;
-	firstName: string;
-	lastName: string;
-	dob: string;
 }

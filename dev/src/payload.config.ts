@@ -19,7 +19,7 @@ export default buildConfig({
 	typescript: {
 		outputFile: path.resolve(dirname, "payload-types.ts"),
 	},
-	plugins: [appointments()],
+	plugins: [appointments({})],
 	db: mongooseAdapter({
 		url: process.env.DATABASE_URI!,
 	}),

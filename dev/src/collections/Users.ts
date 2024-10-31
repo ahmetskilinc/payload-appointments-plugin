@@ -7,8 +7,52 @@ const Users: CollectionConfig = {
 		useAsTitle: "email",
 	},
 	fields: [
-		// Email added by default
-		// Add more fields as needed
+		{
+			name: "firstName",
+			type: "text",
+			label: "First name",
+		},
+		{
+			name: "lastName",
+			type: "text",
+			label: "Last name",
+		},
+		{
+			name: "roles",
+			type: "select",
+			options: [
+				{
+					value: "admin",
+					label: "Admin",
+				},
+				{
+					value: "customer",
+					label: "Customer",
+				},
+			],
+		},
+		{
+			name: "takingAppointments",
+			type: "checkbox",
+			admin: {
+				condition: (siblingData) =>
+					["admin"].includes(siblingData.roles),
+			},
+			label: "Taking appointments?",
+			defaultValue: false,
+		},
+		{
+			name: "preferredNameAppointments",
+			type: "text",
+			label: "Preferred name",
+			required: true,
+			admin: {
+				condition: (siblingData) =>
+					Boolean(siblingData.takingAppointments),
+				description:
+					"Name to show in appointment schedule calendar and to customers when booking.",
+			},
+		},
 	],
 };
 
