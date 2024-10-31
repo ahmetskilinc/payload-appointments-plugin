@@ -10,10 +10,17 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
-              with:
-                  node-version: "20.x"
-                  registry-url: "https://registry.npmjs.org"
-            - run: pnpm install
-            - run: pnpm build
+            - uses: actions/checkout@v4
+            - name: Install pnpm
+                  uses: pnpm/action-setup@v4
+                  with:
+                  version: 9
+            - name: Use Node.js 20.x
+                  uses: actions/setup-node@v4
+                  with:
+                  node-version: 20.x
+                  cache: 'pnpm'
+            - name: Install dependencies
+                  run: pnpm install
+            - name: Build
+                  run: pnpm build
