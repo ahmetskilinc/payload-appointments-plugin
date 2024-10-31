@@ -25,6 +25,7 @@ const AppointmentsList: React.FC<AdminViewProps> = ({
 			>
 				<AppointmentsListClient />
 			</DefaultTemplate>
+			<AppointmentModal />
 		</AppointmentProvider>
 	);
 };

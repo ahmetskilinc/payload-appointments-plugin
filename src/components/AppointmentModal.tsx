@@ -1,10 +1,6 @@
 "use client";
 
-import { Modal } from "@faceless-ui/modal";
-import { Button } from "@payloadcms/ui";
-import { Form, FormSubmit, RenderFields } from "@payloadcms/ui";
-import React from "react";
-import Appointments from "../collections/Appointments";
+import { Button, Form, FormSubmit, Modal } from "@payloadcms/ui";
 import { useAppointments } from "../providers/AppointmentsProvider";
 import "./AppointmentModal.scss";
 

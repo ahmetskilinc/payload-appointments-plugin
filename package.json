@@ -31,7 +31,6 @@
 	"author": "ahmetskilinc@icloud.com",
 	"license": "MIT",
 	"dependencies": {
-		"@faceless-ui/modal": "2.0.2",
 		"@payloadcms/next": "3.0.0-beta.122",
 		"@payloadcms/ui": "3.0.0-beta.122",
 		"@react-email/components": "0.0.25",

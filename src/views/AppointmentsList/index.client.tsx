@@ -49,18 +49,15 @@ const AppointmentsListClient: React.FC = () => {
 	);
 
 	return (
-		<>
-			<div className="collection-list appointments-calendar-view">
-				<ListHeader heading="Appointments" />
-				{takingAppointments && appointments ? (
-					<Calendar
-						resources={takingAppointments}
-						events={appointments}
-					/>
-				) : null}
-			</div>
-			<AppointmentModal />
-		</>
+		<div className="collection-list appointments-calendar-view">
+			<ListHeader heading="Appointments" />
+			{takingAppointments && appointments ? (
+				<Calendar
+					resources={takingAppointments}
+					events={appointments}
+				/>
+			) : null}
+		</div>
 	);
 };
 
