@@ -1,9 +1,9 @@
 "use client";
 
-import { Appointment } from "../types";
+import { useDocumentDrawer } from "@payloadcms/ui";
 import React, { createContext, useContext, useState } from "react";
-import { useModal } from "@faceless-ui/modal";
 import { SlotInfo } from "react-big-calendar";
+import { Appointment } from "../types";
 
 type ModalProps = {
 	type: "edit" | "add" | "remove";
@@ -12,28 +12,28 @@ type ModalProps = {
 };
 
 type AppointmentContextType = {
-	openModal: (props: {
-		type: "edit" | "add" | "remove";
-		slotInfo?: SlotInfo;
-	}) => void;
+	// openModal: (props: {
+	// 	type: "edit" | "add" | "remove";
+	// 	slotInfo?: SlotInfo;
+	// }) => void;
 	removeAppointment: (id: string) => void;
 	editAppointment: (appointment: Appointment) => void;
 	addAppointment: (appointment: Appointment) => void;
-	toggleModal: () => void;
-	modalProps: {
-		props: ModalProps;
-	};
+	// toggleModal: () => void;
+	// modalProps: {
+	// 	props: ModalProps;
+	// };
 };
 
 const AppointmentContext = createContext<AppointmentContextType>({
-	openModal: () => {},
+	// openModal: () => {},
 	addAppointment: () => {},
 	removeAppointment: () => {},
 	editAppointment: () => {},
-	toggleModal: () => {},
-	modalProps: {
-		props: { type: "add", slotInfo: {} as SlotInfo },
-	},
+	// toggleModal: () => {},
+	// modalProps: {
+	// 	props: { type: "add", slotInfo: {} as SlotInfo },
+	// },
 });
 
 export const AppointmentProvider: React.FC<{
@@ -51,32 +51,25 @@ export const AppointmentProvider: React.FC<{
 		},
 	});
 
-	const { toggleModal } = useModal();
-
-	const openModal = ({ type, slotInfo }: ModalProps) => {
-		setModalProps({
-			props: {
-				type,
-				slotInfo,
-			},
-		});
-		// console.log(type, slotInfo);
-		toggleModal("add-edit-appointment");
-	};
+	// const openModal = ({ type, slotInfo }: ModalProps) => {
+	// 	setModalProps({
+	// 		props: {
+	// 			type,
+	// 			slotInfo,
+	// 		},
+	// 	});
+	// };
 
 	const addAppointment = async () => {
 		await updateAppointment();
-		toggleModal("add-edit-appointment");
 	};
 
 	const editAppointment = async () => {
 		await updateAppointment();
-		toggleModal("add-edit-appointment");
 	};
 
 	const removeAppointment = async (id: string) => {
 		await updateAppointment();
-		toggleModal("add-edit-appointment");
 	};
 
 	const updateAppointment = async () => {
@@ -86,12 +79,12 @@ export const AppointmentProvider: React.FC<{
 	return (
 		<AppointmentContext.Provider
 			value={{
-				openModal,
+				// openModal,
 				addAppointment,
 				removeAppointment,
 				editAppointment,
-				modalProps,
-				toggleModal: () => toggleModal("add-edit-appointment"),
+				// modalProps,
+				// toggleModal: () => toggleModal("add-edit-appointment"),
 			}}
 		>
 			{children}

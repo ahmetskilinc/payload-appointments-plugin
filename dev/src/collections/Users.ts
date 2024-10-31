@@ -37,6 +37,7 @@ const Users: CollectionConfig = {
 			admin: {
 				condition: (siblingData) =>
 					["admin"].includes(siblingData.roles),
+				description: "Whether this user takes appointments or not.",
 			},
 			label: "Taking appointments?",
 			defaultValue: false,

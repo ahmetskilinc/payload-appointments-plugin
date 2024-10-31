@@ -63,7 +63,7 @@ export const Email = ({ doc }: Props) => (
 							<Text className="m-0">
 								Host:{" "}
 								<span className="font-bold">
-									{doc?.host.prefferedName}
+									{doc?.host.preferredNameAppointments}
 								</span>
 							</Text>
 						</Container>
@@ -97,31 +97,31 @@ export const Email = ({ doc }: Props) => (
 	</Html>
 );
 
-Email.PreviewProps = {
-	doc: {
-		appointmentType: "appointment",
-		customer: {
-			dob: moment().toString(),
-			email: "ahmet@icloud.com",
-			firstName: "Ahmet",
-			id: "1",
-			lastName: "K",
-			username: "Ahmet",
-		},
-		start: moment().add(+1, "hours").toString(),
-		end: moment().add(+2, "hours").toString(),
-		host: {
-			firstName: "John",
-			lastName: "Smith",
-			prefferedName: "JON",
-			id: "2",
-		},
-		id: "3",
-		services: [
-			{ title: "HAIRCUT", description: "", duration: 60, id: "2" },
-		],
-	},
-} as Props;
+// Email.PreviewProps = {
+// 	doc: {
+// 		appointmentType: "appointment",
+// 		customer: {
+// 			dob: moment().toString(),
+// 			email: "ahmet@icloud.com",
+// 			firstName: "Ahmet",
+// 			id: "1",
+// 			lastName: "K",
+// 			username: "Ahmet",
+// 		},
+// 		start: moment().add(+1, "hours").toString(),
+// 		end: moment().add(+2, "hours").toString(),
+// 		host: {
+// 			firstName: "John",
+// 			lastName: "Smith",
+// 			preferredNameAppointments: "JON",
+// 			id: "2",
+// 		},
+// 		id: "3",
+// 		services: [
+// 			{ title: "HAIRCUT", description: "", duration: 60, id: "2" },
+// 		],
+// 	},
+// } as Props;
 
 // export default Email;
 

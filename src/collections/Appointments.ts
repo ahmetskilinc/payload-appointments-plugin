@@ -1,6 +1,6 @@
 import { CollectionConfig } from "payload";
+import { addAdminTitle } from "../hooks/addAdminTitle";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
-import { getAppointmentsForDayAndHost } from "../utilities/GetAppointmentsForDay";
 import { setEndDateTime } from "../hooks/setEndDateTime";
 
 const Appointments: CollectionConfig = {
@@ -11,6 +11,7 @@ const Appointments: CollectionConfig = {
 	},
 	admin: {
 		group: "Appointments",
+		useAsTitle: "adminTitle",
 	},
 	hooks: {
 		afterChange: [sendCustomerEmail],
@@ -163,6 +164,16 @@ const Appointments: CollectionConfig = {
 					required: true,
 				},
 			],
+		},
+		{
+			type: "text",
+			name: "adminTitle",
+			admin: {
+				hidden: true,
+			},
+			hooks: {
+				beforeValidate: [addAdminTitle],
+			},
 		},
 	],
 };

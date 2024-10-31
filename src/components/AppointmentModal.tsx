@@ -7,21 +7,16 @@ import "./AppointmentModal.scss";
 const baseClass = "add-edit-appointment";
 
 export const AppointmentModal = () => {
-	const {
-		addAppointment,
-		modalProps,
-		editAppointment,
-		removeAppointment,
-		toggleModal,
-	} = useAppointments();
+	const { addAppointment, editAppointment, removeAppointment } =
+		useAppointments();
 
 	async function submit(data: any) {
 		try {
-			if (modalProps.props.type === "edit") {
-				editAppointment(data);
-				return;
-			}
-			addAppointment(data);
+			// if (modalProps.props.type === "edit") {
+			// 	editAppointment(data);
+			// 	return;
+			// }
+			// addAppointment(data);
 		} catch (error) {
 			console.log(error);
 		}
@@ -31,49 +26,10 @@ export const AppointmentModal = () => {
 		<Modal className={baseClass} slug="add-edit-appointment">
 			<div className={`${baseClass}__wrapper`}>
 				<div className={`${baseClass}__content`}>
-					<h1>
-						{modalProps.props.type.charAt(0).toUpperCase() +
-							modalProps.props.type.slice(1)}{" "}
-						appointment
-					</h1>
+					<h1>Add/Edit appointment</h1>
 				</div>
 				<Form onSubmit={submit}>
-					{modalProps.props.type !== "remove" && (
-						// <RenderFields
-						// 	fields={Appointments.fields}
-						// 	forceRender
-						// 	path=""
-						// 	readOnly={false}
-						// 	schemaPath=""
-						// />
-						<p>hello world</p>
-					)}
-					<div className={`${baseClass}__controls`}>
-						{modalProps.props.type === "edit" ? (
-							<>
-								<FormSubmit>Update appointment</FormSubmit>
-								<Button
-									buttonStyle="error"
-									onClick={() => toggleModal()}
-								>
-									Cancel
-								</Button>
-							</>
-						) : modalProps.props.type === "remove" ? (
-							<Button
-								buttonStyle="error"
-								onClick={() =>
-									removeAppointment(
-										modalProps.props.appointment?.id!,
-									)
-								}
-							>
-								Remove appointment
-							</Button>
-						) : (
-							<FormSubmit>Add appointment</FormSubmit>
-						)}
-					</div>
+					<p>Hello World</p>
 				</Form>
 			</div>
 		</Modal>

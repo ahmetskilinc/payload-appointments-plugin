@@ -11,8 +11,8 @@ export const setEndDateTime: FieldHook = async ({ siblingData, req }) => {
 						collection: "services",
 						id: service,
 					})
-					.then((res: Service) => {
-						return res.duration;
+					.then((res) => {
+						return res!.duration;
 					});
 			}),
 		).catch((error: any) => {

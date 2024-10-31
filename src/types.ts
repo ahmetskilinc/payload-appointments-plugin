@@ -51,6 +51,7 @@ export interface User {
 	updatedAt: string;
 	createdAt: string;
 	email: string;
+	adminTitle?: string;
 }
 
 export interface Service {

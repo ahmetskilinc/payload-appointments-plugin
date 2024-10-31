@@ -16,7 +16,6 @@ import type {
 } from "../../types";
 import Appointment from "./Appointment";
 import Blockout from "./Blockout";
-import { useAppointments } from "../../providers/AppointmentsProvider";
 
 const localizer = momentLocalizer(moment);
 
@@ -25,7 +24,6 @@ const Calendar: React.FC<{
 	events: AppointmentType[];
 }> = ({ resources, events }) => {
 	const [date, setDate] = useState<Date>(moment().toDate());
-	const { openModal } = useAppointments();
 
 	const remapAppointments = () => {
 		return events.map((doc) => {
@@ -39,7 +37,7 @@ const Calendar: React.FC<{
 	};
 
 	const handleSlotSelect = (slotInfo: SlotInfo) => {
-		openModal({ type: "add", slotInfo });
+		console.log(slotInfo);
 	};
 
 	const components: Components<BigCalendarAppointment, User> = useMemo(

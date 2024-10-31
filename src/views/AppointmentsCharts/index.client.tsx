@@ -30,6 +30,7 @@ const AppointmentsChartsClient: React.FC = () => {
 	return (
 		<div className="collection-list appointments-calendar-view">
 			<ListHeader heading="Charts" />
+			<p>Theres a calendar below</p>
 			<ChartContainer
 				config={{
 					appointments: {

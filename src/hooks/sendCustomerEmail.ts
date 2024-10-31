@@ -1,7 +1,7 @@
 import { CollectionAfterChangeHook } from "payload";
 import { appointmentCreatedEmail } from "../utilities/AppointmentCreatedEmail";
 import { appointmentUpdatedEmail } from "../utilities/AppointmentUpdatedEmail";
-import { Appointment, Customer } from "../types";
+import { Appointment } from "../types";
 
 export const sendCustomerEmail: CollectionAfterChangeHook = async ({
 	doc, // full document data
@@ -14,8 +14,8 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
 				collection: "appointments",
 				id: doc.id,
 			})
-			.then((res: Appointment) => {
-				return res;
+			.then((res) => {
+				return res as Appointment;
 			})
 			.catch((error: any) => {
 				console.error(error);

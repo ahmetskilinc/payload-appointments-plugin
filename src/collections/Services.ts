@@ -17,19 +17,29 @@ const Services: CollectionConfig = {
 		{
 			type: "text",
 			name: "title",
-			label: "Title",
 			required: true,
 		},
 		{
 			type: "textarea",
 			name: "description",
-			label: "Description",
 			required: false,
 		},
 		{
 			type: "number",
 			name: "duration",
 			label: "Duration",
+			required: true,
+		},
+		{
+			type: "checkbox",
+			name: "paidService",
+		},
+		{
+			type: "text",
+			name: "price",
+			admin: {
+				condition: (siblingData) => siblingData.paidService === true,
+			},
 			required: true,
 		},
 	],

@@ -97,6 +97,7 @@ export interface Appointment {
   title?: string | null;
   start?: string | null;
   end?: string | null;
+  adminTitle?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -109,6 +110,8 @@ export interface Service {
   title: string;
   description?: string | null;
   duration: number;
+  paidService?: boolean | null;
+  price?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -205,6 +208,7 @@ export interface AppointmentsSelect<T extends boolean = true> {
   title?: T;
   start?: T;
   end?: T;
+  adminTitle?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -216,6 +220,8 @@ export interface ServicesSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   duration?: T;
+  paidService?: T;
+  price?: T;
   updatedAt?: T;
   createdAt?: T;
 }
