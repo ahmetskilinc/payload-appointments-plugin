@@ -34,9 +34,16 @@
 		background-color: var(--theme-border-color) !important;
 		cursor: pointer !important;
 		border: none !important;
+		padding: 10px 14px !important;
 		&:hover {
-			background-color: var(--theme-elevation-100) !important;
+			background-color: var(--theme-elevation-200) !important;
 			border: none !important;
+		}
+		&.rbc-active {
+			background-color: var(--theme-elevation-250) !important;
+			&:hover {
+				background-color: var(--theme-elevation-300) !important;
+			}
 		}
 	}
 }
@@ -44,10 +51,9 @@
 .rbc-time-slot {
 	color: var(--theme-text) !important;
 }
-
 .rbc-time-header-gutter,
-.rbc-time-gutter.rbc-time-column > .rbc-time-slot {
-	background-color: var(--theme-elevation-0) !important;
+.rbc-time-gutter.rbc-time-column {
+	background-color: var(--theme-elevation-100) !important;
 }
 
 .rbc-row.rbc-row-resource,
@@ -84,7 +90,7 @@
 }
 
 .rbc-time-view {
-	border-radius: 8px !important;
+	border-radius: 4px !important;
 	overflow: hidden !important;
 	border-color: var(--theme-elevation-150) !important;
 }
@@ -103,6 +109,15 @@
 	border: none !important;
 	padding: 0px !important;
 	border-radius: 0 !important;
+}
+
+.rbc-slot-selection {
+	background-color: rgba(#16a34a, 0.2);
+}
+
+.rbc-addons-dnd-resizable {
+	height: 100%;
+	width: 100%;
 }
 
 .rbc-events-container {

@@ -1,4 +1,4 @@
-import { PayloadRequest } from "payload";
+import { PayloadHandler, PayloadRequest } from "payload";
 import { Appointment, OpeningTimes, Service } from "../types";
 
 import Moment from "moment";
@@ -11,7 +11,9 @@ import { extendMoment } from "moment-range";
 // @ts-expect-error
 const moment = extendMoment(Moment);
 
-export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
+export const getAppointmentsForDayAndHost: PayloadHandler = async (
+	req: PayloadRequest,
+) => {
 	const services = req.query.services as string;
 	const day = req.query.day as string;
 	const durations = (await req.payload
@@ -53,7 +55,10 @@ export const getAppointmentsForDayAndHost = async (req: PayloadRequest) => {
 		slotInterval,
 	);
 
-	return { filteredSlots, availableSlotsForDate };
+	return Response.json(
+		{ filteredSlots, availableSlotsForDate },
+		{ status: 200 },
+	);
 };
 
 const curateSlots = (
@@ -65,7 +70,12 @@ const curateSlots = (
 	const originalStartTime = moment(startTime, "HH:mm");
 
 	while (startTime < endTime) {
-		if (startTime.isBetween(originalStartTime.add(-1, "minute"), endTime))
+		if (
+			startTime.isBetween(
+				originalStartTime.subtract(1, "minute"),
+				endTime,
+			)
+		)
 			allTimes.push(startTime.format("HH:mm"));
 		startTime.add(slotInterval, "minutes");
 	}

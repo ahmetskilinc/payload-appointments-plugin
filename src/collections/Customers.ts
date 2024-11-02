@@ -1,10 +1,12 @@
 import { CollectionConfig } from "payload";
 
-const Users: CollectionConfig = {
-	slug: "users",
-	auth: true,
+const Customers: CollectionConfig = {
+	slug: "customers",
 	admin: {
-		useAsTitle: "email",
+		useAsTitle: "firstName",
+	},
+	access: {
+		read: () => true,
 	},
 	fields: [
 		{
@@ -20,4 +22,4 @@ const Users: CollectionConfig = {
 	],
 };
 
-export default Users;
+export default Customers;

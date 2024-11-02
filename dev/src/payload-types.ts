@@ -13,6 +13,8 @@ export interface Config {
   collections: {
     users: User;
     appointments: Appointment;
+    customers: Customer;
+    teamMembers: TeamMember;
     services: Service;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -21,6 +23,8 @@ export interface Config {
   collectionsSelect?: {
     users: UsersSelect<false> | UsersSelect<true>;
     appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
+    customers: CustomersSelect<false> | CustomersSelect<true>;
+    teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -70,9 +74,6 @@ export interface User {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
-  roles?: ('admin' | 'customer') | null;
-  takingAppointments?: boolean | null;
-  preferredNameAppointments?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -91,13 +92,37 @@ export interface User {
 export interface Appointment {
   id: string;
   appointmentType: 'appointment' | 'blockout';
-  host?: (string | null) | User;
-  customer?: (string | null) | User;
+  host?: (string | null) | TeamMember;
+  customer?: (string | null) | Customer;
   services?: (string | Service)[] | null;
   title?: string | null;
   start?: string | null;
   end?: string | null;
   adminTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teamMembers".
+ */
+export interface TeamMember {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  takingAppointments?: boolean | null;
+  preferredNameAppointments: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers".
+ */
+export interface Customer {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -129,6 +154,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'appointments';
         value: string | Appointment;
+      } | null)
+    | ({
+        relationTo: 'customers';
+        value: string | Customer;
+      } | null)
+    | ({
+        relationTo: 'teamMembers';
+        value: string | TeamMember;
       } | null)
     | ({
         relationTo: 'services';
@@ -183,9 +216,6 @@ export interface PayloadMigration {
 export interface UsersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
-  roles?: T;
-  takingAppointments?: T;
-  preferredNameAppointments?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -209,6 +239,28 @@ export interface AppointmentsSelect<T extends boolean = true> {
   start?: T;
   end?: T;
   adminTitle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers_select".
+ */
+export interface CustomersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teamMembers_select".
+ */
+export interface TeamMembersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  takingAppointments?: T;
+  preferredNameAppointments?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -4,7 +4,7 @@ export const addAdminTitle: FieldHook = async ({ siblingData, req }) => {
 	if (siblingData.appointmentType === "appointment") {
 		const customer = (
 			await req.payload.find({
-				collection: "users",
+				collection: "customers",
 				where: {
 					id: {
 						equals: siblingData.customer,

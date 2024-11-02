@@ -1,9 +1,7 @@
 import { DefaultTemplate } from "@payloadcms/next/templates";
 import type { AdminViewProps } from "payload";
-import { AppointmentModal } from "../../components/AppointmentModal";
 import "../../components/Appointments/styles.scss";
 import { AppointmentProvider } from "../../providers/AppointmentsProvider";
-import { User } from "../../types";
 import AppointmentsListClient from "./index.client";
 
 const AppointmentsList: React.FC<AdminViewProps> = ({
@@ -25,7 +23,6 @@ const AppointmentsList: React.FC<AdminViewProps> = ({
 			>
 				<AppointmentsListClient />
 			</DefaultTemplate>
-			<AppointmentModal />
 		</AppointmentProvider>
 	);
 };

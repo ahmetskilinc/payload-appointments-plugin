@@ -15,6 +15,8 @@
 		"generate:importmap": "payload generate:importmap"
 	},
 	"dependencies": {
+		"@headlessui/react": "^2.2.0",
+		"@heroicons/react": "^2.1.5",
 		"@payloadcms/db-mongodb": "3.0.0-beta.122",
 		"@payloadcms/next": "3.0.0-beta.122",
 		"@payloadcms/richtext-lexical": "3.0.0-beta.122",
@@ -23,12 +25,18 @@
 		"payload": "3.0.0-beta.122",
 		"payload-appointments-plugin": "workspace:*",
 		"react": "19.0.0-rc-3edc000d-20240926",
-		"react-dom": "19.0.0-rc-3edc000d-20240926"
+		"react-calendar": "^5.1.0",
+		"react-device-detect": "^2.2.3",
+		"react-dom": "19.0.0-rc-3edc000d-20240926",
+		"react-spinners": "^0.14.1"
 	},
 	"devDependencies": {
+		"autoprefixer": "^10.4.20",
 		"copyfiles": "^2.4.1",
 		"cross-env": "^7.0.3",
 		"dotenv": "^8.2.0",
+		"postcss": "^8.4.47",
+		"tailwindcss": "^3.4.14",
 		"typescript": "5.5.3"
 	}
 }

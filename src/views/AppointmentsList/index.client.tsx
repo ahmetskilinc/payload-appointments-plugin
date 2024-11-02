@@ -10,8 +10,8 @@ import { useEffect } from "react";
 import Appointments from "../../collections/Appointments";
 import Calendar from "../../components/Appointments";
 import "../../components/Appointments/styles.scss";
-import { User } from "../../types";
-import { AppointmentModal } from "../../components/AppointmentModal";
+import { TeamMember } from "../../types";
+import TeamMembers from "../../collections/TeamMembers";
 
 const AppointmentsListClient: React.FC = () => {
 	const { setStepNav } = useStepNav();
@@ -27,7 +27,6 @@ const AppointmentsListClient: React.FC = () => {
 	const {
 		config: {
 			routes: { api: apiRoute },
-			admin,
 			serverURL,
 		},
 	} = useConfig();
@@ -40,12 +39,12 @@ const AppointmentsListClient: React.FC = () => {
 
 	const [
 		{
-			data: { docs: admins },
+			data: { docs: teamMembers },
 		},
-	] = usePayloadAPI(`${serverURL}${apiRoute}/${admin.user}`);
+	] = usePayloadAPI(`${serverURL}${apiRoute}/${TeamMembers.slug}`);
 
-	const takingAppointments = admins?.filter(
-		(user: User) => user.roles === "admin" && user.takingAppointments,
+	const takingAppointments = teamMembers?.filter(
+		(user: TeamMember) => user.takingAppointments,
 	);
 
 	return (

@@ -15,10 +15,7 @@
 		"declaration": true,
 		"skipLibCheck": true,
 		"strict": true,
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["./*"]
-		}
+		"baseUrl": "."
 	},
 	"include": ["src/**/*"]
 }

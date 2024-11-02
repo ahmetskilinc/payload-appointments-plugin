@@ -54,6 +54,16 @@ export interface User {
 	adminTitle?: string;
 }
 
+export interface TeamMember {
+	id: string;
+	firstName?: string | null;
+	lastName?: string | null;
+	takingAppointments?: boolean | null;
+	preferredNameAppointments?: string | null;
+	updatedAt: string;
+	createdAt: string;
+}
+
 export interface Service {
 	id: string;
 	title: string;

@@ -3,6 +3,9 @@ import type { PluginTypes } from "./types";
 import Appointments from "./collections/Appointments";
 import Services from "./collections/Services";
 import OpeningTimes from "./globals/OpeningTimes";
+import TeamMembers from "./collections/TeamMembers";
+import Customers from "./collections/Customers";
+import { getAppointmentsForDayAndHost } from "./utilities/GetAppointmentsForDay";
 
 export const appointments =
 	({ showDashboardCards = true, showNavItems = true }: PluginTypes): Plugin =>
@@ -63,10 +66,21 @@ export const appointments =
 		config.collections = [
 			...(config.collections || []),
 			Appointments,
+			Customers,
+			TeamMembers,
 			Services,
 		];
 
 		config.globals = [...(config.globals || []), OpeningTimes];
+
+		config.endpoints = [
+			...(config.endpoints || []),
+			{
+				path: "/get-available-slots",
+				method: "get",
+				handler: getAppointmentsForDayAndHost,
+			},
+		];
 
 		return config;
 	};

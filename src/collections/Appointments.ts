@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { addAdminTitle } from "../hooks/addAdminTitle";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
 import { setEndDateTime } from "../hooks/setEndDateTime";
+import { getAppointmentsForDayAndHost } from "src/utilities/GetAppointmentsForDay";
 
 const Appointments: CollectionConfig = {
 	slug: "appointments",
@@ -16,20 +17,6 @@ const Appointments: CollectionConfig = {
 	hooks: {
 		afterChange: [sendCustomerEmail],
 	},
-	endpoints: [
-		// {
-		// 	path: "/get-slots",
-		// 	method: "get",
-		// 	handler: async (req, res): Promise<void> => {
-		// 		const { availableSlotsForDate, filteredSlots } =
-		// 			await getAppointmentsForDayAndHost(req);
-		// 		res.json({
-		// 			availableSlots: filteredSlots,
-		// 			allSlots: availableSlotsForDate,
-		// 		});
-		// 	},
-		// },
-	],
 	fields: [
 		{
 			name: "appointmentType",
@@ -49,12 +36,9 @@ const Appointments: CollectionConfig = {
 		},
 		{
 			type: "relationship",
-			relationTo: "users",
+			relationTo: "teamMembers",
 			filterOptions: ({ data }) => {
 				return {
-					roles: {
-						equals: "admin",
-					},
 					takingAppointments: {
 						equals: true,
 					},
@@ -74,16 +58,9 @@ const Appointments: CollectionConfig = {
 		},
 		{
 			type: "relationship",
-			relationTo: "users",
+			relationTo: "customers",
 			name: "customer",
 			label: "Customer",
-			filterOptions: ({ id }) => {
-				return {
-					roles: {
-						equals: "customer",
-					},
-				};
-			},
 			admin: {
 				condition: (siblingData) => {
 					if (siblingData.appointmentType === "appointment")

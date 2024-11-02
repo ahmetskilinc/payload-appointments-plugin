@@ -2,7 +2,8 @@ import type { AdminViewProps } from "payload";
 import { AppointmentProvider } from "../../providers/AppointmentsProvider";
 import { DefaultTemplate } from "@payloadcms/next/templates";
 import AppointmentsChartsClient from "./index.client";
-import { ListHeader } from "@payloadcms/ui";
+
+import "../styles.css";
 
 const AppointmentsCharts: React.FC<AdminViewProps> = ({
 	initPageResult,
