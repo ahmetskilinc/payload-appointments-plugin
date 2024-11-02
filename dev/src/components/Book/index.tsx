@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-import BarbersList from "./BarbersList";
+import HostList from "./HostList";
 import CustomerDetails from "./CustomerDetails";
 import SelectDateTime from "./SelectDateTime";
 import ServiceCategoriesList from "./ServiceCategoriesList";
@@ -89,7 +89,7 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
 					</div>
 
 					<div className={cn(stepIndex === 1 ? "block" : "hidden")}>
-						<BarbersList
+						<HostList
 							setChosenStaff={setChosenStaff}
 							chosenStaff={chosenStaff}
 							teamMembers={teamMembers}

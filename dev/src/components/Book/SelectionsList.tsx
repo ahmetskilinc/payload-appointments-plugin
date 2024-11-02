@@ -2,6 +2,7 @@ import React from "react";
 import { millisToMinutes } from "../../lib/millisToMinutes";
 import moment from "moment";
 import { Service, TeamMember } from "../../../src/payload-types";
+import { formatPrice } from "../../lib/formatPrice";
 
 const SelectionsList: React.FC<{
 	chosenStaff: TeamMember[];
@@ -43,7 +44,7 @@ const SelectionsList: React.FC<{
 			{chosenStaff?.length ? (
 				<div className="space-y-2">
 					<div className="flex items-center justify-between">
-						<p>Barber</p>
+						<p>Host</p>
 						<button
 							className="hover:underline text-sm text-indigo-500 hover:text-indigo-600"
 							onClick={() => setStepIndex(1)}
@@ -117,6 +118,25 @@ const SelectionsList: React.FC<{
 					<p className="text-gray-500 text-xs">
 						You havent made any selections yet.
 					</p>
+				</div>
+			) : null}
+			{chosenServices?.length ? (
+				<div className="space-y-2">
+					<div className="flex items-center justify-between">
+						<p>Total price</p>
+					</div>
+					<div className="space-y-4">
+						<div className="bg-gray-100 p-3 shadow-none md:shadow-sm">
+							<p className="text-gray-900 text-sm">
+								{formatPrice(
+									chosenServices.reduce(
+										(acc, { price }) => acc + Number(price),
+										0,
+									),
+								)}
+							</p>
+						</div>
+					</div>
 				</div>
 			) : null}
 		</React.Fragment>

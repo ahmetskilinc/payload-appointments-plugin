@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { TeamMember } from "../../../src/payload-types";
+import { TeamMember } from "../../payload-types";
 
-const BarberList: React.FC<{
+const HostList: React.FC<{
 	chosenStaff: TeamMember[];
 	setChosenStaff: React.Dispatch<React.SetStateAction<TeamMember[]>>;
 	teamMembers: TeamMember[];
@@ -76,4 +76,4 @@ const BarberList: React.FC<{
 	);
 };
 
-export default BarberList;
+export default HostList;
