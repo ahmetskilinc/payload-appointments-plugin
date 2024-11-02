@@ -7,7 +7,6 @@ import {
 } from "@headlessui/react";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import { isMobile } from "react-device-detect";
 import SelectionsList from "./SelectionsList";
 import { Service, TeamMember } from "../../../src/payload-types";
 
@@ -21,14 +20,11 @@ const Selections: React.FC<{
 		<Disclosure
 			as="div"
 			className="col-span-12 md:col-span-4 !mt-0"
-			defaultOpen={!isMobile}
+			defaultOpen={true}
 		>
 			{({ open }) => (
 				<React.Fragment>
-					<DisclosureButton
-						className="flex w-full items-start justify-between text-left text-gray-900"
-						disabled={!isMobile}
-					>
+					<DisclosureButton className="flex w-full items-start justify-between text-left text-gray-900">
 						<p className="text-base md:mb-4">Your selection</p>
 						<span className="ml-6 flex h-7 items-center md:hidden">
 							{open ? (

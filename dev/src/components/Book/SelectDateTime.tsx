@@ -6,6 +6,8 @@ import "react-calendar/dist/Calendar.css";
 import { filterByDateAndPeriod } from "../../lib/filterByDateAndPeriod";
 import { Service, TeamMember } from "../../../src/payload-types";
 import moment from "moment";
+import MoonLoader from "react-spinners/MoonLoader";
+import TimeSelectButton from "./TimeSelectButton";
 
 const SelectDateTime: React.FC<{
 	chosenServices: Service[];
@@ -13,19 +15,25 @@ const SelectDateTime: React.FC<{
 	setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
 	chosenDateTime: Date | null;
 }> = ({ chosenServices, chosenStaff, setChosenDateTime, chosenDateTime }) => {
-	const [availabilities, setAvailabilities] = useState<string[]>([]);
+	const [slots, setSlots] = useState<string[]>([]);
+	const [loading, setLoading] = useState<boolean>(false);
 
 	useEffect(() => {
+		const services = chosenServices.map((service) => service.id).join(",");
+		const hosts = chosenStaff.map((staff) => staff.id).join(",");
+		const day = moment(chosenDateTime).toISOString();
 		const getAvailabilities = async () => {
+			setLoading(true);
 			const data = await fetch(
-				`/api/get-available-slots?services=${chosenServices.map((service) => service.id).join(",")}&host=${chosenStaff.map((staff) => staff.id).join(",")}&day=${moment(chosenDateTime).toISOString()}`,
+				`/api/appointments/get-available-slots?services=${services}&host=${hosts}&day=${day}`,
 				{
 					method: "get",
 				},
 			);
 
-			const availabilities = await data.json();
-			setAvailabilities(availabilities.availableSlotsForDate);
+			const slots = await data.json();
+			setSlots(slots.availableSlotsForDate);
+			setLoading(false);
 		};
 
 		getAvailabilities();
@@ -35,12 +43,12 @@ const SelectDateTime: React.FC<{
 		<div className="mt-6">
 			<React.Fragment>
 				<Calendar
-					className="!w-full"
+					className="!w-full !border-neutral-200"
 					locale="en-GB"
 					minDate={new Date()}
 					// tileDisabled={({ activeStartDate, date, view }) =>
-					// 	availabilities.filter((availability) =>
-					// 		moment(availability.startAt).isBetween(
+					// 	slots.filter((availability) =>
+					// 		moment(availability).isBetween(
 					// 			new Date(
 					// 				moment(new Date(date).toISOString())
 					// 					.startOf("day")
@@ -63,131 +71,66 @@ const SelectDateTime: React.FC<{
 						setChosenDateTime(new Date(value!.toString()))
 					}
 					value={chosenDateTime}
+					defaultValue={chosenDateTime}
 				/>
-				{chosenDateTime &&
-				availabilities &&
-				availabilities.length &&
-				availabilities.length > 0 ? (
-					<div className="space-y-6 mt-6">
-						<p>Morning</p>
-						<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
-							{filterByDateAndPeriod(
-								"morning",
-								chosenDateTime,
-								availabilities,
-							).map((availability) => (
-								<div
-									className="bg-indigo-500 py-2.5 hover:bg-indigo-600 text-white rounded-sm cursor-pointer"
-									key={JSON.stringify(availability)}
-								>
-									<button
-										className="tabular-nums"
-										type="button"
-										onClick={() =>
-											setChosenDateTime(
-												moment(availability, "HH:mm")
-													.set({
-														year: moment(
-															chosenDateTime,
-														).year(),
-														month: moment(
-															chosenDateTime,
-														).month(),
-														date: moment(
-															chosenDateTime,
-														).date(),
-													})
-													.toDate(),
-											)
-										}
-									>
-										{moment(availability, "HH:mm").format(
-											"HH:mm",
-										)}
-									</button>
-								</div>
-							))}
+				{!loading ? (
+					chosenDateTime &&
+					slots &&
+					slots.length &&
+					slots.length > 0 ? (
+						<div className="space-y-6 mt-6">
+							<p>Morning</p>
+							<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+								{filterByDateAndPeriod(
+									"morning",
+									chosenDateTime,
+									slots,
+								).map((availability) => (
+									<TimeSelectButton
+										key={availability}
+										availability={availability}
+										chosenDateTime={chosenDateTime}
+										setChosenDateTime={setChosenDateTime}
+									/>
+								))}
+							</div>
+							<p>Afternoon</p>
+							<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+								{filterByDateAndPeriod(
+									"afternoon",
+									chosenDateTime,
+									slots,
+								).map((availability) => (
+									<TimeSelectButton
+										key={availability}
+										availability={availability}
+										chosenDateTime={chosenDateTime}
+										setChosenDateTime={setChosenDateTime}
+									/>
+								))}
+							</div>
+							<p>Evening</p>
+							<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+								{filterByDateAndPeriod(
+									"evening",
+									chosenDateTime,
+									slots,
+								).map((availability) => (
+									<TimeSelectButton
+										key={availability}
+										availability={availability}
+										chosenDateTime={chosenDateTime}
+										setChosenDateTime={setChosenDateTime}
+									/>
+								))}
+							</div>
 						</div>
-						<p>Afternoon</p>
-						<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
-							{filterByDateAndPeriod(
-								"afternoon",
-								chosenDateTime,
-								availabilities,
-							).map((availability) => (
-								<div
-									className="bg-indigo-500 py-2.5 hover:bg-indigo-600 text-white rounded-sm cursor-pointer"
-									key={JSON.stringify(availability)}
-								>
-									<button
-										className="tabular-nums"
-										type="button"
-										onClick={() =>
-											setChosenDateTime(
-												moment(availability, "HH:mm")
-													.set({
-														year: moment(
-															chosenDateTime,
-														).year(),
-														month: moment(
-															chosenDateTime,
-														).month(),
-														date: moment(
-															chosenDateTime,
-														).date(),
-													})
-													.toDate(),
-											)
-										}
-									>
-										{moment(availability, "HH:mm").format(
-											"HH:mm",
-										)}
-									</button>
-								</div>
-							))}
-						</div>
-						<p>Evening</p>
-						<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
-							{filterByDateAndPeriod(
-								"evening",
-								chosenDateTime,
-								availabilities,
-							).map((availability) => (
-								<div
-									className="bg-indigo-500 py-2.5 px-4 hover:bg-indigo-600 text-white rounded-sm cursor-pointer"
-									key={JSON.stringify(availability)}
-								>
-									<button
-										className="tabular-nums"
-										type="button"
-										onClick={() =>
-											setChosenDateTime(
-												moment(availability, "HH:mm")
-													.set({
-														year: moment(
-															chosenDateTime,
-														).year(),
-														month: moment(
-															chosenDateTime,
-														).month(),
-														date: moment(
-															chosenDateTime,
-														).date(),
-													})
-													.toDate(),
-											)
-										}
-									>
-										{moment(availability, "HH:mm").format(
-											"HH:mm",
-										)}
-									</button>
-								</div>
-							))}
-						</div>
+					) : null
+				) : (
+					<div className="flex items-center justify-center h-96">
+						<MoonLoader />
 					</div>
-				) : null}
+				)}
 			</React.Fragment>
 		</div>
 	);

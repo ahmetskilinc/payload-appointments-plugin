@@ -5,10 +5,11 @@ import React, { useState } from "react";
 import HostList from "./HostList";
 import CustomerDetails from "./CustomerDetails";
 import SelectDateTime from "./SelectDateTime";
-import ServiceCategoriesList from "./ServiceCategoriesList";
+import ServicesList from "./ServicesList";
 import Selections from "./Selections";
 import { cn } from "../../lib/utils";
 import { Service, TeamMember } from "../../payload-types";
+import moment from "moment";
 
 const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
 	services,
@@ -16,31 +17,50 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
 }) => {
 	const [chosenStaff, setChosenStaff] = useState<TeamMember[]>([]);
 	const [chosenServices, setChosenServices] = useState<Service[]>([]);
-	const [chosenDateTime, setChosenDateTime] = useState<Date | null>(null);
+	const [chosenDateTime, setChosenDateTime] = useState<Date | null>(
+		moment().toDate(),
+	);
 	const [stepIndex, setStepIndex] = useState<number>(0);
+	const [customerDetails, setCustomerDetails] = useState<{
+		firstName: string;
+		lastName: string;
+		phone: string;
+		email: string;
+		notes: string;
+	}>({
+		email: "",
+		firstName: "",
+		lastName: "",
+		notes: "",
+		phone: "",
+	});
 
 	const nextStep = () => {
 		setStepIndex(stepIndex + 1);
-		window.scrollTo({ top: 0 });
+		if (window !== undefined) {
+			window.scrollTo({ top: 0 });
+		}
 	};
 
 	const prevStep = () => {
 		setStepIndex(stepIndex - 1);
-		window.scrollTo({ top: 0 });
+		if (window !== undefined) {
+			window.scrollTo({ top: 0 });
+		}
 	};
 
 	const isContinueDisabled = () => {
 		if (stepIndex === 0) {
 			return !chosenServices?.length;
 		} else if (stepIndex === 1) {
-			return !chosenStaff;
+			return !chosenStaff?.length;
 		} else if (stepIndex === 2) {
 			return !chosenDateTime;
 		}
 	};
 
 	return (
-		<div className="max-w-4xl mx-auto">
+		<div className="max-w-3xl mx-auto">
 			<div className="grid grid-cols-12 gap-4 md:gap-8">
 				<Selections
 					chosenStaff={chosenStaff}
@@ -81,7 +101,7 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
 						) : null}
 					</div>
 					<div className={cn(stepIndex === 0 ? "block" : "hidden")}>
-						<ServiceCategoriesList
+						<ServicesList
 							setChosenServices={setChosenServices}
 							chosenServices={chosenServices}
 							services={services}
@@ -111,6 +131,8 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
 							chosenDateTime={chosenDateTime}
 							chosenStaff={chosenStaff}
 							chosenServices={chosenServices}
+							customerDetails={customerDetails}
+							setCustomerDetails={setCustomerDetails}
 						/>
 					</div>
 				</div>
