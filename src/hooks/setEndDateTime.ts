@@ -1,4 +1,4 @@
-import { FieldHook } from "payload/types";
+import { FieldHook } from "payload";
 import moment from "moment";
 import { Service } from "../types";
 
@@ -11,8 +11,8 @@ export const setEndDateTime: FieldHook = async ({ siblingData, req }) => {
 						collection: "services",
 						id: service,
 					})
-					.then((res: Service) => {
-						return res.duration;
+					.then((res) => {
+						return res!.duration;
 					});
 			}),
 		).catch((error: any) => {
@@ -21,7 +21,7 @@ export const setEndDateTime: FieldHook = async ({ siblingData, req }) => {
 		});
 
 		let totalDuration = 0;
-		durations.forEach(el => (totalDuration += el));
+		durations.forEach((el) => (totalDuration += el));
 
 		const end = moment(siblingData.start).add(totalDuration, "minutes");
 		return moment(end).format("YYYY-MM-DDTHH:mm:ss.SSSZ");

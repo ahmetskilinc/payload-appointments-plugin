@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.react-calendar__month-view__days {
+	height: 280px;
+}

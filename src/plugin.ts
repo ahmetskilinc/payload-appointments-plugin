@@ -1,119 +1,86 @@
-import type { Config, Plugin } from "payload/config";
-
+import type { Config, Plugin } from "payload";
 import type { PluginTypes } from "./types";
-import { extendWebpackConfig } from "./webpack";
 import Appointments from "./collections/Appointments";
-import Customers from "./collections/Customers";
 import Services from "./collections/Services";
-import AppointmentsList from "./views/AppointmentsList";
-import BeforeNavLinks from "./components/Appointments/BeforeNavLinks";
-import AppointmentsListMe from "./views/AppointmentsListMe";
 import OpeningTimes from "./globals/OpeningTimes";
-import { onInitExtension } from "./onInitExtension";
+import TeamMembers from "./collections/TeamMembers";
+import Customers from "./collections/Customers";
+import { getAppointmentsForDayAndHost } from "./utilities/GetAppointmentsForDay";
 
 export const appointments =
-	(pluginOptions?: PluginTypes): Plugin =>
-	incomingConfig => {
+	({ showDashboardCards = true, showNavItems = true }: PluginTypes): Plugin =>
+	(incomingConfig): Config => {
 		let config: Config = { ...incomingConfig };
-		const webpack = extendWebpackConfig(incomingConfig);
-
-		config.admin = {
-			...(config.admin || {}),
-			webpack,
-			components: {
-				...(config.admin?.components || {}),
-				afterDashboard: [...(config.admin?.components?.afterDashboard || [])],
-			},
-		};
 
 		config.admin = {
 			...(config.admin || {}),
 			components: {
 				...(config.admin?.components || {}),
 				views: {
-					...(config.admin.components?.views || {}),
+					...(config.admin?.components?.views || {}),
 					AppointmentsList: {
-						Component: AppointmentsList,
-						path: "/appointments-schedule",
+						Component:
+							"payload-appointments-plugin/src/views/AppointmentsList/index",
+						path: "/appointments/schedule",
 						exact: true,
 					},
-					// AppointmentsListMe: {
-					// 	Component: AppointmentsListMe,
-					// 	path: "/appointments-schedule/me",
-					// 	exact: true,
-					// },
+					AppointmentsCharts: {
+						Component:
+							"payload-appointments-plugin/src/views/AppointmentsCharts/index",
+						path: "/appointments/charts",
+						exact: true,
+					},
+					AppointmentsMarketingCampaigns: {
+						Component:
+							"payload-appointments-plugin/src/views/AppointmentsMarketingCampaigns/index",
+						path: "/appointments/marketing-campaigns",
+						exact: true,
+					},
+					AppointmentsListMe: {
+						Component:
+							"payload-appointments-plugin/src/views/AppointmentsListMe/index",
+						path: "/appointments/schedule/me",
+						exact: true,
+					},
 				},
+				beforeDashboard: [
+					...(config.admin?.components?.beforeDashboard || []),
+					// TODO: add component for appointments today, appointments yesterday, appointments tomorrow...
+					...(showDashboardCards
+						? [
+								"payload-appointments-plugin/src/components/BeforeDashboard",
+							]
+						: []),
+				],
 				beforeNavLinks: [
 					...(config.admin?.components?.beforeNavLinks || []),
-					BeforeNavLinks,
+					...(showNavItems
+						? [
+								"payload-appointments-plugin/src/components/BeforeNavLinks",
+							]
+						: []),
 				],
 			},
 		};
 
-		config.collections = [...(config.collections || []), Appointments, Customers, Services];
-
-		if (config.collections !== undefined) {
-			const userCollection = config.collections.find(
-				collection => collection.slug === incomingConfig.admin?.user,
-			);
-			if (userCollection) {
-				userCollection.fields = [
-					...userCollection.fields,
-					{
-						name: "firstName",
-						type: "text",
-						label: "First name",
-					},
-					{
-						name: "lastName",
-						type: "text",
-						label: "Last name",
-					},
-					{
-						name: "takingAppointments",
-						type: "checkbox",
-						label: "Taking appointments?",
-						defaultValue: false,
-					},
-					{
-						name: "prefferedName",
-						type: "text",
-						label: "Preffered name",
-						required: true,
-						admin: {
-							condition: siblingData => {
-								if (siblingData.takingAppointments) return true;
-								return false;
-							},
-						},
-					},
-				];
-			}
-		}
-
-		config.endpoints = [
-			...(config.endpoints || []),
-			// {
-			// 	path: "/custom-endpoint",
-			// 	method: "get",
-			// 	root: true,
-			// 	handler: (req, res): void => {
-			// 		res.json({ message: "Here is a custom endpoint" });
-			// 	},
-			// },
+		config.collections = [
+			...(config.collections || []),
+			Appointments,
+			Customers,
+			TeamMembers,
+			Services,
 		];
 
 		config.globals = [...(config.globals || []), OpeningTimes];
 
-		config.hooks = {
-			...(config.hooks || {}),
-		};
-
-		config.onInit = async payload => {
-			if (incomingConfig.onInit) await incomingConfig.onInit(payload);
-			// Add additional onInit code by using the onInitExtension function
-			onInitExtension(payload, pluginOptions);
-		};
+		config.endpoints = [
+			...(config.endpoints || []),
+			{
+				path: "/get-available-slots",
+				method: "get",
+				handler: getAppointmentsForDayAndHost,
+			},
+		];
 
 		return config;
 	};

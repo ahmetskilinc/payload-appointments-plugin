@@ -1,8 +1,7 @@
-import { Message } from "payload/dist/email/types";
 import { RenderedEmail } from "../emails/AppointmentCreatedEmail";
 import { Appointment } from "../types";
 
-export const appointmentCreatedEmail = (doc: Appointment): Message => {
+export const appointmentCreatedEmail = (doc: Appointment) => {
 	return {
 		to: doc.customer.email,
 		from: "Payload Appointments <ahmet@kilinc.me>",

@@ -1,44 +1,23 @@
-import { CollectionConfig } from "payload/types";
+import { CollectionConfig } from "payload";
 
 const Customers: CollectionConfig = {
 	slug: "customers",
-	labels: {
-		singular: "Customer",
-		plural: "Customers",
-	},
-	auth: true,
 	admin: {
-		useAsTitle: "username",
-		group: "Booking",
+		useAsTitle: "firstName",
 	},
 	access: {
-		create: () => true,
+		read: () => true,
 	},
 	fields: [
 		{
-			name: "username",
-			type: "text",
-			label: "Username",
-			required: true,
-			unique: true,
-		},
-		{
 			name: "firstName",
 			type: "text",
-			label: "First Name",
-			required: true,
+			label: "First name",
 		},
 		{
 			name: "lastName",
 			type: "text",
-			label: "Last Name",
-			required: true,
-		},
-		{
-			name: "dob",
-			type: "date",
-			label: "Date Of Birth",
-			required: true,
+			label: "Last name",
 		},
 	],
 };

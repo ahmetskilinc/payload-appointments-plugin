@@ -1,4 +1,4 @@
-import { CollectionConfig } from "payload/types";
+import { CollectionConfig } from "payload";
 
 const Services: CollectionConfig = {
 	slug: "services",
@@ -7,7 +7,7 @@ const Services: CollectionConfig = {
 		plural: "Services",
 	},
 	admin: {
-		group: "Booking",
+		group: "Appointments",
 		useAsTitle: "title",
 	},
 	access: {
@@ -17,19 +17,29 @@ const Services: CollectionConfig = {
 		{
 			type: "text",
 			name: "title",
-			label: "Title",
 			required: true,
 		},
 		{
 			type: "textarea",
 			name: "description",
-			label: "Description",
 			required: false,
 		},
 		{
 			type: "number",
 			name: "duration",
 			label: "Duration",
+			required: true,
+		},
+		{
+			type: "checkbox",
+			name: "paidService",
+		},
+		{
+			type: "text",
+			name: "price",
+			admin: {
+				condition: (siblingData) => siblingData.paidService === true,
+			},
 			required: true,
 		},
 	],

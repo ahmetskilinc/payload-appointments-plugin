@@ -7,16 +7,63 @@
  */
 
 export interface Config {
+  auth: {
+    users: UserAuthOperations;
+  };
   collections: {
     users: User;
     appointments: Appointment;
     customers: Customer;
+    teamMembers: TeamMember;
     services: Service;
+    'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
+  collectionsSelect?: {
+    users: UsersSelect<false> | UsersSelect<true>;
+    appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
+    customers: CustomersSelect<false> | CustomersSelect<true>;
+    teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+  };
+  db: {
+    defaultIDType: string;
+  };
   globals: {
     openingTimes: OpeningTime;
+  };
+  globalsSelect?: {
+    openingTimes: OpeningTimesSelect<false> | OpeningTimesSelect<true>;
+  };
+  locale: null;
+  user: User & {
+    collection: 'users';
+  };
+  jobs?: {
+    tasks: unknown;
+    workflows?: unknown;
+  };
+}
+export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
   };
 }
 /**
@@ -27,8 +74,6 @@ export interface User {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
-  takingAppointments?: boolean | null;
-  prefferedName?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -38,7 +83,7 @@ export interface User {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
-  password: string | null;
+  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -47,12 +92,26 @@ export interface User {
 export interface Appointment {
   id: string;
   appointmentType: 'appointment' | 'blockout';
-  host?: (string | null) | User;
+  host?: (string | null) | TeamMember;
   customer?: (string | null) | Customer;
   services?: (string | Service)[] | null;
   title?: string | null;
   start?: string | null;
   end?: string | null;
+  adminTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teamMembers".
+ */
+export interface TeamMember {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  takingAppointments?: boolean | null;
+  preferredNameAppointments: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -62,20 +121,10 @@ export interface Appointment {
  */
 export interface Customer {
   id: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  dob: string;
+  firstName?: string | null;
+  lastName?: string | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -86,6 +135,43 @@ export interface Service {
   title: string;
   description?: string | null;
   duration: number;
+  paidService?: boolean | null;
+  price?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents".
+ */
+export interface PayloadLockedDocument {
+  id: string;
+  document?:
+    | ({
+        relationTo: 'users';
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: 'appointments';
+        value: string | Appointment;
+      } | null)
+    | ({
+        relationTo: 'customers';
+        value: string | Customer;
+      } | null)
+    | ({
+        relationTo: 'teamMembers';
+        value: string | TeamMember;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: string | Service;
+      } | null);
+  globalSlug?: string | null;
+  user: {
+    relationTo: 'users';
+    value: string | User;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -95,15 +181,10 @@ export interface Service {
  */
 export interface PayloadPreference {
   id: string;
-  user:
-    | {
-        relationTo: 'users';
-        value: string | User;
-      }
-    | {
-        relationTo: 'customers';
-        value: string | Customer;
-      };
+  user: {
+    relationTo: 'users';
+    value: string | User;
+  };
   key?: string | null;
   value?:
     | {
@@ -127,6 +208,106 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "appointments_select".
+ */
+export interface AppointmentsSelect<T extends boolean = true> {
+  appointmentType?: T;
+  host?: T;
+  customer?: T;
+  services?: T;
+  title?: T;
+  start?: T;
+  end?: T;
+  adminTitle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customers_select".
+ */
+export interface CustomersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "teamMembers_select".
+ */
+export interface TeamMembersSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  takingAppointments?: T;
+  preferredNameAppointments?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  duration?: T;
+  paidService?: T;
+  price?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents_select".
+ */
+export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-preferences_select".
+ */
+export interface PayloadPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-migrations_select".
+ */
+export interface PayloadMigrationsSelect<T extends boolean = true> {
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -171,6 +352,71 @@ export interface OpeningTime {
   };
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "openingTimes_select".
+ */
+export interface OpeningTimesSelect<T extends boolean = true> {
+  monday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  tuesday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  wednesday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  thursday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  friday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  saturday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  sunday?:
+    | T
+    | {
+        isOpen?: T;
+        opening?: T;
+        closing?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auth".
+ */
+export interface Auth {
+  [k: string]: unknown;
 }
 
 
