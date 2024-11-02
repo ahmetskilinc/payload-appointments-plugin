@@ -2,7 +2,6 @@ import { CollectionConfig } from "payload";
 import { addAdminTitle } from "../hooks/addAdminTitle";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
 import { setEndDateTime } from "../hooks/setEndDateTime";
-import { getAppointmentsForDayAndHost } from "src/utilities/GetAppointmentsForDay";
 
 const Appointments: CollectionConfig = {
 	slug: "appointments",
