@@ -5,9 +5,7 @@ const Customers: CollectionConfig = {
 	admin: {
 		useAsTitle: "firstName",
 	},
-	access: {
-		read: () => true,
-	},
+	access: {},
 	fields: [
 		{
 			name: "firstName",
@@ -18,6 +16,25 @@ const Customers: CollectionConfig = {
 			name: "lastName",
 			type: "text",
 			label: "Last name",
+		},
+		{
+			name: "email",
+			type: "email",
+			label: "Email",
+		},
+		{
+			name: "otpCode",
+			type: "text",
+			admin: {
+				disabled: true,
+			},
+		},
+		{
+			name: "otpExpiresAt",
+			type: "date",
+			admin: {
+				disabled: true,
+			},
 		},
 	],
 };

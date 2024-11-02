@@ -64,6 +64,17 @@ export interface TeamMember {
 	createdAt: string;
 }
 
+export interface Customer {
+	id: string;
+	firstName?: string | null;
+	lastName?: string | null;
+	updatedAt: string;
+	createdAt: string;
+	email: string;
+	otpCode?: string;
+	otpExpiresAt?: Date;
+}
+
 export interface Service {
 	id: string;
 	title: string;

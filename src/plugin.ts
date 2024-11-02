@@ -5,7 +5,9 @@ import Services from "./collections/Services";
 import OpeningTimes from "./globals/OpeningTimes";
 import TeamMembers from "./collections/TeamMembers";
 import Customers from "./collections/Customers";
-import { getAppointmentsForDayAndHost } from "./utilities/GetAppointmentsForDay";
+import { getAppointmentsForDayAndHost } from "./endpoints/getAppointmentsForDay";
+import { requestOtp } from "./endpoints/requestOtp";
+import { verifyOtp } from "./endpoints/verifyOtp";
 
 export const appointments =
 	({ showDashboardCards = true, showNavItems = true }: PluginTypes): Plugin =>
@@ -76,9 +78,19 @@ export const appointments =
 		config.endpoints = [
 			...(config.endpoints || []),
 			{
-				path: "/get-available-slots",
+				path: "/appointments/get-available-slots",
 				method: "get",
 				handler: getAppointmentsForDayAndHost,
+			},
+			{
+				path: "/customer/request-otp",
+				method: "post",
+				handler: requestOtp,
+			},
+			{
+				path: "/customer/verify-otp",
+				method: "post",
+				handler: verifyOtp,
 			},
 		];
 
