@@ -2,12 +2,12 @@
 
 import { ListHeader, useConfig, useStepNav } from "@payloadcms/ui";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Calendar from "../../components/Appointments";
-import { Appointment, User } from "../../types";
+import { Appointment, Customer } from "../../types";
 
 const AppointmentsListMeClient: React.FC<{
-	hosts: User[];
+	hosts: Customer[];
 	appointments: Appointment[];
 }> = ({ hosts, appointments }) => {
 	const { setStepNav } = useStepNav();

@@ -2,34 +2,34 @@ import { DefaultTemplate } from "@payloadcms/next/templates";
 import type { AdminViewProps } from "payload";
 import React from "react";
 import AppointmentsListMeClient from "./index.client";
-import { Appointment, User } from "@/src/types";
+import { Appointment, User, Customer } from "../../types";
 
 const AppointmentsListMe: React.FC<AdminViewProps> = async ({
 	initPageResult,
 	params,
 	searchParams,
 }) => {
-	const appointments: Appointment[] = (
-		await initPageResult.req.payload.find({
-			collection: "appointments",
-			where: {
-				"host.id": {
-					equals: initPageResult.req.user?.id,
-				},
-			},
-		})
-	).docs as Appointment[];
+	// const appointments = (
+	// 	await initPageResult.req.payload.find({
+	// 		collection: "appointments",
+	// 		where: {
+	// 			"host.id": {
+	// 				equals: initPageResult.req.user?.id,
+	// 			},
+	// 		},
+	// 	})
+	// ).docs as Appointment[];
 
-	const hosts: User[] = (
-		await initPageResult.req.payload.find({
-			collection: "users",
-			where: {
-				id: {
-					equals: initPageResult.req.user?.id,
-				},
-			},
-		})
-	).docs as User[];
+	// const hosts = (
+	// 	await initPageResult.req.payload.find({
+	// 		collection: "customers",
+	// 		where: {
+	// 			id: {
+	// 				equals: initPageResult.req.user?.id,
+	// 			},
+	// 		},
+	// 	})
+	// ).docs as Customer[];
 
 	return (
 		<DefaultTemplate
@@ -42,10 +42,11 @@ const AppointmentsListMe: React.FC<AdminViewProps> = async ({
 			user={initPageResult.req.user || undefined}
 			visibleEntities={initPageResult.visibleEntities}
 		>
-			<AppointmentsListMeClient
+			{/* <AppointmentsListMeClient
 				appointments={appointments}
 				hosts={hosts}
-			/>
+			/> */}
+			<p>This needs fixing</p>
 		</DefaultTemplate>
 	);
 };
