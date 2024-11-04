@@ -1,17 +1,20 @@
 "use server";
 
+import { getDashboardData } from "@lib/dashboardData";
 import configPromise from "@payload-config";
 import { getPayloadHMR } from "@payloadcms/next/utilities";
 import moment from "moment";
 
-async function createAppointment(host: string, customer: string, services: string[], start: Date) {
+export async function createAppointment(host: string, services: string[], start: Date) {
+  const customer = await getDashboardData();
   const payload = await getPayloadHMR({ config: configPromise });
   const response = await payload.create({
     collection: "appointments",
     overrideAccess: false,
+    user: customer,
     data: {
       host,
-      customer,
+      customer: customer.user.id,
       services,
       appointmentType: "appointment",
       start: moment(start).toISOString(),
