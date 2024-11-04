@@ -33,7 +33,7 @@ export async function login(formData: FormData) {
     const { token, exp } = await loginToAuthServer(email, password);
 
     // Store the token in an HTTP-only cookie
-    (await cookies()).set("auth_token", token, {
+    (await cookies()).set("payload-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: exp,
@@ -48,10 +48,10 @@ export async function login(formData: FormData) {
 }
 
 export async function logout() {
-  (await cookies()).delete("auth_token");
+  (await cookies()).delete("payload-token");
   redirect("/login");
 }
 
 export async function getAuthToken() {
-  return (await cookies()).get("auth_token")?.value;
+  return (await cookies()).get("payload-token")?.value;
 }
