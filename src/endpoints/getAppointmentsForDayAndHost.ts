@@ -7,43 +7,51 @@ import { extendMoment } from "moment-range";
 const moment = extendMoment(Moment);
 
 export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadRequest) => {
-  const services = req.query.services as string;
-  const day = req.query.day as string;
-  const durations = (await req.payload
-    .find({
-      collection: "services",
-    })
-    .then((res) => {
-      return res.docs.filter((obj) => services.includes(String(obj.id)));
-    })
-    .catch((error: any) => {
-      console.error(error);
-      return [];
-    })) as Service[];
+  try {
+    const services = req.query.services;
+    const day = req.query.day;
+    if (!services || !day || typeof services !== "string" || typeof day !== "string") {
+      return Response.json({ error: { message: "Invalid request" } }, { status: 500 });
+    }
+    const durations = (await req.payload
+      .find({
+        collection: "services",
+      })
+      .then((res) => {
+        return res.docs.filter((obj) => services?.includes(String(obj.id)));
+      })
+      .catch((error: any) => {
+        console.error(error);
+        return [];
+      })) as Service[];
 
-  let slotInterval = 0;
-  durations.forEach((el) => (slotInterval += el.duration));
+    let slotInterval = 0;
+    durations.forEach((el) => (slotInterval += el.duration));
 
-  const openingTimes = await req.payload
-    .findGlobal({
-      slug: "openingTimes",
-    })
-    .then((res) => {
-      return res;
-    });
+    const openingTimes = await req.payload
+      .findGlobal({
+        slug: "openingTimes",
+      })
+      .then((res) => {
+        return res;
+      });
 
-  // @ts-expect-error
-  const openTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].opening;
-  // @ts-expect-error
-  const closeTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].closing;
+    // @ts-expect-error
+    const openTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].opening;
+    // @ts-expect-error
+    const closeTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].closing;
 
-  let startTime = moment(openTime);
-  let endTime = moment(closeTime);
+    let startTime = moment(openTime);
+    let endTime = moment(closeTime);
 
-  const availableSlotsForDate = curateSlots(slotInterval, startTime, endTime);
-  const filteredSlots = await filterSlotsForHost(req, day, availableSlotsForDate, slotInterval);
+    const availableSlotsForDate = curateSlots(slotInterval, startTime, endTime);
+    const filteredSlots = await filterSlotsForHost(req, day, availableSlotsForDate, slotInterval);
 
-  return Response.json({ filteredSlots, availableSlotsForDate }, { status: 200 });
+    return Response.json({ filteredSlots, availableSlotsForDate }, { status: 200 });
+  } catch (error) {
+    req.payload.logger.error(error);
+    return Response.json({ error: { message: error } }, { status: 500 });
+  }
 };
 
 const curateSlots = (slotInterval: number, startTime: Moment.Moment, endTime: Moment.Moment) => {

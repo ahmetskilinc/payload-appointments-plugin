@@ -9,22 +9,22 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
   operation, // name of the operation ie. 'create', 'update'
 }) => {
   if (doc.appointmentType === "appointment") {
-    // const appointment = await req.payload
-    // 	.findByID({
-    // 		collection: "appointments",
-    // 		id: doc.id,
-    // 	})
-    // 	.then((res) => {
-    // 		return res as Appointment;
-    // 	})
-    // 	.catch((error: any) => {
-    // 		console.error(error);
-    // 		return {} as Appointment;
-    // 	});
-    // if (operation === "create") {
-    // 	req.payload.sendEmail(appointmentCreatedEmail(appointment));
-    // } else if (operation === "update") {
-    // 	req.payload.sendEmail(appointmentUpdatedEmail(appointment));
-    // }
+    const appointment = await req.payload
+      .findByID({
+        collection: "appointments",
+        id: doc.id,
+      })
+      .then((res) => {
+        return res as Appointment;
+      })
+      .catch((error: any) => {
+        console.error(error);
+        throw new Error(error.message);
+      });
+    if (operation === "create") {
+      req.payload.sendEmail(await appointmentCreatedEmail(appointment));
+    } else if (operation === "update") {
+      req.payload.sendEmail(await appointmentUpdatedEmail(appointment));
+    }
   }
 };

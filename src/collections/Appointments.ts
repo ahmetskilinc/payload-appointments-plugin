@@ -2,6 +2,7 @@ import { CollectionConfig } from "payload";
 import { addAdminTitle } from "../hooks/addAdminTitle";
 import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
 import { setEndDateTime } from "../hooks/setEndDateTime";
+import { authenticated } from "../access/authenticated";
 
 const Appointments: CollectionConfig = {
   slug: "appointments",
@@ -15,6 +16,9 @@ const Appointments: CollectionConfig = {
   },
   hooks: {
     afterChange: [sendCustomerEmail],
+  },
+  access: {
+    create: authenticated,
   },
   fields: [
     {

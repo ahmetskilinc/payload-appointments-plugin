@@ -10,13 +10,16 @@ import Selections from "./Selections";
 import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
 import { Service, TeamMember } from "../../payload-types";
-import moment from "moment";
+import { createAppointment } from "@app/(frontend)/actions/appointment";
 
 const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({ services, teamMembers }) => {
   const [chosenStaff, setChosenStaff] = useState<TeamMember | null>(null);
   const [chosenServices, setChosenServices] = useState<Service[]>([]);
   const [chosenDateTime, setChosenDateTime] = useState<Date | null>(null);
   const [stepIndex, setStepIndex] = useState<number>(0);
+  const [bookingLoading, setBookingLoading] = useState<boolean>(false);
+  const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
+  const [bookingSuccessMessage, setBookingSuccessMessage] = useState<boolean>(false);
   const [customerDetails, setCustomerDetails] = useState<{
     firstName: string;
     lastName: string;
@@ -121,9 +124,25 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
           ) : (
             <Button
               type="button"
-              // onClick={() => setStepIndex(stepIndex + 1)}
+              // disabled={!chosenStaff?.id && }
+              onClick={() => {
+                setBookingLoading(true);
+                createAppointment(
+                  chosenStaff?.id!,
+                  services.map((service) => service.id),
+                  chosenDateTime!
+                ).then((res) => {
+                  if (res.success) {
+                    setBookingLoading(false);
+                    setBookingSuccess(true);
+                  } else {
+                    setBookingLoading(false);
+                    setBookingSuccess(false);
+                  }
+                });
+              }}
             >
-              Book now
+              {bookingLoading ? "Booking" : "Book now"}
             </Button>
           )}
         </div>

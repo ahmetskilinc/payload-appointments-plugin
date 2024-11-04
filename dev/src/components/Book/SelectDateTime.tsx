@@ -16,7 +16,7 @@ const SelectDateTime: React.FC<{
   setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
   chosenDateTime: Date | null;
 }> = ({ chosenServices, chosenStaff, setChosenDateTime, chosenDateTime }) => {
-  const [slots, setSlots] = useState<string[]>([]);
+  const [slots, setSlots] = useState<string[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ const SelectDateTime: React.FC<{
     const day = moment(chosenDateTime).toISOString();
     const getAvailabilities = async () => {
       setLoading(true);
-      const data = await fetchWithAuth(`/api/appointments/get-available-slots?services=${services}&host=${chosenStaff?.id}&day=${day}`, {
+      const data = await fetchWithAuth(`/api/get-available-appointment-slots?services=${services}&host=${chosenStaff?.id}&day=${day}`, {
         method: "get",
       });
 
@@ -43,22 +43,6 @@ const SelectDateTime: React.FC<{
           className="!w-full !border-neutral-200 !rounded-md !overflow-hidden"
           locale="en-GB"
           minDate={new Date()}
-          // tileDisabled={({ activeStartDate, date, view }) =>
-          // 	slots.filter((availability) =>
-          // 		moment(availability).isBetween(
-          // 			new Date(
-          // 				moment(new Date(date).toISOString())
-          // 					.startOf("day")
-          // 					.toString(),
-          // 			),
-          // 			new Date(
-          // 				moment(new Date(date).toISOString())
-          // 					.endOf("day")
-          // 					.toString(),
-          // 			),
-          // 		),
-          // 	).length === 0
-          // }
           maxDate={new Date(new Date().setMonth(new Date().getMonth() + 1))}
           maxDetail="month"
           minDetail="month"

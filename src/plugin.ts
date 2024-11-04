@@ -57,7 +57,7 @@ export const appointments =
     config.endpoints = [
       ...(config.endpoints || []),
       {
-        path: "/appointments/get-available-slots",
+        path: "/get-available-appointment-slots",
         method: "get",
         handler: getAppointmentsForDayAndHost,
       },
