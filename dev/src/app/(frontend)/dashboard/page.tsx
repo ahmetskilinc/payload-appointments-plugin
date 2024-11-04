@@ -9,7 +9,7 @@ import AppointmentsList from "@components/Appointments";
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
-  const session = cookieStore.get("auth_token");
+  const session = cookieStore.get("payload-token");
 
   if (!session) {
     redirect("/login");
