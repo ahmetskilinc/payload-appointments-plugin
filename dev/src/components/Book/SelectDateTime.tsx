@@ -10,130 +10,93 @@ import MoonLoader from "react-spinners/MoonLoader";
 import TimeSelectButton from "./TimeSelectButton";
 
 const SelectDateTime: React.FC<{
-	chosenServices: Service[];
-	chosenStaff: TeamMember[];
-	setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
-	chosenDateTime: Date | null;
+  chosenServices: Service[];
+  chosenStaff: TeamMember[];
+  setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
+  chosenDateTime: Date | null;
 }> = ({ chosenServices, chosenStaff, setChosenDateTime, chosenDateTime }) => {
-	const [slots, setSlots] = useState<string[]>([]);
-	const [loading, setLoading] = useState<boolean>(false);
+  const [slots, setSlots] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-	useEffect(() => {
-		const services = chosenServices.map((service) => service.id).join(",");
-		const hosts = chosenStaff.map((staff) => staff.id).join(",");
-		const day = moment(chosenDateTime).toISOString();
-		const getAvailabilities = async () => {
-			setLoading(true);
-			const data = await fetch(
-				`/api/appointments/get-available-slots?services=${services}&host=${hosts}&day=${day}`,
-				{
-					method: "get",
-				},
-			);
+  useEffect(() => {
+    const services = chosenServices.map((service) => service.id).join(",");
+    const hosts = chosenStaff.map((staff) => staff.id).join(",");
+    const day = moment(chosenDateTime).toISOString();
+    const getAvailabilities = async () => {
+      setLoading(true);
+      const data = await fetch(`/api/appointments/get-available-slots?services=${services}&host=${hosts}&day=${day}`, {
+        method: "get",
+      });
 
-			const slots = await data.json();
-			setSlots(slots.availableSlotsForDate);
-			setLoading(false);
-		};
+      const slots = await data.json();
+      setSlots(slots.availableSlotsForDate);
+      setLoading(false);
+    };
 
-		getAvailabilities();
-	}, [chosenDateTime]);
+    getAvailabilities();
+  }, [chosenDateTime]);
 
-	return (
-		<div className="mt-6">
-			<React.Fragment>
-				<Calendar
-					className="!w-full !border-neutral-200"
-					locale="en-GB"
-					minDate={new Date()}
-					// tileDisabled={({ activeStartDate, date, view }) =>
-					// 	slots.filter((availability) =>
-					// 		moment(availability).isBetween(
-					// 			new Date(
-					// 				moment(new Date(date).toISOString())
-					// 					.startOf("day")
-					// 					.toString(),
-					// 			),
-					// 			new Date(
-					// 				moment(new Date(date).toISOString())
-					// 					.endOf("day")
-					// 					.toString(),
-					// 			),
-					// 		),
-					// 	).length === 0
-					// }
-					maxDate={
-						new Date(new Date().setMonth(new Date().getMonth() + 1))
-					}
-					maxDetail="month"
-					minDetail="month"
-					onChange={(value) =>
-						setChosenDateTime(new Date(value!.toString()))
-					}
-					value={chosenDateTime}
-					defaultValue={chosenDateTime}
-				/>
-				{!loading ? (
-					chosenDateTime &&
-					slots &&
-					slots.length &&
-					slots.length > 0 ? (
-						<div className="space-y-6 mt-6">
-							<p>Morning</p>
-							<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
-								{filterByDateAndPeriod(
-									"morning",
-									chosenDateTime,
-									slots,
-								).map((availability) => (
-									<TimeSelectButton
-										key={availability}
-										availability={availability}
-										chosenDateTime={chosenDateTime}
-										setChosenDateTime={setChosenDateTime}
-									/>
-								))}
-							</div>
-							<p>Afternoon</p>
-							<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
-								{filterByDateAndPeriod(
-									"afternoon",
-									chosenDateTime,
-									slots,
-								).map((availability) => (
-									<TimeSelectButton
-										key={availability}
-										availability={availability}
-										chosenDateTime={chosenDateTime}
-										setChosenDateTime={setChosenDateTime}
-									/>
-								))}
-							</div>
-							<p>Evening</p>
-							<div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
-								{filterByDateAndPeriod(
-									"evening",
-									chosenDateTime,
-									slots,
-								).map((availability) => (
-									<TimeSelectButton
-										key={availability}
-										availability={availability}
-										chosenDateTime={chosenDateTime}
-										setChosenDateTime={setChosenDateTime}
-									/>
-								))}
-							</div>
-						</div>
-					) : null
-				) : (
-					<div className="flex items-center justify-center h-96">
-						<MoonLoader />
-					</div>
-				)}
-			</React.Fragment>
-		</div>
-	);
+  return (
+    <div className="mt-6">
+      <React.Fragment>
+        <Calendar
+          className="!w-full !border-neutral-200 !rounded-md !overflow-hidden"
+          locale="en-GB"
+          minDate={new Date()}
+          // tileDisabled={({ activeStartDate, date, view }) =>
+          // 	slots.filter((availability) =>
+          // 		moment(availability).isBetween(
+          // 			new Date(
+          // 				moment(new Date(date).toISOString())
+          // 					.startOf("day")
+          // 					.toString(),
+          // 			),
+          // 			new Date(
+          // 				moment(new Date(date).toISOString())
+          // 					.endOf("day")
+          // 					.toString(),
+          // 			),
+          // 		),
+          // 	).length === 0
+          // }
+          maxDate={new Date(new Date().setMonth(new Date().getMonth() + 1))}
+          maxDetail="month"
+          minDetail="month"
+          onChange={(value) => setChosenDateTime(new Date(value!.toString()))}
+          value={chosenDateTime}
+          defaultValue={chosenDateTime}
+        />
+        {!loading ? (
+          chosenDateTime && slots && slots.length && slots.length > 0 ? (
+            <div className="space-y-6 mt-6">
+              <p>Morning</p>
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+                {filterByDateAndPeriod("morning", chosenDateTime, slots).map((availability) => (
+                  <TimeSelectButton key={availability} availability={availability} chosenDateTime={chosenDateTime} setChosenDateTime={setChosenDateTime} />
+                ))}
+              </div>
+              <p>Afternoon</p>
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+                {filterByDateAndPeriod("afternoon", chosenDateTime, slots).map((availability) => (
+                  <TimeSelectButton key={availability} availability={availability} chosenDateTime={chosenDateTime} setChosenDateTime={setChosenDateTime} />
+                ))}
+              </div>
+              <p>Evening</p>
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+                {filterByDateAndPeriod("evening", chosenDateTime, slots).map((availability) => (
+                  <TimeSelectButton key={availability} availability={availability} chosenDateTime={chosenDateTime} setChosenDateTime={setChosenDateTime} />
+                ))}
+              </div>
+            </div>
+          ) : null
+        ) : (
+          <div className="flex items-center justify-center h-96">
+            <MoonLoader />
+          </div>
+        )}
+      </React.Fragment>
+    </div>
+  );
 };
 
 export default SelectDateTime;

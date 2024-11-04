@@ -365,20 +365,23 @@
 }
 
 .filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia)
+    var(--tw-drop-shadow);
 }
 
 @keyframes enter {
   from {
     opacity: var(--tw-enter-opacity, 1);
-    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
   }
 }
 
 @keyframes exit {
   to {
     opacity: var(--tw-exit-opacity, 1);
-    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
+    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0)
+      scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
   }
 }
 
@@ -432,8 +435,8 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-feature-settings:
-		"rlig" 1,
-		"calt" 1;
+    "rlig" 1,
+    "calt" 1;
 }
 
 @media (min-width: 768px) {
@@ -448,23 +451,23 @@ body {
   }
 }
 
-.\[\&\>svg\]\:h-2\.5>svg {
+.\[\&\>svg\]\:h-2\.5 > svg {
   height: 0.625rem;
 }
 
-.\[\&\>svg\]\:h-3>svg {
+.\[\&\>svg\]\:h-3 > svg {
   height: 0.75rem;
 }
 
-.\[\&\>svg\]\:w-2\.5>svg {
+.\[\&\>svg\]\:w-2\.5 > svg {
   width: 0.625rem;
 }
 
-.\[\&\>svg\]\:w-3>svg {
+.\[\&\>svg\]\:w-3 > svg {
   width: 0.75rem;
 }
 
-.\[\&\>svg\]\:text-muted-foreground>svg {
+.\[\&\>svg\]\:text-muted-foreground > svg {
   color: hsl(var(--muted-foreground));
 }
 
@@ -472,7 +475,7 @@ body {
   fill: hsl(var(--muted-foreground));
 }
 
-.\[\&_\.recharts-cartesian-grid_line\[stroke\=\'\#ccc\'\]\]\:stroke-border\/50 .recharts-cartesian-grid line[stroke='#ccc'] {
+.\[\&_\.recharts-cartesian-grid_line\[stroke\=\'\#ccc\'\]\]\:stroke-border\/50 .recharts-cartesian-grid line[stroke="#ccc"] {
   stroke: hsl(var(--border) / 0.5);
 }
 
@@ -480,7 +483,7 @@ body {
   stroke: hsl(var(--border));
 }
 
-.\[\&_\.recharts-dot\[stroke\=\'\#fff\'\]\]\:stroke-transparent .recharts-dot[stroke='#fff'] {
+.\[\&_\.recharts-dot\[stroke\=\'\#fff\'\]\]\:stroke-transparent .recharts-dot[stroke="#fff"] {
   stroke: transparent;
 }
 
@@ -489,7 +492,7 @@ body {
   outline-offset: 2px;
 }
 
-.\[\&_\.recharts-polar-grid_\[stroke\=\'\#ccc\'\]\]\:stroke-border .recharts-polar-grid [stroke='#ccc'] {
+.\[\&_\.recharts-polar-grid_\[stroke\=\'\#ccc\'\]\]\:stroke-border .recharts-polar-grid [stroke="#ccc"] {
   stroke: hsl(var(--border));
 }
 
@@ -501,11 +504,11 @@ body {
   fill: hsl(var(--muted));
 }
 
-.\[\&_\.recharts-reference-line_\[stroke\=\'\#ccc\'\]\]\:stroke-border .recharts-reference-line [stroke='#ccc'] {
+.\[\&_\.recharts-reference-line_\[stroke\=\'\#ccc\'\]\]\:stroke-border .recharts-reference-line [stroke="#ccc"] {
   stroke: hsl(var(--border));
 }
 
-.\[\&_\.recharts-sector\[stroke\=\'\#fff\'\]\]\:stroke-transparent .recharts-sector[stroke='#fff'] {
+.\[\&_\.recharts-sector\[stroke\=\'\#fff\'\]\]\:stroke-transparent .recharts-sector[stroke="#fff"] {
   stroke: transparent;
 }
 

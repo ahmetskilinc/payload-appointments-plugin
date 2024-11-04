@@ -11,7 +11,9 @@
 		"jsx": "preserve",
 		"paths": {
 			"@payload-config": ["./src/payload.config.ts"],
-			"payload/generated-types": ["./src/payload-types.ts"]
+			"payload/generated-types": ["./src/payload-types.ts"],
+			"@*": ["./src/*"],
+			"@components/*": ["./src/components/*"]
 		},
 		"noEmit": true,
 		"incremental": true,

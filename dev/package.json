@@ -18,8 +18,16 @@
 		"@headlessui/react": "^2.2.0",
 		"@heroicons/react": "^2.1.5",
 		"@payloadcms/db-mongodb": "3.0.0-beta.123",
+		"@payloadcms/email-nodemailer": "3.0.0-beta.123",
 		"@payloadcms/next": "3.0.0-beta.123",
 		"@payloadcms/richtext-lexical": "3.0.0-beta.123",
+		"@radix-ui/react-label": "^2.1.0",
+		"@radix-ui/react-slot": "^1.1.0",
+		"@radix-ui/react-tabs": "^1.1.1",
+		"@types/nodemailer": "^6.4.16",
+		"class-variance-authority": "^0.7.0",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.454.0",
 		"next": "15.0.2",
 		"nodemailer": "^6.9.16",
 		"payload": "3.0.0-beta.123",
@@ -27,7 +35,9 @@
 		"react": "19.0.0-rc-3edc000d-20240926",
 		"react-calendar": "^5.1.0",
 		"react-dom": "19.0.0-rc-3edc000d-20240926",
-		"react-spinners": "^0.14.1"
+		"react-spinners": "^0.14.1",
+		"tailwind-merge": "^2.5.4",
+		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.4.20",

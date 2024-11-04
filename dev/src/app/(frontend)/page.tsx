@@ -1,34 +1,11 @@
 import React from "react";
-import BookNow from "../../components/Book";
-import configPromise from "@payload-config";
-import { getPayloadHMR } from "@payloadcms/next/utilities";
 
 const Page = async () => {
-	const payload = await getPayloadHMR({ config: configPromise });
-	const teamMembers = (
-		await payload.find({
-			collection: "teamMembers",
-			overrideAccess: false,
-			where: {
-				takingAppointments: {
-					equals: true,
-				},
-			},
-		})
-	).docs;
-
-	const services = (
-		await payload.find({
-			collection: "services",
-			overrideAccess: false,
-		})
-	).docs;
-
-	return (
-		<div className="py-20 px-6">
-			<BookNow services={services} teamMembers={teamMembers} />
-		</div>
-	);
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <p>Not here</p>
+    </div>
+  );
 };
 
 export default Page;
