@@ -8,10 +8,11 @@ import { Service, TeamMember } from "../../../src/payload-types";
 import moment from "moment";
 import MoonLoader from "react-spinners/MoonLoader";
 import TimeSelectButton from "./TimeSelectButton";
+import { fetchWithAuth } from "@lib/api";
 
 const SelectDateTime: React.FC<{
   chosenServices: Service[];
-  chosenStaff: TeamMember[];
+  chosenStaff: TeamMember | null;
   setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
   chosenDateTime: Date | null;
 }> = ({ chosenServices, chosenStaff, setChosenDateTime, chosenDateTime }) => {
@@ -20,11 +21,10 @@ const SelectDateTime: React.FC<{
 
   useEffect(() => {
     const services = chosenServices.map((service) => service.id).join(",");
-    const hosts = chosenStaff.map((staff) => staff.id).join(",");
     const day = moment(chosenDateTime).toISOString();
     const getAvailabilities = async () => {
       setLoading(true);
-      const data = await fetch(`/api/appointments/get-available-slots?services=${services}&host=${hosts}&day=${day}`, {
+      const data = await fetchWithAuth(`/api/appointments/get-available-slots?services=${services}&host=${chosenStaff?.id}&day=${day}`, {
         method: "get",
       });
 

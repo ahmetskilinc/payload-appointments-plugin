@@ -1,6 +1,5 @@
 "use server";
 
-import Users from "@collections/Users";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 

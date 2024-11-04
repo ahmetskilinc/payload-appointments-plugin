@@ -13,9 +13,9 @@ import { Service, TeamMember } from "../../payload-types";
 import moment from "moment";
 
 const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({ services, teamMembers }) => {
-  const [chosenStaff, setChosenStaff] = useState<TeamMember[]>([]);
+  const [chosenStaff, setChosenStaff] = useState<TeamMember | null>(null);
   const [chosenServices, setChosenServices] = useState<Service[]>([]);
-  const [chosenDateTime, setChosenDateTime] = useState<Date | null>(moment().toDate());
+  const [chosenDateTime, setChosenDateTime] = useState<Date | null>(null);
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [customerDetails, setCustomerDetails] = useState<{
     firstName: string;
@@ -49,7 +49,7 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
     if (stepIndex === 0) {
       return !chosenServices?.length;
     } else if (stepIndex === 1) {
-      return !chosenStaff?.length;
+      return !chosenStaff;
     } else if (stepIndex === 2) {
       return !chosenDateTime;
     }

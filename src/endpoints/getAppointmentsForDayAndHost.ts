@@ -32,7 +32,9 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       return res;
     });
 
+  // @ts-expect-error
   const openTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].opening;
+  // @ts-expect-error
   const closeTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].closing;
 
   let startTime = moment(openTime);

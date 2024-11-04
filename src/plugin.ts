@@ -4,8 +4,7 @@ import Appointments from "./collections/Appointments";
 import Services from "./collections/Services";
 import OpeningTimes from "./globals/OpeningTimes";
 import TeamMembers from "./collections/TeamMembers";
-import { getAppointmentsForDayAndHost } from "./endpoints/getAppointmentsForDay";
-import { getAppointmentsForCustomer } from "./endpoints/getAppointmentsForCustomer";
+import { getAppointmentsForDayAndHost } from "./endpoints/getAppointmentsForDayAndHost";
 
 export const appointments =
   ({ showDashboardCards = true, showNavItems = true }: PluginTypes): Plugin =>
@@ -61,11 +60,6 @@ export const appointments =
         path: "/appointments/get-available-slots",
         method: "get",
         handler: getAppointmentsForDayAndHost,
-      },
-      {
-        path: "/customer/get-appointments",
-        method: "post",
-        handler: getAppointmentsForCustomer,
       },
     ];
 

@@ -5,7 +5,7 @@ import { Service, TeamMember } from "../../../src/payload-types";
 import { formatPrice } from "../../lib/formatPrice";
 
 const SelectionsList: React.FC<{
-  chosenStaff: TeamMember[];
+  chosenStaff: TeamMember | null;
   chosenServices?: Service[] | null;
   chosenDateTime?: Date | null;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -30,7 +30,7 @@ const SelectionsList: React.FC<{
           </div>
         </div>
       ) : null}
-      {chosenStaff?.length ? (
+      {chosenStaff ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p>Host</p>
@@ -39,12 +39,10 @@ const SelectionsList: React.FC<{
             </button>
           </div>
           <div className="space-y-6">
-            {chosenStaff?.length === 1 ? (
-              chosenStaff.map((staff) => (
-                <div className="bg-gray-100 p-3 shadow-none md:shadow-sm" key={staff.id}>
-                  <p className="text-gray-900 text-sm">{staff.preferredNameAppointments}</p>
-                </div>
-              ))
+            {chosenStaff ? (
+              <div className="bg-gray-100 p-3 shadow-none md:shadow-sm">
+                <p className="text-gray-900 text-sm">{chosenStaff.preferredNameAppointments}</p>
+              </div>
             ) : (
               <div className="bg-gray-100 p-3 shadow-none md:shadow-sm">
                 <p className="text-gray-900 text-sm">Any available staff member</p>
@@ -73,7 +71,7 @@ const SelectionsList: React.FC<{
           </div>
         </div>
       ) : null}
-      {!chosenStaff?.length && !chosenServices?.length && !chosenDateTime ? (
+      {!chosenStaff && !chosenServices?.length && !chosenDateTime ? (
         <div className="space-y-2">
           <p className="text-gray-500 text-xs">You havent made any selections yet.</p>
         </div>

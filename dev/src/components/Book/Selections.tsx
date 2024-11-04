@@ -7,7 +7,7 @@ import SelectionsList from "./SelectionsList";
 import { Service, TeamMember } from "../../../src/payload-types";
 
 const Selections: React.FC<{
-  chosenStaff: TeamMember[];
+  chosenStaff: TeamMember | null;
   chosenServices: Service[];
   chosenDateTime: Date | null;
   setStepIndex: React.Dispatch<React.SetStateAction<number>>;

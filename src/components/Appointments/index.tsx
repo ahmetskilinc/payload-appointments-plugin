@@ -115,7 +115,6 @@ const Calendar: React.FC<{
           max={new Date(1970, 0, 0, 19, 0, 0, 0)}
           onSelectSlot={handleSlotSelect}
           onEventDrop={handleEventDrop}
-          // onEventResize={handleEventResize}
           resizable={false}
           selectable
         />
