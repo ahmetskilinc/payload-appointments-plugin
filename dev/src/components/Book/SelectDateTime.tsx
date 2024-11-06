@@ -29,7 +29,7 @@ const SelectDateTime: React.FC<{
       });
 
       const slots = await data.json();
-      setSlots(slots.availableSlotsForDate);
+      setSlots(slots.filteredSlots);
       setLoading(false);
     };
 
