@@ -35,7 +35,7 @@ const AppointmentsListMeClient: React.FC<{
   return (
     <div className="collection-list appointments-calendar-view">
       <ListHeader heading="Appointments" />
-      {hosts && appointments ? <Calendar events={appointments} resources={hosts} /> : null}
+      {hosts && appointments ? <Calendar /> : null}
     </div>
   );
 };
