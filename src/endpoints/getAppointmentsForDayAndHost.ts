@@ -1,5 +1,4 @@
 import { PayloadHandler, PayloadRequest } from "payload";
-import { Service } from "../types";
 import Moment from "moment";
 import { extendMoment } from "moment-range";
 
@@ -13,17 +12,18 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
     if (!services || !day || typeof services !== "string" || typeof day !== "string") {
       return Response.json({ error: { message: "Invalid request" } }, { status: 500 });
     }
-    const durations = (await req.payload
-      .find({
-        collection: "services",
-      })
-      .then((res) => {
-        return res.docs.filter((obj) => services?.includes(String(obj.id)));
-      })
-      .catch((error: any) => {
-        console.error(error);
-        return [];
-      })) as Service[];
+    const durations = await Promise.all(
+      await req.payload
+        .find({
+          collection: "services",
+        })
+        .then((res) => {
+          return res.docs.filter((obj) => services.includes(String(obj.id)));
+        })
+    ).catch((error: any) => {
+      console.error(error);
+      return [];
+    });
 
     let slotInterval = 0;
     durations.forEach((el) => (slotInterval += el.duration));
@@ -36,9 +36,9 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
         return res;
       });
 
-    // @ts-expect-error
+    // @ts-ignore
     const openTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].opening;
-    // @ts-expect-error
+    // @ts-ignore
     const closeTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].closing;
 
     let startTime = moment(openTime);
@@ -59,7 +59,7 @@ const curateSlots = (slotInterval: number, startTime: Moment.Moment, endTime: Mo
   const originalStartTime = moment(startTime, "HH:mm");
 
   while (startTime < endTime) {
-    if (startTime.isBetween(originalStartTime.subtract(1, "minute"), endTime)) allTimes.push(startTime.format("HH:mm"));
+    if (startTime.isBetween(originalStartTime.add(-1, "minute"), endTime)) allTimes.push(startTime.format("HH:mm"));
     startTime.add(slotInterval, "minutes");
   }
 
@@ -67,46 +67,37 @@ const curateSlots = (slotInterval: number, startTime: Moment.Moment, endTime: Mo
 };
 
 const filterSlotsForHost = async (req: PayloadRequest, day: string, availableSlotsForDate: string[], slotInterval: number) => {
-  const allAvailableSlots: string[] = [];
-  await req.payload
-    .find({
-      collection: "appointments",
-      depth: 999,
-      where: {
-        "host.id": {
-          equals: req.query.host,
-        },
-        start: {
-          greater_than: moment().startOf("day").add(-1, "day").toString(),
-        },
+  const appointments = await req.payload.find({
+    collection: "appointments",
+    where: {
+      "host.id": {
+        equals: req.query.host,
       },
-    })
-    .then((res) => {
-      return availableSlotsForDate.forEach((newAppointmentStartTime) => {
-        if (
-          res.docs.some((doc) => {
-            return moment(day).format("YYYY-MM-DD") === moment(doc.start).format("YYYY-MM-DD");
-          })
-        ) {
-          const newAppointmentSlot = moment.range(
-            moment(newAppointmentStartTime, "HH:mm"),
-            moment(newAppointmentStartTime, "HH:mm").add(slotInterval, "minutes")
-          );
+      start: {
+        greater_than_equal: moment(day).startOf("day").toDate(),
+        less_than: moment(day).endOf("day").toDate(),
+      },
+    },
+  });
 
-          if (
-            res.docs.every((doc) => {
-              const existingSlot = moment.range(moment(doc.start), moment(doc.end));
-              return !newAppointmentSlot.overlaps(existingSlot);
-            })
-          ) {
-            allAvailableSlots.push(newAppointmentStartTime);
-          }
-        } else {
-          allAvailableSlots.push(newAppointmentStartTime);
-        }
-      });
+  const now = moment();
+  const thirtyMinutesFromNow = moment().add(30, "minutes");
+
+  const filteredSlots = availableSlotsForDate.filter((newAppointmentStartTime) => {
+    const newAppointmentStart = moment(`${day} ${newAppointmentStartTime}`, "YYYY-MM-DD HH:mm");
+    const newAppointmentEnd = moment(newAppointmentStart).add(slotInterval, "minutes");
+    const newAppointmentSlot = moment.range(newAppointmentStart, newAppointmentEnd);
+
+    // Check if the appointment start time has passed or is less than 30 minutes from now
+    if (newAppointmentStart.isSameOrBefore(now) || newAppointmentStart.isBefore(thirtyMinutesFromNow)) {
+      return false;
+    }
+
+    return appointments.docs.every((doc) => {
+      const existingSlot = moment.range(moment(doc.start), moment(doc.end));
+      return !newAppointmentSlot.overlaps(existingSlot);
     });
+  });
 
-  const uniqueSlots = new Set(allAvailableSlots);
-  return Array.from(uniqueSlots).sort((a, b) => moment(a, "HH:mm").diff(moment(b, "HH:mm")));
+  return filteredSlots.sort((a, b) => moment(a, "HH:mm").diff(moment(b, "HH:mm")));
 };
