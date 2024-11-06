@@ -3,12 +3,10 @@ import { logout } from "../actions/auth";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { redirect } from "next/navigation";
-import { Appointment } from "../../../payload-types";
 import { getDashboardData } from "@lib/dashboardData";
 import AppointmentsList from "@components/Appointments";
 import configPromise from "@payload-config";
 import { getPayloadHMR } from "@payloadcms/next/utilities";
-import moment from "moment";
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
@@ -34,10 +32,11 @@ export default async function Dashboard() {
   }
 
   const payload = await getPayloadHMR({ config: configPromise });
-  const res = (
+  const appointments = (
     await payload.find({
       collection: "appointments",
       overrideAccess: false,
+      limit: 0,
       user: dashboardData.user,
       where: {
         customer: {
@@ -48,9 +47,6 @@ export default async function Dashboard() {
     })
   ).docs;
 
-  // const res = dashboardData.user.appointments.docs as Appointment[];
-
-  const appointments = res;
   const currentDate = new Date();
 
   const upcomingAppointments = appointments.filter((appointment) => new Date(appointment.start!) >= currentDate);

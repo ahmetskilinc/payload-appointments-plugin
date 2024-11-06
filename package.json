@@ -1,78 +1,85 @@
 {
-	"name": "payload-appointments-plugin",
-	"version": "0.0.4-beta-3",
-	"repository": "git@github.com:ahmetskilinc/payload-appointments-plugin.git",
-	"description": "An appointment scheduling plugin for Payload CMS",
-	"main": "./src/index.ts",
-	"types": "./src/index.ts",
-	"type": "module",
-	"keywords": [
-		"payload",
-		"cms",
-		"appointments",
-		"scheduling",
-		"plugin",
-		"typescript",
-		"react"
-	],
-	"scripts": {
-		"build": "tsc --project tsconfig.json",
-		"build:all": "pnpm build && pnpm -C dev build",
-		"build:app": "pnpm -C dev build",
-		"clean": "rimraf {dist,*.tsbuildinfo,package}",
-		"copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png}\" dist/",
-		"dev": "pnpm -C dev dev",
-		"lint": "eslint .",
-		"lint:fix": "eslint . --fix",
-		"prepack": "pnpm prepublishOnly",
-		"prepublishOnly": "pnpm clean && pnpm build && pnpm copyfiles",
-		"email": "email dev --dir src/emails",
-		"tw": "tailwindcss -i ./src/views/input.css -o ./src/views/styles.css --watch"
-	},
-	"author": "ahmetskilinc@icloud.com",
-	"license": "MIT",
-	"dependencies": {
-		"@payloadcms/next": "3.0.0-beta.123",
-		"@payloadcms/ui": "3.0.0-beta.123",
-		"@react-email/components": "0.0.26",
-		"@react-email/render": "^1.0.2",
-		"class-variance-authority": "^0.7.0",
-		"clsx": "^2.1.1",
-		"lucide-react": "^0.454.0",
-		"moment": "^2.30.1",
-		"moment-range": "^4.0.2",
-		"react": "19.0.0-rc-3edc000d-20240926",
-		"react-big-calendar": "1.15.0",
-		"react-dom": "19.0.0-rc-3edc000d-20240926",
-		"react-email": "3.0.2",
-		"recharts": "^2.13.3",
-		"sass": "1.80.6",
-		"tailwind-merge": "^2.5.4",
-		"tailwindcss-animate": "^1.0.7"
-	},
-	"devDependencies": {
-		"@types/node": "22.8.4",
-		"@types/react": "npm:types-react@19.0.0-rc.1",
-		"@types/react-big-calendar": "1.15.0",
-		"@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
-		"copyfiles": "^2.4.1",
-		"dotenv": "^16.4.5",
-		"next": "15.0.2",
-		"react": "19.0.0-rc-3edc000d-20240926",
-		"react-dom": "19.0.0-rc-3edc000d-20240926",
-		"rimraf": "^5.0.5",
-		"tailwindcss": "^3.4.14",
-		"typescript": "^5.4.5"
-	},
-	"peerDependencies": {
-		"next": "15.0.2",
-		"payload": "3.0.0-beta.123"
-	},
-	"pnpm": {
-		"overrides": {
-			"@types/react": "npm:types-react@19.0.0-rc.1",
-			"@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
-			"react-is": "19.0.0-rc-3edc000d-20240926"
-		}
-	}
+  "name": "payload-appointments-plugin",
+  "version": "0.0.4-beta-3",
+  "repository": "git@github.com:ahmetskilinc/payload-appointments-plugin.git",
+  "description": "An appointment scheduling plugin for Payload CMS",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "type": "module",
+  "keywords": [
+    "payload",
+    "cms",
+    "appointments",
+    "scheduling",
+    "plugin",
+    "typescript",
+    "react"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "build:all": "pnpm build && pnpm -C dev build",
+    "build:app": "pnpm -C dev build",
+    "clean": "rimraf {dist,*.tsbuildinfo,package}",
+    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png}\" dist/",
+    "dev": "pnpm -C dev dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepack": "pnpm prepublishOnly",
+    "prepublishOnly": "pnpm clean && pnpm build && pnpm copyfiles",
+    "email": "email dev --dir src/emails",
+    "tw": "tailwindcss -i ./src/views/input.css -o ./src/views/styles.css --watch",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "author": "ahmetskilinc@icloud.com",
+  "license": "MIT",
+  "dependencies": {
+    "@payloadcms/next": "3.0.0-beta.125",
+    "@payloadcms/ui": "3.0.0-beta.125",
+    "@react-email/components": "0.0.26",
+    "@react-email/render": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.454.0",
+    "moment": "^2.30.1",
+    "moment-range": "^4.0.2",
+    "react": "19.0.0-rc-3edc000d-20240926",
+    "react-big-calendar": "1.15.0",
+    "react-dom": "19.0.0-rc-3edc000d-20240926",
+    "react-email": "3.0.2",
+    "recharts": "^2.13.3",
+    "sass": "1.80.6",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "22.8.4",
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-big-calendar": "1.15.0",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
+    "copyfiles": "^2.4.1",
+    "dotenv": "^16.4.5",
+    "jest": "^29.7.0",
+    "next": "15.0.2",
+    "react": "19.0.0-rc-3edc000d-20240926",
+    "react-dom": "19.0.0-rc-3edc000d-20240926",
+    "rimraf": "^5.0.5",
+    "tailwindcss": "^3.4.14",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "next": "15.0.2",
+    "payload": "3.0.0-beta.125"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "npm:types-react@19.0.0-rc.1",
+      "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
+      "react-is": "19.0.0-rc-3edc000d-20240926"
+    }
+  }
 }

@@ -22,21 +22,21 @@ export const appointments =
             path: "/appointments/schedule",
             exact: true,
           },
-          AppointmentsCharts: {
-            Component: "payload-appointments-plugin/src/views/AppointmentsCharts/index",
-            path: "/appointments/charts",
-            exact: true,
-          },
-          AppointmentsMarketingCampaigns: {
-            Component: "payload-appointments-plugin/src/views/AppointmentsMarketingCampaigns/index",
-            path: "/appointments/marketing-campaigns",
-            exact: true,
-          },
-          AppointmentsListMe: {
-            Component: "payload-appointments-plugin/src/views/AppointmentsListMe/index",
-            path: "/appointments/schedule/me",
-            exact: true,
-          },
+          // AppointmentsCharts: {
+          //   Component: "payload-appointments-plugin/src/views/AppointmentsCharts/index",
+          //   path: "/appointments/charts",
+          //   exact: true,
+          // },
+          // AppointmentsMarketingCampaigns: {
+          //   Component: "payload-appointments-plugin/src/views/AppointmentsMarketingCampaigns/index",
+          //   path: "/appointments/marketing-campaigns",
+          //   exact: true,
+          // },
+          // AppointmentsListMe: {
+          //   Component: "payload-appointments-plugin/src/views/AppointmentsListMe/index",
+          //   path: "/appointments/schedule/me",
+          //   exact: true,
+          // },
         },
         beforeDashboard: [
           ...(config.admin?.components?.beforeDashboard || []),

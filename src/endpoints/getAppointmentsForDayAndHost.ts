@@ -1,9 +1,5 @@
 import { PayloadHandler, PayloadRequest } from "payload";
-import Moment from "moment";
-import { extendMoment } from "moment-range";
-
-// @ts-expect-error
-const moment = extendMoment(Moment);
+import moment, { Moment } from "moment";
 
 export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadRequest) => {
   try {
@@ -54,7 +50,7 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
   }
 };
 
-const curateSlots = (slotInterval: number, startTime: Moment.Moment, endTime: Moment.Moment) => {
+const curateSlots = (slotInterval: number, startTime: Moment, endTime: Moment) => {
   let allTimes = [];
   const originalStartTime = moment(startTime, "HH:mm");
 
@@ -86,7 +82,6 @@ const filterSlotsForHost = async (req: PayloadRequest, day: string, availableSlo
   const filteredSlots = availableSlotsForDate.filter((newAppointmentStartTime) => {
     const newAppointmentStart = moment(`${day} ${newAppointmentStartTime}`, "YYYY-MM-DD HH:mm");
     const newAppointmentEnd = moment(newAppointmentStart).add(slotInterval, "minutes");
-    const newAppointmentSlot = moment.range(newAppointmentStart, newAppointmentEnd);
 
     // Check if the appointment start time has passed or is less than 30 minutes from now
     if (newAppointmentStart.isSameOrBefore(now) || newAppointmentStart.isBefore(thirtyMinutesFromNow)) {
@@ -94,8 +89,9 @@ const filterSlotsForHost = async (req: PayloadRequest, day: string, availableSlo
     }
 
     return appointments.docs.every((doc) => {
-      const existingSlot = moment.range(moment(doc.start), moment(doc.end));
-      return !newAppointmentSlot.overlaps(existingSlot);
+      const existingStart = moment(doc.start);
+      const existingEnd = moment(doc.end);
+      return !(newAppointmentStart.isBetween(existingStart, existingEnd, null, "[]") || newAppointmentEnd.isBetween(existingStart, existingEnd, null, "[]"));
     });
   });
 

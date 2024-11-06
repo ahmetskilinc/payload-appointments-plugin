@@ -19,7 +19,7 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsSelect?: {
+  collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
@@ -34,7 +34,7 @@ export interface Config {
   globals: {
     openingTimes: OpeningTime;
   };
-  globalsSelect?: {
+  globalsSelect: {
     openingTimes: OpeningTimesSelect<false> | OpeningTimesSelect<true>;
   };
   locale: null;

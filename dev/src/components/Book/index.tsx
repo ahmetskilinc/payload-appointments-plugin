@@ -11,11 +11,12 @@ import { Button } from "../ui/button";
 import { cn } from "../../lib/utils";
 import { Service, TeamMember } from "../../payload-types";
 import { createAppointment } from "@app/(frontend)/actions/appointment";
+import moment from "moment";
 
 const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({ services, teamMembers }) => {
   const [chosenStaff, setChosenStaff] = useState<TeamMember | null>(null);
   const [chosenServices, setChosenServices] = useState<Service[]>([]);
-  const [chosenDateTime, setChosenDateTime] = useState<Date | null>(null);
+  const [chosenDateTime, setChosenDateTime] = useState<Date>(moment().toDate());
   const [stepIndex, setStepIndex] = useState<number>(0);
   const [bookingLoading, setBookingLoading] = useState<boolean>(false);
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);

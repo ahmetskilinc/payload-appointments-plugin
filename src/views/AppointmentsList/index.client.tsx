@@ -1,11 +1,9 @@
 "use client";
 
-import { ListHeader, useConfig, usePayloadAPI, useStepNav } from "@payloadcms/ui";
+import { ListHeader, useStepNav } from "@payloadcms/ui";
 import { useEffect } from "react";
-import Appointments from "../../collections/Appointments";
 import Calendar from "../../components/Appointments";
 import "../../components/Appointments/styles.scss";
-import { TeamMember } from "../../types";
 
 const AppointmentsListClient: React.FC = () => {
   const { setStepNav } = useStepNav();
@@ -18,31 +16,10 @@ const AppointmentsListClient: React.FC = () => {
     ]);
   }, [setStepNav]);
 
-  const {
-    config: {
-      routes: { api: apiRoute },
-      serverURL,
-    },
-  } = useConfig();
-
-  const [
-    {
-      data: { docs: appointments },
-    },
-  ] = usePayloadAPI(`${serverURL}${apiRoute}/${Appointments.slug}`);
-
-  const [
-    {
-      data: { docs: teamMembers },
-    },
-  ] = usePayloadAPI(`${serverURL}${apiRoute}/teamMembers`);
-
-  const takingAppointments = teamMembers?.filter((user: TeamMember) => user.takingAppointments);
-
   return (
     <div className="collection-list appointments-calendar-view">
       <ListHeader heading="Appointments" />
-      {takingAppointments && appointments ? <Calendar resources={takingAppointments} events={appointments} /> : null}
+      {<Calendar />}
     </div>
   );
 };

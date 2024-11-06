@@ -13,8 +13,8 @@ import { fetchWithAuth } from "@lib/api";
 const SelectDateTime: React.FC<{
   chosenServices: Service[];
   chosenStaff: TeamMember | null;
-  setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
-  chosenDateTime: Date | null;
+  setChosenDateTime: React.Dispatch<React.SetStateAction<Date>>;
+  chosenDateTime: Date;
 }> = ({ chosenServices, chosenStaff, setChosenDateTime, chosenDateTime }) => {
   const [slots, setSlots] = useState<string[] | null>(null);
   const [loading, setLoading] = useState<boolean>(false);

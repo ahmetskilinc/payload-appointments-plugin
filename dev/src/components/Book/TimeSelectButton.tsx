@@ -9,7 +9,7 @@ const TimeSelectButton = ({
 }: {
   availability: string;
   chosenDateTime: Date;
-  setChosenDateTime: React.Dispatch<React.SetStateAction<Date | null>>;
+  setChosenDateTime: React.Dispatch<React.SetStateAction<Date>>;
 }) => {
   return (
     <button
