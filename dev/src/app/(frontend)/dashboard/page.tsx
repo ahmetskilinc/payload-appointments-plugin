@@ -6,6 +6,9 @@ import { redirect } from "next/navigation";
 import { Appointment } from "../../../payload-types";
 import { getDashboardData } from "@lib/dashboardData";
 import AppointmentsList from "@components/Appointments";
+import configPromise from "@payload-config";
+import { getPayloadHMR } from "@payloadcms/next/utilities";
+import moment from "moment";
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
@@ -30,7 +33,24 @@ export default async function Dashboard() {
     );
   }
 
-  const appointments = dashboardData.user.appointments.docs as Appointment[];
+  const payload = await getPayloadHMR({ config: configPromise });
+  const res = (
+    await payload.find({
+      collection: "appointments",
+      overrideAccess: false,
+      user: dashboardData.user,
+      where: {
+        customer: {
+          equals: dashboardData.user.id,
+        },
+      },
+      sort: "starts",
+    })
+  ).docs;
+
+  // const res = dashboardData.user.appointments.docs as Appointment[];
+
+  const appointments = res;
   const currentDate = new Date();
 
   const upcomingAppointments = appointments.filter((appointment) => new Date(appointment.start!) >= currentDate);
