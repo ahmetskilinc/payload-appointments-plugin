@@ -1,10 +1,10 @@
 "use client";
 
-import { ListHeader, useStepNav } from "@payloadcms/ui";
+import { useStepNav } from "@payloadcms/ui";
 import { useEffect } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components/ui/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../../components/ui/chart";
 
 // Mock data for the chart
 const appointmentData = Array.from({ length: 30 }, (_, i) => ({
@@ -24,7 +24,10 @@ const AppointmentsChartsClient: React.FC = () => {
   }, [setStepNav]);
   return (
     <div className="collection-list appointments-calendar-view">
-      <ListHeader heading="Charts" />
+      <header className="list-header">
+        <h1>Charts</h1>
+      </header>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
         <Card className="border-none">
           <CardHeader>

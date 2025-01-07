@@ -1,7 +1,6 @@
 "use client";
 
-import { ListHeader, useConfig, useStepNav } from "@payloadcms/ui";
-import moment from "moment";
+import { useConfig, useStepNav } from "@payloadcms/ui";
 import React, { useEffect } from "react";
 import Calendar from "../../components/Appointments";
 import { Appointment, TeamMember } from "../../types";
@@ -34,7 +33,9 @@ const AppointmentsListMeClient: React.FC<{
 
   return (
     <div className="collection-list appointments-calendar-view">
-      <ListHeader heading="Appointments" />
+      <header className="list-header">
+        <h1>My Appointments</h1>
+      </header>
       {hosts && appointments ? <Calendar /> : null}
     </div>
   );

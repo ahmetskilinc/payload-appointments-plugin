@@ -1,6 +1,6 @@
 "use client";
 
-import { ListHeader, useStepNav } from "@payloadcms/ui";
+import { useStepNav } from "@payloadcms/ui";
 import { useEffect } from "react";
 
 const AppointmentsMarketingCampaignsClient: React.FC = () => {
@@ -15,7 +15,9 @@ const AppointmentsMarketingCampaignsClient: React.FC = () => {
   }, [setStepNav]);
   return (
     <div className="collection-list appointments-calendar-view">
-      <ListHeader heading="Marketing Campaigns" />
+      <header className="list-header">
+        <h1>Marketing Campaigns</h1>
+      </header>
       <p>should be a marketing campaigns here</p>
       {/* TODO: MARKETING CAMPAIGNS */}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ListHeader, useStepNav } from "@payloadcms/ui";
+import { useStepNav } from "@payloadcms/ui";
 import { useEffect } from "react";
 import Calendar from "../../components/Appointments";
 import "../../components/Appointments/styles.scss";
@@ -18,7 +18,9 @@ const AppointmentsListClient: React.FC = () => {
 
   return (
     <div className="collection-list appointments-calendar-view">
-      <ListHeader heading="Appointments" />
+      <header className="list-header">
+        <h1>Appointments</h1>
+      </header>
       {<Calendar />}
     </div>
   );
