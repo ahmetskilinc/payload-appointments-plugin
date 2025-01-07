@@ -42,6 +42,7 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^0.469.0",
     "moment": "^2.30.1",
+    "payload": "3.14.0",
     "react": "19.0.0",
     "react-big-calendar": "1.17.1",
     "react-dom": "19.0.0",
