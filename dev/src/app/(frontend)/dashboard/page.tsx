@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getDashboardData } from "@lib/dashboardData";
 import AppointmentsList from "@components/Appointments";
 import configPromise from "@payload-config";
-import { getPayloadHMR } from "@payloadcms/next/utilities";
+import { getPayload } from "payload";
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
@@ -31,7 +31,7 @@ export default async function Dashboard() {
     );
   }
 
-  const payload = await getPayloadHMR({ config: configPromise });
+  const payload = await getPayload({ config: configPromise });
   const appointments = (
     await payload.find({
       collection: "appointments",

@@ -19,6 +19,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
+  collectionsJoins: {
+    users: {
+      appointments: 'appointments';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
@@ -41,9 +46,9 @@ export interface Config {
   user: User & {
     collection: 'users';
   };
-  jobs?: {
+  jobs: {
     tasks: unknown;
-    workflows?: unknown;
+    workflows: unknown;
   };
 }
 export interface UserAuthOperations {
@@ -113,7 +118,13 @@ export interface TeamMember {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
+  /**
+   * Whether this user takes appointments or not.
+   */
   takingAppointments?: boolean | null;
+  /**
+   * Name to show in appointment schedule calendar and to customers when booking.
+   */
   preferredNameAppointments: string;
   updatedAt: string;
   createdAt: string;
@@ -295,37 +306,37 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface OpeningTime {
   id: string;
-  monday?: {
+  monday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;
   };
-  tuesday?: {
+  tuesday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;
   };
-  wednesday?: {
+  wednesday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;
   };
-  thursday?: {
+  thursday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;
   };
-  friday?: {
+  friday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;
   };
-  saturday?: {
+  saturday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;
   };
-  sunday?: {
+  sunday: {
     isOpen?: boolean | null;
     opening: string;
     closing: string;

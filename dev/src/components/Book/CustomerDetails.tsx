@@ -54,7 +54,7 @@ const CustomerDetails: React.FC<{
         </label>
       </div>
       <label className="w-full block" htmlFor="host">
-        <span className="text-sm font-semibold leading-6 text-gray-900">Host</span>
+        <span className="text-sm font-semibold leading-6 text-gray-900">Date/Time</span>
         <div className="mt-2.5">
           <input
             className="block w-full rounded-none border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"

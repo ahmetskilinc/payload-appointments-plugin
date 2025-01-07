@@ -1,21 +1,21 @@
 {
-	"compilerOptions": {
-		"composite": true,
-		"declarationDir": "./dist",
-		"outDir": "./dist",
-		"rootDir": "./src",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"target": "es5",
-		"allowJs": true,
-		"jsx": "preserve",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"sourceMap": true,
-		"esModuleInterop": true,
-		"declaration": true,
-		"skipLibCheck": true,
-		"strict": true,
-		"baseUrl": "."
-	},
-	"include": ["src/**/*"]
+  "compilerOptions": {
+    "composite": true,
+    "declarationDir": "./dist",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "es5",
+    "allowJs": true,
+    "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "baseUrl": "."
+  },
+  "include": ["src/**/*"]
 }

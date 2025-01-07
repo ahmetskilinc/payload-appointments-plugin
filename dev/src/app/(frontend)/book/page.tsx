@@ -1,10 +1,10 @@
 import React from "react";
 import BookNow from "../../../components/Book";
 import configPromise from "@payload-config";
-import { getPayloadHMR } from "@payloadcms/next/utilities";
+import { getPayload } from "payload";
 
 const Page = async () => {
-  const payload = await getPayloadHMR({ config: configPromise });
+  const payload = await getPayload({ config: configPromise });
   const teamMembers = (
     await payload.find({
       collection: "teamMembers",

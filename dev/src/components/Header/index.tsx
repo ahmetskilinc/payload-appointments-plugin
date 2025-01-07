@@ -16,11 +16,19 @@ export default async function Header() {
               <span className="text-xl font-bold text-gray-800">Appointments</span>
             </Link>
           </div>
-          <nav className="ml-6 flex items-center">
+          <nav className="ml-6 flex items-center space-x-4">
             {dashboardData.user ? (
-              <form action={logout}>
-                <Button type="submit">Logout</Button>
-              </form>
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link href="/book">Book An Appointment</Link>
+                </Button>
+                <form action={logout}>
+                  <Button type="submit">Logout</Button>
+                </form>
+              </>
             ) : null}
           </nav>
         </div>
