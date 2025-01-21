@@ -41,16 +41,19 @@ export type BigCalendarAppointment = {
   appointmentType: "appointment" | "blockout";
 };
 
-export interface User {
+export interface BaseUser {
   id: string;
   firstName?: string | null;
   lastName?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface User extends BaseUser {
   roles?: ("admin" | "customer") | null;
   takingAppointments?: boolean | null;
   preferredNameAppointments?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
+  email?: string;
   adminTitle?: string;
   appointments?: {
     docs: Appointment[];
@@ -58,22 +61,12 @@ export interface User {
   };
 }
 
-export interface TeamMember {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
+export interface TeamMember extends BaseUser {
   takingAppointments?: boolean | null;
   preferredNameAppointments?: string | null;
-  updatedAt: string;
-  createdAt: string;
 }
 
-export interface Customer {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  updatedAt: string;
-  createdAt: string;
+export interface Customer extends BaseUser {
   email: string;
 }
 

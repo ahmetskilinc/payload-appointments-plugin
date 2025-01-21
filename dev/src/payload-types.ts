@@ -111,21 +111,29 @@ export interface Appointment {
   createdAt: string;
 }
 /**
+ * Manage team members who can take appointments
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "teamMembers".
  */
 export interface TeamMember {
   id: string;
-  firstName?: string | null;
-  lastName?: string | null;
   /**
-   * Whether this user takes appointments or not.
+   * Team member's first name
    */
-  takingAppointments?: boolean | null;
+  firstName: string;
   /**
-   * Name to show in appointment schedule calendar and to customers when booking.
+   * Team member's last name
+   */
+  lastName: string;
+  /**
+   * Name to display in appointment schedule and booking system
    */
   preferredNameAppointments: string;
+  /**
+   * Enable to allow this team member to take appointments
+   */
+  takingAppointments?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -137,9 +145,15 @@ export interface Service {
   id: string;
   title: string;
   description?: string | null;
+  /**
+   * Duration of the service in minutes
+   */
   duration: number;
   paidService?: boolean | null;
-  price?: string | null;
+  /**
+   * Price in your local currency
+   */
+  price?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -250,8 +264,8 @@ export interface AppointmentsSelect<T extends boolean = true> {
 export interface TeamMembersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
-  takingAppointments?: T;
   preferredNameAppointments?: T;
+  takingAppointments?: T;
   updatedAt?: T;
   createdAt?: T;
 }

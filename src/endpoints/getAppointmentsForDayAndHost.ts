@@ -1,99 +1,98 @@
 import { PayloadHandler, PayloadRequest } from "payload";
 import moment, { Moment } from "moment";
 
-export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadRequest) => {
-  try {
-    const services = req.query.services;
-    const day = req.query.day;
-    if (!services || !day || typeof services !== "string" || typeof day !== "string") {
-      return Response.json({ error: { message: "Invalid request" } }, { status: 500 });
-    }
-    const durations = await Promise.all(
-      await req.payload
-        .find({
-          collection: "services",
-        })
-        .then((res) => {
-          return res.docs.filter((obj) => services.includes(String(obj.id)));
-        })
-    ).catch((error: any) => {
-      console.error(error);
-      return [];
-    });
+const curateSlots = (slotInterval: number, startTime: Moment, endTime: Moment): string[] => {
+  const slots: string[] = [];
+  let current = startTime.clone();
 
-    let slotInterval = 0;
-    durations.forEach((el) => (slotInterval += el.duration));
-
-    const openingTimes = await req.payload
-      .findGlobal({
-        slug: "openingTimes",
-      })
-      .then((res) => {
-        return res;
-      });
-
-    // @ts-ignore
-    const openTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].opening;
-    // @ts-ignore
-    const closeTime = openingTimes[moment(day).format("dddd").toString().toLowerCase()].closing;
-
-    let startTime = moment(openTime);
-    let endTime = moment(closeTime);
-
-    const availableSlotsForDate = curateSlots(slotInterval, startTime, endTime);
-    const filteredSlots = await filterSlotsForHost(req, day, availableSlotsForDate, slotInterval);
-
-    return Response.json({ filteredSlots, availableSlotsForDate }, { status: 200 });
-  } catch (error) {
-    req.payload.logger.error(error);
-    return Response.json({ error: { message: error } }, { status: 500 });
-  }
-};
-
-const curateSlots = (slotInterval: number, startTime: Moment, endTime: Moment) => {
-  let allTimes = [];
-  const originalStartTime = moment(startTime, "HH:mm");
-
-  while (startTime < endTime) {
-    if (startTime.isBetween(originalStartTime.add(-1, "minute"), endTime)) allTimes.push(startTime.format("HH:mm"));
-    startTime.add(slotInterval, "minutes");
+  while (current.isBefore(endTime)) {
+    slots.push(current.format("YYYY-MM-DDTHH:mm:ss.SSSZ"));
+    current.add(slotInterval, "minutes");
   }
 
-  return allTimes;
+  return slots;
 };
 
-const filterSlotsForHost = async (req: PayloadRequest, day: string, availableSlotsForDate: string[], slotInterval: number) => {
-  const appointments = await req.payload.find({
+const filterSlotsForHost = async (
+  req: PayloadRequest,
+  day: string,
+  availableSlots: string[],
+  slotInterval: number
+): Promise<string[]> => {
+  const startOfDay = moment(day).startOf("day");
+  const endOfDay = moment(day).endOf("day");
+
+  const existingAppointments = await req.payload.find({
     collection: "appointments",
     where: {
-      "host.id": {
-        equals: req.query.host,
-      },
       start: {
-        greater_than_equal: moment(day).startOf("day").toDate(),
-        less_than: moment(day).endOf("day").toDate(),
-      },
-    },
+        greater_than_equal: startOfDay.toISOString(),
+        less_than_equal: endOfDay.toISOString()
+      }
+    }
   });
 
-  const now = moment();
-  const thirtyMinutesFromNow = moment().add(30, "minutes");
+  const bookedSlots = new Set(
+    existingAppointments.docs.map(appointment => 
+      moment(appointment.start).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+    )
+  );
 
-  const filteredSlots = availableSlotsForDate.filter((newAppointmentStartTime) => {
-    const newAppointmentStart = moment(`${day} ${newAppointmentStartTime}`, "YYYY-MM-DD HH:mm");
-    const newAppointmentEnd = moment(newAppointmentStart).add(slotInterval, "minutes");
+  return availableSlots.filter(slot => !bookedSlots.has(slot));
+};
 
-    // Check if the appointment start time has passed or is less than 30 minutes from now
-    if (newAppointmentStart.isSameOrBefore(now) || newAppointmentStart.isBefore(thirtyMinutesFromNow)) {
-      return false;
+export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadRequest) => {
+  try {
+    const { services, day } = req.query;
+
+    if (!services || !day || typeof services !== "string" || typeof day !== "string") {
+      return Response.json(
+        { error: "Missing or invalid services or day parameter" },
+        { status: 400 }
+      );
     }
 
-    return appointments.docs.every((doc) => {
-      const existingStart = moment(doc.start);
-      const existingEnd = moment(doc.end);
-      return !(newAppointmentStart.isBetween(existingStart, existingEnd, null, "[]") || newAppointmentEnd.isBetween(existingStart, existingEnd, null, "[]"));
+    const servicesArray = services.split(",");
+    const servicesData = await req.payload.find({
+      collection: "services",
+      where: {
+        id: {
+          in: servicesArray
+        }
+      }
     });
-  });
 
-  return filteredSlots.sort((a, b) => moment(a, "HH:mm").diff(moment(b, "HH:mm")));
+    const slotInterval = servicesData.docs.reduce(
+      (total, service) => total + (service.duration || 0),
+      0
+    );
+
+    const openingTimes = await req.payload.findGlobal({ slug: "openingTimes" });
+    const dayOfWeek = moment(day).format("dddd").toLowerCase();
+    
+    if (!openingTimes || !openingTimes[dayOfWeek]) {
+      return Response.json(
+        { error: "Opening times not configured for this day" },
+        { status: 400 }
+      );
+    }
+
+    const { opening, closing } = openingTimes[dayOfWeek];
+    const startTime = moment(opening, "HH:mm");
+    const endTime = moment(closing, "HH:mm");
+
+    const availableSlots = curateSlots(slotInterval, startTime, endTime);
+    const filteredSlots = await filterSlotsForHost(req, day, availableSlots, slotInterval);
+
+    return Response.json({
+      availableSlots,
+      filteredSlots
+    });
+  } catch (error) {
+    req.payload.logger.error(`Error getting appointments: ${error}`);
+    return Response.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 };

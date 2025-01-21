@@ -4,27 +4,31 @@ import { appointmentUpdatedEmail } from "../utilities/AppointmentUpdatedEmail";
 import { Appointment } from "../types";
 
 export const sendCustomerEmail: CollectionAfterChangeHook = async ({
-  doc, // full document data
-  req, // full express request
-  operation, // name of the operation ie. 'create', 'update'
+  doc,
+  req,
+  operation,
 }) => {
-  if (doc.appointmentType === "appointment") {
-    const appointment = await req.payload
-      .findByID({
-        collection: "appointments",
-        id: doc.id,
-      })
-      .then((res) => {
-        return res as Appointment;
-      })
-      .catch((error: any) => {
-        console.error(error);
-        throw new Error(error.message);
-      });
-    if (operation === "create") {
-      req.payload.sendEmail(await appointmentCreatedEmail(appointment));
-    } else if (operation === "update") {
-      req.payload.sendEmail(await appointmentUpdatedEmail(appointment));
+  if (doc.appointmentType !== "appointment") {
+    return;
+  }
+
+  try {
+    const appointment = await req.payload.findByID({
+      collection: "appointments",
+      id: doc.id,
+      depth: 2 // To populate customer and host relationships
+    }) as Appointment;
+
+    const emailTemplate = operation === "create" 
+      ? await appointmentCreatedEmail(appointment)
+      : operation === "update"
+        ? await appointmentUpdatedEmail(appointment)
+        : null;
+
+    if (emailTemplate) {
+      await req.payload.sendEmail(emailTemplate);
     }
+  } catch (error) {
+    req.payload.logger.error(`Error sending ${operation} email: ${error}`);
   }
 };

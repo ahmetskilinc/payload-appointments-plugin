@@ -53,8 +53,6 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
     "@types/node": "22.10.5",
     "@types/react": "19.0.3",
     "@types/react-big-calendar": "1.16.0",

@@ -1,4 +1,5 @@
 import { CollectionConfig } from "payload";
+import { authenticated } from "../access/authenticated";
 
 const Services: CollectionConfig = {
   slug: "services",
@@ -9,15 +10,20 @@ const Services: CollectionConfig = {
   admin: {
     group: "Appointments",
     useAsTitle: "title",
+    defaultColumns: ["title", "duration", "paidService", "price"],
   },
   access: {
     read: () => true,
+    create: authenticated,
+    update: authenticated,
+    delete: authenticated,
   },
   fields: [
     {
       type: "text",
       name: "title",
       required: true,
+      index: true,
     },
     {
       type: "textarea",
@@ -27,22 +33,39 @@ const Services: CollectionConfig = {
     {
       type: "number",
       name: "duration",
-      label: "Duration",
+      label: "Duration (minutes)",
       required: true,
-    },
-    {
-      type: "checkbox",
-      name: "paidService",
-    },
-    {
-      type: "text",
-      name: "price",
+      min: 1,
+      max: 480, // 8 hours max
       admin: {
-        condition: (siblingData) => siblingData.paidService === true,
+        description: "Duration of the service in minutes",
       },
-      required: true,
+    },
+    {
+      type: "row",
+      fields: [
+        {
+          type: "checkbox",
+          name: "paidService",
+          label: "Paid Service",
+          defaultValue: false,
+        },
+        {
+          type: "number",
+          name: "price",
+          label: "Price",
+          admin: {
+            condition: (data) => data.paidService === true,
+            description: "Price in your local currency",
+          },
+          required: true,
+          min: 0,
+          // step: 0.01,
+        },
+      ],
     },
   ],
+  timestamps: true,
 };
 
 export default Services;
