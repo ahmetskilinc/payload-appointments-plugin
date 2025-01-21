@@ -1,13 +1,13 @@
 import { PayloadHandler, PayloadRequest } from "payload";
-import moment, { Moment } from "moment";
+import { parseISO, format, startOfDay, endOfDay, addMinutes, isBefore } from "date-fns";
 
-const curateSlots = (slotInterval: number, startTime: Moment, endTime: Moment): string[] => {
+const curateSlots = (slotInterval: number, startTime: Date, endTime: Date): string[] => {
   const slots: string[] = [];
-  let current = startTime.clone();
+  let current = startTime;
 
-  while (current.isBefore(endTime)) {
-    slots.push(current.format("YYYY-MM-DDTHH:mm:ss.SSSZ"));
-    current.add(slotInterval, "minutes");
+  while (isBefore(current, endTime)) {
+    slots.push(format(current, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"));
+    current = addMinutes(current, slotInterval);
   }
 
   return slots;
@@ -19,22 +19,33 @@ const filterSlotsForHost = async (
   availableSlots: string[],
   slotInterval: number
 ): Promise<string[]> => {
-  const startOfDay = moment(day).startOf("day");
-  const endOfDay = moment(day).endOf("day");
+  const dayStart = startOfDay(parseISO(day));
+  const dayEnd = endOfDay(parseISO(day));
 
+  // Use index hints for Payload v3
   const existingAppointments = await req.payload.find({
     collection: "appointments",
     where: {
-      start: {
-        greater_than_equal: startOfDay.toISOString(),
-        less_than_equal: endOfDay.toISOString()
-      }
-    }
+      and: [
+        {
+          start: {
+            greater_than_equal: dayStart.toISOString(),
+          }
+        },
+        {
+          start: {
+            less_than_equal: dayEnd.toISOString(),
+          }
+        }
+      ]
+    },
+    depth: 0, // Optimize by not populating relations
+    limit: 100 // Add reasonable limit
   });
 
   const bookedSlots = new Set(
     existingAppointments.docs.map(appointment => 
-      moment(appointment.start).format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+      format(new Date(appointment.start), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
     )
   );
 
@@ -59,7 +70,8 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
         id: {
           in: servicesArray
         }
-      }
+      },
+      depth: 0 // Optimize by not populating relations
     });
 
     const slotInterval = servicesData.docs.reduce(
@@ -67,8 +79,12 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       0
     );
 
-    const openingTimes = await req.payload.findGlobal({ slug: "openingTimes" });
-    const dayOfWeek = moment(day).format("dddd").toLowerCase();
+    const openingTimes = await req.payload.findGlobal({
+      slug: "openingTimes",
+      depth: 0 // Optimize by not populating relations
+    });
+    
+    const dayOfWeek = format(parseISO(day), "EEEE").toLowerCase();
     
     if (!openingTimes || !openingTimes[dayOfWeek]) {
       return Response.json(
@@ -78,8 +94,12 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
     }
 
     const { opening, closing } = openingTimes[dayOfWeek];
-    const startTime = moment(opening, "HH:mm");
-    const endTime = moment(closing, "HH:mm");
+    const [openingHour, openingMinute] = opening.split(":").map(Number);
+    const [closingHour, closingMinute] = closing.split(":").map(Number);
+    
+    const dayDate = parseISO(day);
+    const startTime = new Date(dayDate.setHours(openingHour, openingMinute, 0, 0));
+    const endTime = new Date(dayDate.setHours(closingHour, closingMinute, 0, 0));
 
     const availableSlots = curateSlots(slotInterval, startTime, endTime);
     const filteredSlots = await filterSlotsForHost(req, day, availableSlots, slotInterval);
