@@ -1,16 +1,16 @@
 "use client";
 
-import { useConfig, useDocumentDrawer, usePayloadAPI } from "@payloadcms/ui";
+import { useConfig, useDocumentDrawer } from "@payloadcms/ui";
 import moment from "moment";
 import React, { useEffect, useMemo, useState } from "react";
 import { Components, Calendar as ReactBigCalendar, SlotInfo, View, momentLocalizer } from "react-big-calendar";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import Appointments from "../../collections/Appointments";
-import type { Appointment as AppointmentType, BigCalendarAppointment, TeamMember, User } from "../../types";
+import TeamMembers from "../../collections/TeamMembers";
+import type { Appointment as AppointmentType, BigCalendarAppointment, TeamMember } from "../../types";
 import Appointment from "./Appointment";
 import Blockout from "./Blockout";
 import "./styles.scss";
-import TeamMembers from "../../collections/TeamMembers";
 
 const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(ReactBigCalendar);

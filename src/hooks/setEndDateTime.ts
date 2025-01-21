@@ -1,5 +1,5 @@
 import { FieldHook } from "payload";
-import { addMinutes, format } from "date-fns";
+import moment from "moment";
 
 export const setEndDateTime: FieldHook = async ({ siblingData, req }) => {
   if (siblingData.appointmentType !== "appointment") {
@@ -7,7 +7,7 @@ export const setEndDateTime: FieldHook = async ({ siblingData, req }) => {
   }
 
   if (!siblingData.services?.length) {
-    return format(new Date(siblingData.start), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
+    return moment(siblingData.start).format("YYYY-MM-DDTHH:mm:ss.SSSZ");
   }
 
   try {
@@ -23,10 +23,9 @@ export const setEndDateTime: FieldHook = async ({ siblingData, req }) => {
     });
 
     const totalDuration = services.docs.reduce((total, service) => total + (service.duration || 0), 0);
-    const startDate = new Date(siblingData.start);
-    return format(addMinutes(startDate, totalDuration), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
+    return moment(siblingData.start).add(totalDuration, "minutes").format("YYYY-MM-DDTHH:mm:ss.SSSZ");
   } catch (error) {
     req.payload.logger.error(`Error calculating end time: ${error}`);
-    return format(new Date(siblingData.start), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
+    return moment(siblingData.start).format("YYYY-MM-DDTHH:mm:ss.SSSZ");
   }
 };
