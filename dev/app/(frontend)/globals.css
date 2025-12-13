@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+/* .react-calendar__month-view__days {
+  @apply !h-[200px];
+}
+
+.react-calendar__tile--now {
+  @apply !bg-pink-400 hover:!bg-pink-500 !text-white !transition-colors;
+}
+
+.react-calendar__tile--active {
+  @apply !bg-indigo-500 hover:!bg-indigo-600 !transition-colors;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  @apply !transition-colors;
+} */
+/* .react-calendar__tile {
+  @apply rounded-sm;
+} */
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}

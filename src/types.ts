@@ -1,63 +1,78 @@
-export interface PluginTypes {}
+export interface PluginTypes {
+  overrides?: {} // TODO: ADD OVERRIDES FOR COLLECTIONS
+  showDashboardCards?: boolean
+  showNavItems?: boolean
+}
 
 export type OpeningTimes = {
-	[key: string]: {
-		isOpen: boolean;
-		opening: string;
-		closing: string;
-	};
+  [key: string]: {
+    closing: string
+    isOpen: boolean
+    opening: string
+  }
 } & {
-	createdAt: string;
-	updatedAt: string;
-	id: string;
-	globalType: "openingTime";
-};
+  createdAt: string
+  globalType: 'openingTime'
+  id: string
+  updatedAt: string
+}
 
 export interface Appointment {
-	id: string;
-	customer: Customer;
-	host: User;
-	services: Service[];
-	title?: string;
-	start: string;
-	end: string;
-	hostId?: string;
-	appointmentType: "appointment" | "blockout";
+  appointmentType: 'appointment' | 'blockout'
+  customer: User
+  end: string
+  host: User
+  hostId?: string
+  id: string
+  services: Service[]
+  start: string
+  title?: string
 }
 
 export type BigCalendarAppointment = {
-	start: Date;
-	end: Date;
-	hostId: string;
-	id: string;
-	customer: Customer;
-	host: User;
-	services: Service[];
-	title?: string;
-	appointmentType: "appointment" | "blockout";
-};
+  appointmentType: 'appointment' | 'blockout'
+  customer: User
+  end: Date
+  host: User
+  hostId: string
+  id: string
+  services: Service[]
+  start: Date
+  title?: string
+}
 
-export interface User {
-	id: string;
-	firstName?: string | null;
-	lastName?: string | null;
-	takingAppointments?: boolean | null;
-	prefferedName?: string | null;
-	email: string;
+export interface BaseUser {
+  createdAt: string
+  firstName?: null | string
+  id: string
+  lastName?: null | string
+  updatedAt: string
+}
+
+export interface User extends BaseUser {
+  adminTitle?: string
+  appointments?: {
+    docs: Appointment[]
+    hasNextPage: boolean
+  }
+  email?: string
+  preferredNameAppointments?: null | string
+  roles?: ('admin' | 'customer') | null
+  takingAppointments?: boolean | null
+}
+
+export interface TeamMember extends BaseUser {
+  preferredNameAppointments?: null | string
+  takingAppointments?: boolean | null
+}
+
+export interface Customer extends BaseUser {
+  email: string
 }
 
 export interface Service {
-	id: string;
-	title: string;
-	description: string | null;
-	duration: number;
-}
-
-export interface Customer {
-	id: string;
-	email: string;
-	username: string;
-	firstName: string;
-	lastName: string;
-	dob: string;
+  description: null | string
+  duration: number
+  id: string
+  title: string
 }

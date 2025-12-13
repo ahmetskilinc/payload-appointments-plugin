@@ -1,154 +1,180 @@
-import { CollectionConfig, FieldHook } from "payload/types";
-import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
-import { getAppointmentsForDayAndHost } from "../utilities/GetAppointmentsForDay";
-import { setEndDateTime } from "../hooks/setEndDateTime";
-import EndDateField from "../components/EndDateField";
-import HostsSelectField from "../components/HostsSelectField";
+import type { CollectionConfig } from 'payload'
+
+import { authenticated } from '../access/authenticated'
+import { addAdminTitle } from '../hooks/addAdminTitle'
+import { sendCustomerEmail } from '../hooks/sendCustomerEmail'
+import { setEndDateTime } from '../hooks/setEndDateTime'
 
 const Appointments: CollectionConfig = {
-	slug: "appointments",
-	labels: {
-		singular: "Appointment",
-		plural: "Appointments",
-	},
-	admin: {
-		group: "Booking",
-	},
-	hooks: {
-		afterChange: [sendCustomerEmail],
-	},
-	endpoints: [
-		{
-			path: "/get-slots",
-			method: "get",
-			handler: async (req, res): Promise<void> => {
-				const { availableSlotsForDate, filteredSlots } =
-					await getAppointmentsForDayAndHost(req);
-				res.json({
-					availableSlots: filteredSlots,
-					allSlots: availableSlotsForDate,
-				});
-			},
-		},
-	],
-	fields: [
-		{
-			name: "appointmentType",
-			type: "select",
-			label: "Appointment type",
-			options: [
-				{
-					value: "appointment",
-					label: "Appointment",
-				},
-				{
-					value: "blockout",
-					label: "Blockout",
-				},
-			],
-			required: true,
-		},
-		{
-			type: "relationship",
-			relationTo: "users",
-			name: "host",
-			label: "Host",
-			admin: {
-				condition: siblingData => {
-					if (siblingData.appointmentType === "appointment") return true;
-					if (siblingData.appointmentType === "blockout") return true;
-					return false;
-				},
-				components: {
-					// Field: HostsSelectField,
-				},
-			},
-			required: true,
-		},
-		{
-			type: "relationship",
-			relationTo: "customers",
-			name: "customer",
-			label: "Customer",
-			admin: {
-				condition: siblingData => {
-					if (siblingData.appointmentType === "appointment") return true;
-					return false;
-				},
-			},
-			required: true,
-		},
-		{
-			type: "relationship",
-			relationTo: "services",
-			name: "services",
-			label: "Services",
-			hasMany: true,
-			admin: {
-				condition: (data, siblingData) => {
-					if (siblingData.appointmentType === "appointment") return true;
-					return false;
-				},
-			},
-			required: true,
-		},
-		{
-			name: "title",
-			type: "text",
-			admin: {
-				condition: (data, siblingData) => {
-					if (siblingData.appointmentType === "blockout") return true;
-					return false;
-				},
-			},
-			required: true,
-		},
-		{
-			type: "row",
-			fields: [
-				{
-					type: "date",
-					name: "start",
-					label: "Starts at",
-					defaultValue: new Date().toString(),
-					admin: {
-						date: {
-							pickerAppearance: "dayAndTime",
-						},
-						condition: (data, siblingData) => {
-							if (siblingData.appointmentType === "appointment") return true;
-							if (siblingData.appointmentType === "blockout") return true;
-							return false;
-						},
-					},
-					required: true,
-				},
-				{
-					type: "date",
-					name: "end",
-					label: "Ends at",
-					defaultValue: new Date().toString(),
-					admin: {
-						date: {
-							pickerAppearance: "dayAndTime",
-						},
-						condition: (data, siblingData) => {
-							if (siblingData.appointmentType === "appointment") return true;
-							if (siblingData.appointmentType === "blockout") return true;
-							return false;
-						},
-						components: {
-							Field: EndDateField,
-						},
-					},
-					hooks: {
-						beforeValidate: [setEndDateTime],
-					},
-					required: true,
-				},
-			],
-		},
-	],
-};
+  slug: 'appointments',
+  access: {
+    create: authenticated,
+  },
+  admin: {
+    group: 'Appointments',
+    useAsTitle: 'adminTitle',
+  },
+  fields: [
+    {
+      name: 'appointmentType',
+      type: 'select',
+      label: 'Appointment type',
+      options: [
+        {
+          label: 'Appointment',
+          value: 'appointment',
+        },
+        {
+          label: 'Blockout',
+          value: 'blockout',
+        },
+      ],
+      required: true,
+    },
+    {
+      name: 'host',
+      type: 'relationship',
+      admin: {
+        condition: (siblingData) => {
+          if (siblingData.appointmentType === 'appointment') {
+            return true
+          }
+          if (siblingData.appointmentType === 'blockout') {
+            return true
+          }
+          return false
+        },
+      },
+      filterOptions: ({ data }) => {
+        return {
+          takingAppointments: {
+            equals: true,
+          },
+        }
+      },
+      label: 'Host',
+      relationTo: 'teamMembers',
+      required: true,
+    },
+    {
+      name: 'customer',
+      type: 'relationship',
+      admin: {
+        condition: (siblingData) => {
+          if (siblingData.appointmentType === 'appointment') {
+            return true
+          }
+          return false
+        },
+      },
+      filterOptions: ({ data }) => {
+        return {
+          roles: {
+            equals: 'customer',
+          },
+        }
+      },
+      label: 'Customer',
+      relationTo: 'users',
+      required: true,
+    },
+    {
+      name: 'services',
+      type: 'relationship',
+      admin: {
+        condition: (data, siblingData) => {
+          if (siblingData.appointmentType === 'appointment') {
+            return true
+          }
+          return false
+        },
+      },
+      hasMany: true,
+      label: 'Services',
+      relationTo: 'services',
+      required: true,
+    },
+    {
+      name: 'title',
+      type: 'text',
+      admin: {
+        condition: (data, siblingData) => {
+          if (siblingData.appointmentType === 'blockout') {
+            return true
+          }
+          return false
+        },
+      },
+      required: true,
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'start',
+          type: 'date',
+          admin: {
+            condition: (data, siblingData) => {
+              if (siblingData.appointmentType === 'appointment') {
+                return true
+              }
+              if (siblingData.appointmentType === 'blockout') {
+                return true
+              }
+              return false
+            },
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+          defaultValue: new Date(),
+          label: 'Starts at',
+          required: true,
+        },
+        {
+          name: 'end',
+          type: 'date',
+          admin: {
+            condition: (data, siblingData) => {
+              if (siblingData.appointmentType === 'appointment') {
+                return true
+              }
+              if (siblingData.appointmentType === 'blockout') {
+                return true
+              }
+              return false
+            },
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+          defaultValue: new Date(),
+          hooks: {
+            beforeValidate: [setEndDateTime],
+          },
+          label: 'Ends at',
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'adminTitle',
+      type: 'text',
+      admin: {
+        hidden: true,
+      },
+      hooks: {
+        beforeValidate: [addAdminTitle],
+      },
+    },
+  ],
+  hooks: {
+    afterChange: [sendCustomerEmail],
+  },
+  labels: {
+    plural: 'Appointments',
+    singular: 'Appointment',
+  },
+}
 
-export default Appointments;
+export default Appointments

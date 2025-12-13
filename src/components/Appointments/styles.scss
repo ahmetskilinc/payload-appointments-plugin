@@ -1,0 +1,154 @@
+@import "react-big-calendar/lib/sass/styles";
+@import "react-big-calendar/lib/addons/dragAndDrop/styles";
+
+.appointments-calendar-view.collection-list {
+  padding-left: var(--gutter-h) !important;
+  padding-right: var(--gutter-h) !important;
+  > .list-header {
+    margin-bottom: 10px;
+  }
+}
+
+.rbc-time-content > * + * > *,
+.rbc-timeslot-group {
+  border-color: var(--theme-border-color) !important;
+}
+
+.rbc-day-slot.rbc-time-column {
+  .rbc-timeslot-group {
+    border-color: var(--theme-border-color) !important;
+    .rbc-time-slot {
+      border-color: var(--theme-elevation-50) !important;
+    }
+  }
+}
+
+.rbc-time-view-resources .rbc-time-gutter,
+.rbc-time-view-resources .rbc-time-header-gutter {
+  border-color: var(--theme-border-color) !important;
+}
+
+.rbc-btn-group {
+  button {
+    color: var(--theme-text) !important;
+    background-color: var(--theme-border-color) !important;
+    cursor: pointer !important;
+    border: none !important;
+    padding: 10px 14px !important;
+    &:hover {
+      background-color: var(--theme-elevation-200) !important;
+      border: none !important;
+    }
+    &.rbc-active {
+      background-color: var(--theme-elevation-250) !important;
+      &:hover {
+        background-color: var(--theme-elevation-300) !important;
+      }
+    }
+  }
+}
+
+.rbc-time-slot {
+  color: var(--theme-text) !important;
+}
+.rbc-time-header-gutter,
+.rbc-time-gutter.rbc-time-column {
+  background-color: var(--theme-elevation-100) !important;
+}
+
+.rbc-row.rbc-row-resource,
+.rbc-time-header-content,
+// .rbc-time-view-resources .rbc-time-gutter, .rbc-time-view-resources .rbc-time-header-gutter,
+.rbc-header,
+.rbc-day-slot.rbc-time-column {
+  border: none !important;
+}
+
+.rbc-header {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  background-color: var(--theme-bg);
+}
+
+.rbc-allday-cell {
+  display: none;
+}
+
+.rbc-day-slot.rbc-time-column {
+  background-color: var(--theme-bg) !important;
+  .rbc-today {
+    background-color: var(--theme-bg) !important;
+  }
+}
+
+.rbc-time-slot {
+  // background-color: var(--theme-bg);
+  z-index: 1;
+}
+
+.rbc-time-view {
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  border-color: var(--theme-elevation-150) !important;
+}
+
+.rbc-time-gutter {
+  background-color: var(--theme-bg) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid var(--theme-border-color) !important;
+}
+
+.rbc-event,
+.rbc-background-event {
+  z-index: 2;
+  border: none !important;
+  padding: 0px !important;
+  border-radius: 0 !important;
+}
+
+.rbc-slot-selection {
+  background-color: rgba(#16a34a, 0.2);
+}
+
+.rbc-addons-dnd-resizable {
+  height: 100%;
+  width: 100%;
+}
+
+.rbc-events-container {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-calendar {
+  background-color: var(--theme-bg) !important;
+  height: calc(100vh - (75px + 27.59px + 25px + 12.5px));
+
+  @media only screen and (max-width: 1024px) {
+    height: calc(100vh - (46.15px + 27.59px + 5.769px + 23.077px));
+  }
+
+  @media only screen and (max-width: 768px) {
+    height: calc(100vh - (46.15px + 27.59px + 23.077px));
+  }
+}
+
+.rbc-day-slot .rbc-event,
+.rbc-day-slot .rbc-background-event {
+  background-color: var(--theme-bg) !important;
+  cursor: auto !important;
+  pointer-events: auto !important;
+}
+
+.rbc-current-time-indicator {
+  background-color: var(--toastify-color-success);
+}

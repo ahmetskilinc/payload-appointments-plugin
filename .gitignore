@@ -1,0 +1,12 @@
+/node_modules
+/dev/node_modules
+
+.pnpm-store
+
+/dev/.next
+
+**/.env
+
+**/.DS_Store
+
+dist

@@ -1,17 +1,26 @@
 {
-	"compilerOptions": {
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"target": "ES2015",
-		"outDir": "./dist",
-		"rootDir": "./src",
-		"allowJs": true,
-		"module": "commonjs",
-		"sourceMap": true,
-		"jsx": "react",
-		"esModuleInterop": true,
-		"declaration": true,
-		"skipLibCheck": true,
-		"strict": true
-	},
-	"include": ["src/**/*"]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "rootDir": "./",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "emitDeclarationOnly": true,
+    "target": "ES2022",
+    "composite": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./dev/next-env.d.ts"]
 }

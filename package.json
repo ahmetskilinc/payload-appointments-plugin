@@ -1,47 +1,133 @@
 {
-	"name": "payload-appointments-plugin",
-	"version": "0.0.4-beta-3",
-	"repository": "git@github.com:ahmetskilinc/payload-appointments-plugin.git",
-	"description": "An appointment scheduling plugin for Payload CMS",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"keywords": [
-		"payload",
-		"cms",
-		"appointments",
-		"scheduling",
-		"plugin",
-		"typescript",
-		"react"
-	],
-	"scripts": {
-		"build": "yarn clean && tsc && yarn copy",
-		"clean": "rimraf dist && rimraf dev/yarn.lock",
-		"copy": "copyfiles -u 1 src/**/**/*.scss dist/",
-		"prepublishOnly": "yarn clean && yarn build",
-		"email": "email dev --dir src/emails"
-	},
-	"author": "ahmetskilinc@icloud.com",
-	"license": "MIT",
-	"peerDependencies": {
-		"payload": "^2.7.0"
-	},
-	"devDependencies": {
-		"@types/react-big-calendar": "^1.8.9",
-		"copyfiles": "^2.4.1",
-		"dotenv": "^16.4.5",
-		"payload": "^2.16.1",
-		"react": "^18.3.1",
-		"rimraf": "^5.0.5",
-		"typescript": "^5.4.5",
-		"webpack": "^5.91.0"
-	},
-	"dependencies": {
-		"@react-email/components": "0.0.17",
-		"moment": "^2.30.1",
-		"moment-range": "^4.0.2",
-		"react-big-calendar": "^1.12.1",
-		"react-email": "2.1.2",
-		"sass": "^1.77.0"
-	}
+  "name": "appointments-plugin",
+  "version": "1.0.0",
+  "description": "A blank template to get started with Payload 3.0",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./BeforeDashboard": {
+      "import": "./src/components/BeforeDashboard/index.tsx",
+      "types": "./src/components/BeforeDashboard/index.tsx",
+      "default": "./src/components/BeforeDashboard/index.tsx"
+    },
+    "./BeforeNavLinks": {
+      "import": "./src/components/BeforeNavLinks/index.tsx",
+      "types": "./src/components/BeforeNavLinks/index.tsx",
+      "default": "./src/components/BeforeNavLinks/index.tsx"
+    },
+    "./AppointmentsList": {
+      "import": "./src/views/AppointmentsList/index.tsx",
+      "types": "./src/views/AppointmentsList/index.tsx",
+      "default": "./src/views/AppointmentsList/index.tsx"
+    }
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm copyfiles && pnpm build:types && pnpm build:swc",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --outDir dist --rootDir ./src",
+    "clean": "rimraf {dist,*.tsbuildinfo}",
+    "copyfiles": "copyfiles -u 1 \"src/**/*.{html,css,scss,ttf,woff,woff2,eot,svg,jpg,png,json}\" dist/",
+    "dev": "next dev dev --turbo",
+    "dev:generate-importmap": "pnpm dev:payload generate:importmap",
+    "dev:generate-types": "pnpm dev:payload generate:types",
+    "dev:payload": "cross-env PAYLOAD_CONFIG_PATH=./dev/payload.config.ts payload",
+    "generate:importmap": "pnpm dev:generate-importmap",
+    "generate:types": "pnpm dev:generate-types",
+    "lint": "eslint",
+    "lint:fix": "eslint ./src --fix",
+    "test": "pnpm test:int && pnpm test:e2e",
+    "test:e2e": "playwright test",
+    "test:int": "vitest"
+  },
+  "dependencies": {
+    "@payloadcms/next": "3.68.3",
+    "@payloadcms/ui": "3.68.3",
+    "@react-email/components": "^1.0.1",
+    "@react-email/render": "^2.0.0",
+    "clsx": "^2.1.1",
+    "moment": "^2.30.1",
+    "react-big-calendar": "^1.19.4",
+    "recharts": "2.15.4",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@payloadcms/db-postgres": "3.68.3",
+    "@payloadcms/eslint-config": "3.28.0",
+    "@payloadcms/richtext-lexical": "3.68.3",
+    "@playwright/test": "1.57.0",
+    "@swc-node/register": "1.11.1",
+    "@swc/cli": "0.7.9",
+    "@types/node": "^25.0.1",
+    "@types/react": "19.2.7",
+    "@types/react-big-calendar": "^1.16.3",
+    "@types/react-dom": "19.2.3",
+    "copyfiles": "2.4.1",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "16.0.10",
+    "graphql": "^16.12.0",
+    "next": "^15.5.8",
+    "open": "^11.0.0",
+    "payload": "3.68.3",
+    "prettier": "^3.7.4",
+    "qs-esm": "7.0.2",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "rimraf": "6.1.2",
+    "sharp": "0.34.5",
+    "sort-package-json": "^3.5.1",
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.15"
+  },
+  "peerDependencies": {
+    "next": "^15.0.0 || ^16.0.0",
+    "payload": "^3.37.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "engines": {
+    "node": "^18.20.2 || >=20.9.0",
+    "pnpm": "^9 || ^10"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./client": {
+        "import": "./dist/exports/client.js",
+        "types": "./dist/exports/client.d.ts",
+        "default": "./dist/exports/client.js"
+      },
+      "./rsc": {
+        "import": "./dist/exports/rsc.js",
+        "types": "./dist/exports/rsc.d.ts",
+        "default": "./dist/exports/rsc.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ]
+  },
+  "registry": "https://registry.npmjs.org/"
 }

@@ -1,31 +1,33 @@
-import { CollectionAfterChangeHook } from "payload/types";
-import { appointmentCreatedEmail } from "../utilities/AppointmentCreatedEmail";
-import { appointmentUpdatedEmail } from "../utilities/AppointmentUpdatedEmail";
-import { Appointment, Customer } from "../types";
+import type { CollectionAfterChangeHook } from 'payload'
 
-export const sendCustomerEmail: CollectionAfterChangeHook = async ({
-	doc, // full document data
-	req, // full express request
-	operation, // name of the operation ie. 'create', 'update'
-}) => {
-	if (doc.appointmentType === "appointment") {
-		const appointment = await req.payload
-			.findByID({
-				collection: "appointments",
-				id: doc.id,
-			})
-			.then((res: Appointment) => {
-				return res;
-			})
-			.catch((error: any) => {
-				console.error(error);
-				return {} as Appointment;
-			});
+import type { Appointment } from '../types'
 
-		if (operation === "create") {
-			req.payload.sendEmail(appointmentCreatedEmail(appointment));
-		} else if (operation === "update") {
-			req.payload.sendEmail(appointmentUpdatedEmail(appointment));
-		}
-	}
-};
+import { appointmentCreatedEmail } from '../utilities/AppointmentCreatedEmail'
+import { appointmentUpdatedEmail } from '../utilities/AppointmentUpdatedEmail'
+
+export const sendCustomerEmail: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
+  if (doc.appointmentType !== 'appointment') {
+    return
+  }
+
+  try {
+    const appointment = (await req.payload.findByID({
+      id: doc.id,
+      collection: 'appointments',
+      depth: 2,
+    })) as unknown as Appointment
+
+    const emailTemplate =
+      operation === 'create'
+        ? await appointmentCreatedEmail(appointment)
+        : operation === 'update'
+          ? await appointmentUpdatedEmail(appointment)
+          : null
+
+    if (emailTemplate) {
+      await req.payload.sendEmail(emailTemplate)
+    }
+  } catch (error) {
+    req.payload.logger.error(`Error sending ${operation} email: ${error}`)
+  }
+}

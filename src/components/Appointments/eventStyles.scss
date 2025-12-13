@@ -1,0 +1,43 @@
+.doc-drawer__toggler {
+  padding: 0 !important;
+  margin: 0;
+  height: 100% !important;
+}
+
+.event {
+  width: 100%;
+  .appointment {
+    height: 100%;
+    background-color: #7469b6;
+    border: 1px solid #8d80d3;
+    cursor: pointer;
+    pointer-events: auto;
+    .event__label {
+      text-decoration: underline;
+      font-weight: bold;
+    }
+  }
+  .blockout {
+    height: 100%;
+    padding: 10px;
+    background-color: #dc8686;
+    border: 1px solid #eb9292;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.event {
+  .event__label {
+    font-size: 14px;
+    padding: 0;
+    margin-bottom: 6px;
+  }
+  .event__start-end {
+    margin-bottom: 6px;
+  }
+  .event__services {
+    margin-bottom: 6px;
+  }
+}
