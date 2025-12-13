@@ -14,8 +14,8 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({ doc, operat
     const appointment = (await req.payload.findByID({
       id: doc.id,
       collection: 'appointments',
-      depth: 2, // To populate customer and host relationships
-    })) as Appointment
+      depth: 2,
+    })) as unknown as Appointment
 
     const emailTemplate =
       operation === 'create'

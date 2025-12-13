@@ -7,7 +7,6 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import Users from './collections/Users'
-import { testEmailAdapter } from './helpers/testEmailAdapter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -30,7 +29,6 @@ const buildConfigWithMemoryDB = async () => {
       },
     }),
     editor: lexicalEditor(),
-    email: testEmailAdapter,
     plugins: [appointmentsPlugin({})],
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
     sharp,

@@ -2,6 +2,8 @@ import type { PayloadHandler, PayloadRequest } from 'payload'
 
 import moment from 'moment'
 
+type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+
 const curateSlots = (slotInterval: number, startTime: string, endTime: string): string[] => {
   const slots: string[] = []
   const current = moment(startTime)
@@ -76,7 +78,7 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       depth: 0,
     })
 
-    const dayOfWeek = moment(day).format('dddd').toLowerCase()
+    const dayOfWeek = moment(day).format('dddd').toLowerCase() as DayOfWeek
 
     if (!openingTimes || !openingTimes[dayOfWeek]) {
       return Response.json({ error: 'Opening times not configured for this day' }, { status: 400 })

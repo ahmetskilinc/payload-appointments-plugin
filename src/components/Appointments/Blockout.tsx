@@ -1,13 +1,13 @@
-import React from "react";
-import { Appointment, BigCalendarAppointment } from "../../types";
-import "./eventStyles.scss";
-import { useDocumentDrawer } from "@payloadcms/ui";
+import React from 'react'
+import { Appointment, BigCalendarAppointment } from '../../types'
+import './eventStyles.scss'
+import { useDocumentDrawer } from '@payloadcms/ui'
 
 const Blockout = ({ event }: { event: BigCalendarAppointment }) => {
   const [DocumentDrawer, DocumentDrawerToggler] = useDocumentDrawer({
-    id: event.id,
-    collectionSlug: "appointments",
-  });
+    id: Number(event.id),
+    collectionSlug: 'appointments',
+  })
   return (
     <>
       <DocumentDrawerToggler className="event">
@@ -17,7 +17,7 @@ const Blockout = ({ event }: { event: BigCalendarAppointment }) => {
       </DocumentDrawerToggler>
       <DocumentDrawer />
     </>
-  );
-};
+  )
+}
 
-export default Blockout;
+export default Blockout

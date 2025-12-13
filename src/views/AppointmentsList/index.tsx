@@ -45,8 +45,8 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
         <AppointmentsListClient
           apiRoute={apiRoute}
           collectionSlug={Appointments.slug}
-          initialAppointments={appointmentsRes.docs as Appointment[]}
-          initialTeamMembers={teamMembersRes.docs as TeamMember[]}
+          initialAppointments={appointmentsRes.docs as unknown as Appointment[]}
+          initialTeamMembers={teamMembersRes.docs as unknown as TeamMember[]}
         />
       </DefaultTemplate>
     </AppointmentProvider>

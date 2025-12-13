@@ -8,3 +8,5 @@
 **/.env
 
 **/.DS_Store
+
+dist
