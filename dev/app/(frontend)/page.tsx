@@ -43,7 +43,7 @@ export default async function Dashboard() {
       user: dashboardData?.id,
       where: {
         customer: {
-          equals: dashboardData.id,
+          equals: dashboardData?.id,
         },
       },
     })

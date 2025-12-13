@@ -12,8 +12,6 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
   })
 
   if (response.status === 401) {
-    // Token has expired or is invalid
-    // You might want to redirect to login page or refresh the token here
     throw new Error('Unauthorized')
   }
 

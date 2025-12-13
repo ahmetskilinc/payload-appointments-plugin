@@ -18,10 +18,10 @@ export default async function Header() {
             </Link>
           </div>
           <nav className="ml-6 flex items-center space-x-4">
-            {dashboardData.id ? (
+            {dashboardData && dashboardData.id ? (
               <>
                 <Button asChild variant="ghost">
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/">Home</Link>
                 </Button>
                 <Button asChild variant="ghost">
                   <Link href="/book">Book An Appointment</Link>

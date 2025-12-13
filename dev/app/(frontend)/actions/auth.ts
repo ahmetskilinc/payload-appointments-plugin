@@ -3,44 +3,33 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-// This function would call your auth server
-async function loginToAuthServer(email: string, password: string) {
-  // Replace this with actual call to your auth server
-  const response = await fetch(`${process.env.SERVER_URL}/api/users/login`, {
-    body: JSON.stringify({ email, password }),
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-  })
-
-  if (!response.ok) {
-    throw new Error('Login failed')
-  }
-
-  const data = await response.json()
-
-  if (data.user.roles === 'admin') {
-    throw new Error('Login failed')
-  }
-
-  return data
-}
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
   try {
-    const { exp, token } = await loginToAuthServer(email, password)
+    const payload = await getPayload({ config: configPromise })
 
-    // Store the token in an HTTP-only cookie
-    ;(await cookies()).set('payload-token', token, {
+    const result = await payload.login({
+      collection: 'users',
+      data: { email, password },
+    })
+
+    if (result.user.roles === 'admin') {
+      throw new Error('Login failed')
+    }
+
+    ;(await cookies()).set('payload-token', result.token!, {
       httpOnly: true,
-      maxAge: exp,
+      maxAge: result.exp!,
       path: '/',
       secure: process.env.NODE_ENV === 'production',
     })
 
-    redirect('/dashboard')
+    redirect('/')
   } catch (error) {
     return { error: (error as Error).message }
   }
@@ -53,4 +42,42 @@ export async function logout() {
 
 export async function getAuthToken() {
   return (await cookies()).get('payload-token')?.value
+}
+
+export async function signup(formData: FormData) {
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const firstName = formData.get('firstName') as string
+  const lastName = formData.get('lastName') as string
+
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    await payload.create({
+      collection: 'users',
+      data: {
+        email,
+        firstName,
+        lastName,
+        password,
+        roles: 'customer',
+      },
+    })
+
+    const result = await payload.login({
+      collection: 'users',
+      data: { email, password },
+    })
+
+    ;(await cookies()).set('payload-token', result.token!, {
+      httpOnly: true,
+      maxAge: result.exp!,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+    })
+
+    redirect('/')
+  } catch (error) {
+    return { error: (error as Error).message }
+  }
 }
