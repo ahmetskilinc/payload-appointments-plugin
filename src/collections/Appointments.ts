@@ -1,153 +1,165 @@
-import { CollectionConfig } from "payload";
-import { addAdminTitle } from "../hooks/addAdminTitle";
-import { sendCustomerEmail } from "../hooks/sendCustomerEmail";
-import { setEndDateTime } from "../hooks/setEndDateTime";
-import { authenticated } from "../access/authenticated";
+import type { CollectionConfig } from 'payload'
+
+import { authenticated } from '../access/authenticated'
+import { addAdminTitle } from '../hooks/addAdminTitle'
+import { sendCustomerEmail } from '../hooks/sendCustomerEmail'
+import { setEndDateTime } from '../hooks/setEndDateTime'
 
 const Appointments: CollectionConfig = {
-  slug: "appointments",
-  labels: {
-    singular: "Appointment",
-    plural: "Appointments",
-  },
-  admin: {
-    group: "Appointments",
-    useAsTitle: "adminTitle",
-  },
-  hooks: {
-    afterChange: [sendCustomerEmail],
-  },
+  slug: 'appointments',
   access: {
     create: authenticated,
   },
+  admin: {
+    group: 'Appointments',
+    useAsTitle: 'adminTitle',
+  },
   fields: [
     {
-      name: "appointmentType",
-      type: "select",
-      label: "Appointment type",
+      name: 'appointmentType',
+      type: 'select',
+      label: 'Appointment type',
       options: [
         {
-          value: "appointment",
-          label: "Appointment",
+          label: 'Appointment',
+          value: 'appointment',
         },
         {
-          value: "blockout",
-          label: "Blockout",
+          label: 'Blockout',
+          value: 'blockout',
         },
       ],
       required: true,
     },
     {
-      type: "relationship",
-      relationTo: "teamMembers",
+      name: 'host',
+      type: 'relationship',
+      admin: {
+        condition: (siblingData) => {
+          if (siblingData.appointmentType === 'appointment') {
+            return true
+          }
+          if (siblingData.appointmentType === 'blockout') {
+            return true
+          }
+          return false
+        },
+      },
       filterOptions: ({ data }) => {
         return {
           takingAppointments: {
             equals: true,
           },
-        };
+        }
       },
-      name: "host",
-      label: "Host",
-      admin: {
-        condition: (siblingData) => {
-          if (siblingData.appointmentType === "appointment") return true;
-          if (siblingData.appointmentType === "blockout") return true;
-          return false;
-        },
-      },
+      label: 'Host',
+      relationTo: 'teamMembers',
       required: true,
     },
     {
-      type: "relationship",
-      relationTo: "users",
-      name: "customer",
+      name: 'customer',
+      type: 'relationship',
+      admin: {
+        condition: (siblingData) => {
+          if (siblingData.appointmentType === 'appointment') {
+            return true
+          }
+          return false
+        },
+      },
       filterOptions: ({ data }) => {
         return {
           roles: {
-            equals: "customer",
+            equals: 'customer',
           },
-        };
+        }
       },
-      label: "Customer",
-      admin: {
-        condition: (siblingData) => {
-          if (siblingData.appointmentType === "appointment") return true;
-          return false;
-        },
-      },
+      label: 'Customer',
+      relationTo: 'users',
       required: true,
     },
     {
-      type: "relationship",
-      relationTo: "services",
-      name: "services",
-      label: "Services",
+      name: 'services',
+      type: 'relationship',
+      admin: {
+        condition: (data, siblingData) => {
+          if (siblingData.appointmentType === 'appointment') {
+            return true
+          }
+          return false
+        },
+      },
       hasMany: true,
+      label: 'Services',
+      relationTo: 'services',
+      required: true,
+    },
+    {
+      name: 'title',
+      type: 'text',
       admin: {
         condition: (data, siblingData) => {
-          if (siblingData.appointmentType === "appointment") return true;
-          return false;
+          if (siblingData.appointmentType === 'blockout') {
+            return true
+          }
+          return false
         },
       },
       required: true,
     },
     {
-      name: "title",
-      type: "text",
-      admin: {
-        condition: (data, siblingData) => {
-          if (siblingData.appointmentType === "blockout") return true;
-          return false;
-        },
-      },
-      required: true,
-    },
-    {
-      type: "row",
+      type: 'row',
       fields: [
         {
-          type: "date",
-          name: "start",
-          label: "Starts at",
-          defaultValue: new Date().toString(),
+          name: 'start',
+          type: 'date',
           admin: {
-            date: {
-              pickerAppearance: "dayAndTime",
-            },
             condition: (data, siblingData) => {
-              if (siblingData.appointmentType === "appointment") return true;
-              if (siblingData.appointmentType === "blockout") return true;
-              return false;
+              if (siblingData.appointmentType === 'appointment') {
+                return true
+              }
+              if (siblingData.appointmentType === 'blockout') {
+                return true
+              }
+              return false
+            },
+            date: {
+              pickerAppearance: 'dayAndTime',
             },
           },
+          defaultValue: new Date(),
+          label: 'Starts at',
           required: true,
         },
         {
-          type: "date",
-          name: "end",
-          label: "Ends at",
-          defaultValue: new Date().toString(),
+          name: 'end',
+          type: 'date',
           admin: {
-            date: {
-              pickerAppearance: "dayAndTime",
-            },
             condition: (data, siblingData) => {
-              if (siblingData.appointmentType === "appointment") return true;
-              if (siblingData.appointmentType === "blockout") return true;
-              return false;
+              if (siblingData.appointmentType === 'appointment') {
+                return true
+              }
+              if (siblingData.appointmentType === 'blockout') {
+                return true
+              }
+              return false
+            },
+            date: {
+              pickerAppearance: 'dayAndTime',
             },
           },
+          defaultValue: new Date(),
           hooks: {
             beforeValidate: [setEndDateTime],
           },
+          label: 'Ends at',
           required: true,
         },
       ],
     },
     {
-      type: "text",
-      name: "adminTitle",
+      name: 'adminTitle',
+      type: 'text',
       admin: {
         hidden: true,
       },
@@ -156,6 +168,13 @@ const Appointments: CollectionConfig = {
       },
     },
   ],
-};
+  hooks: {
+    afterChange: [sendCustomerEmail],
+  },
+  labels: {
+    plural: 'Appointments',
+    singular: 'Appointment',
+  },
+}
 
-export default Appointments;
+export default Appointments

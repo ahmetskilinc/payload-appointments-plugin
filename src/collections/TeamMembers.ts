@@ -1,73 +1,74 @@
-import { CollectionConfig } from "payload";
-import { authenticated } from "../access/authenticated";
+import type { CollectionConfig } from 'payload'
+
+import { authenticated } from '../access/authenticated'
 
 const TeamMembers: CollectionConfig = {
-  slug: "teamMembers",
-  admin: {
-    useAsTitle: "preferredNameAppointments",
-    group: "Appointments",
-    defaultColumns: ["firstName", "lastName", "takingAppointments", "preferredNameAppointments"],
-    description: "Manage team members who can take appointments",
-  },
+  slug: 'teamMembers',
   access: {
-    read: () => true,
     create: authenticated,
-    update: authenticated,
     delete: authenticated,
+    read: () => true,
+    update: authenticated,
+  },
+  admin: {
+    defaultColumns: ['firstName', 'lastName', 'takingAppointments', 'preferredNameAppointments'],
+    description: 'Manage team members who can take appointments',
+    group: 'Appointments',
+    useAsTitle: 'preferredNameAppointments',
   },
   fields: [
     {
-      type: "row",
+      type: 'row',
       fields: [
         {
-          name: "firstName",
-          type: "text",
-          label: "First Name",
-          required: true,
+          name: 'firstName',
+          type: 'text',
           admin: {
             description: "Team member's first name",
           },
+          label: 'First Name',
+          required: true,
         },
         {
-          name: "lastName",
-          type: "text",
-          label: "Last Name",
-          required: true,
+          name: 'lastName',
+          type: 'text',
           admin: {
             description: "Team member's last name",
           },
+          label: 'Last Name',
+          required: true,
         },
       ],
     },
     {
-      name: "preferredNameAppointments",
-      type: "text",
-      label: "Display Name",
-      required: true,
-      unique: true,
+      name: 'preferredNameAppointments',
+      type: 'text',
       admin: {
-        description: "Name to display in appointment schedule and booking system",
+        description: 'Name to display in appointment schedule and booking system',
       },
       hooks: {
         beforeValidate: [
-          ({ value, data }) => {
+          ({ data, value }) => {
             if (!value && data?.firstName && data?.lastName) {
-              return `${data.firstName} ${data.lastName}`;
+              return `${data.firstName} ${data.lastName}`
             }
-            return value;
+            return value
           },
         ],
       },
+      label: 'Display Name',
+      required: true,
+      unique: true,
     },
     {
-      name: "takingAppointments",
-      type: "checkbox",
-      label: "Available for Appointments",
-      defaultValue: false,
+      name: 'takingAppointments',
+      type: 'checkbox',
       admin: {
-        description: "Enable to allow this team member to take appointments",
-        position: "sidebar",
+        description: 'Enable to allow this team member to take appointments',
+        position: 'sidebar',
       },
+      defaultValue: false,
+      label: 'Available for Appointments',
     },
     // {
     //   name: "maxAppointmentsPerDay",
@@ -84,6 +85,6 @@ const TeamMembers: CollectionConfig = {
     // },
   ],
   timestamps: true,
-};
+}
 
-export default TeamMembers;
+export default TeamMembers

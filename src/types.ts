@@ -1,78 +1,78 @@
 export interface PluginTypes {
-  showDashboardCards?: boolean;
-  showNavItems?: boolean;
-  overrides?: {}; // TODO: ADD OVERRIDES FOR COLLECTIONS
+  overrides?: {} // TODO: ADD OVERRIDES FOR COLLECTIONS
+  showDashboardCards?: boolean
+  showNavItems?: boolean
 }
 
 export type OpeningTimes = {
   [key: string]: {
-    isOpen: boolean;
-    opening: string;
-    closing: string;
-  };
+    closing: string
+    isOpen: boolean
+    opening: string
+  }
 } & {
-  createdAt: string;
-  updatedAt: string;
-  id: string;
-  globalType: "openingTime";
-};
+  createdAt: string
+  globalType: 'openingTime'
+  id: string
+  updatedAt: string
+}
 
 export interface Appointment {
-  id: string;
-  customer: User;
-  host: User;
-  services: Service[];
-  title?: string;
-  start: string;
-  end: string;
-  hostId?: string;
-  appointmentType: "appointment" | "blockout";
+  appointmentType: 'appointment' | 'blockout'
+  customer: User
+  end: string
+  host: User
+  hostId?: string
+  id: string
+  services: Service[]
+  start: string
+  title?: string
 }
 
 export type BigCalendarAppointment = {
-  start: Date;
-  end: Date;
-  hostId: string;
-  id: string;
-  customer: User;
-  host: User;
-  services: Service[];
-  title?: string;
-  appointmentType: "appointment" | "blockout";
-};
+  appointmentType: 'appointment' | 'blockout'
+  customer: User
+  end: Date
+  host: User
+  hostId: string
+  id: string
+  services: Service[]
+  start: Date
+  title?: string
+}
 
 export interface BaseUser {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  updatedAt: string;
-  createdAt: string;
+  createdAt: string
+  firstName?: null | string
+  id: string
+  lastName?: null | string
+  updatedAt: string
 }
 
 export interface User extends BaseUser {
-  roles?: ("admin" | "customer") | null;
-  takingAppointments?: boolean | null;
-  preferredNameAppointments?: string | null;
-  email?: string;
-  adminTitle?: string;
+  adminTitle?: string
   appointments?: {
-    docs: Appointment[];
-    hasNextPage: boolean;
-  };
+    docs: Appointment[]
+    hasNextPage: boolean
+  }
+  email?: string
+  preferredNameAppointments?: null | string
+  roles?: ('admin' | 'customer') | null
+  takingAppointments?: boolean | null
 }
 
 export interface TeamMember extends BaseUser {
-  takingAppointments?: boolean | null;
-  preferredNameAppointments?: string | null;
+  preferredNameAppointments?: null | string
+  takingAppointments?: boolean | null
 }
 
 export interface Customer extends BaseUser {
-  email: string;
+  email: string
 }
 
 export interface Service {
-  id: string;
-  title: string;
-  description: string | null;
-  duration: number;
+  description: null | string
+  duration: number
+  id: string
+  title: string
 }

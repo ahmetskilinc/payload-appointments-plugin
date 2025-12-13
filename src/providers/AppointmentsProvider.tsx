@@ -1,22 +1,23 @@
-"use client";
+'use client'
 
-import React, { createContext, useContext } from "react";
-import { Appointment } from "../types";
+import React, { createContext, useContext } from 'react'
+
+import type { Appointment } from '../types'
 
 type AppointmentContextType = {
-  addAppointment: (appointment: Appointment) => void;
-};
+  addAppointment: (appointment: Appointment) => void
+}
 
 const AppointmentContext = createContext<AppointmentContextType>({
   addAppointment: () => {},
-});
+})
 
 export const AppointmentProvider: React.FC<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }> = ({ children }) => {
-  const addAppointment = async () => {
-    console.log("addAppointment Clicked");
-  };
+  const addAppointment = () => {
+    console.log('addAppointment Clicked')
+  }
 
   return (
     <AppointmentContext.Provider
@@ -26,7 +27,7 @@ export const AppointmentProvider: React.FC<{
     >
       {children}
     </AppointmentContext.Provider>
-  );
-};
+  )
+}
 
-export const useAppointments = () => useContext(AppointmentContext);
+export const useAppointments = () => useContext(AppointmentContext)

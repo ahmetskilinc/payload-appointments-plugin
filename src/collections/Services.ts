@@ -1,71 +1,72 @@
-import { CollectionConfig } from "payload";
-import { authenticated } from "../access/authenticated";
+import type { CollectionConfig } from 'payload'
+
+import { authenticated } from '../access/authenticated'
 
 const Services: CollectionConfig = {
-  slug: "services",
-  labels: {
-    singular: "Service",
-    plural: "Services",
+  slug: 'services',
+  access: {
+    create: authenticated,
+    delete: authenticated,
+    read: () => true,
+    update: authenticated,
   },
   admin: {
-    group: "Appointments",
-    useAsTitle: "title",
-    defaultColumns: ["title", "duration", "paidService", "price"],
-  },
-  access: {
-    read: () => true,
-    create: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    defaultColumns: ['title', 'duration', 'paidService', 'price'],
+    group: 'Appointments',
+    useAsTitle: 'title',
   },
   fields: [
     {
-      type: "text",
-      name: "title",
-      required: true,
+      name: 'title',
+      type: 'text',
       index: true,
+      required: true,
     },
     {
-      type: "textarea",
-      name: "description",
+      name: 'description',
+      type: 'textarea',
       required: false,
     },
     {
-      type: "number",
-      name: "duration",
-      label: "Duration (minutes)",
-      required: true,
-      min: 1,
-      max: 480, // 8 hours max
+      name: 'duration',
+      type: 'number',
       admin: {
-        description: "Duration of the service in minutes",
+        description: 'Duration of the service in minutes',
       },
+      label: 'Duration (minutes)',
+      max: 480, // 8 hours max
+      min: 1,
+      required: true,
     },
     {
-      type: "row",
+      type: 'row',
       fields: [
         {
-          type: "checkbox",
-          name: "paidService",
-          label: "Paid Service",
+          name: 'paidService',
+          type: 'checkbox',
           defaultValue: false,
+          label: 'Paid Service',
         },
         {
-          type: "number",
-          name: "price",
-          label: "Price",
+          name: 'price',
+          type: 'number',
           admin: {
             condition: (data) => data.paidService === true,
-            description: "Price in your local currency",
+            description: 'Price in your local currency',
           },
-          required: true,
+          label: 'Price',
           min: 0,
+          required: true,
           // step: 0.01,
         },
       ],
     },
   ],
+  labels: {
+    plural: 'Services',
+    singular: 'Service',
+  },
   timestamps: true,
-};
+}
 
-export default Services;
+export default Services

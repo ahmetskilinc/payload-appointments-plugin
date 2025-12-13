@@ -1,20 +1,20 @@
-import { FieldHook } from "payload";
+import type { FieldHook } from 'payload'
 
-export const addAdminTitle: FieldHook = async ({ siblingData, req }) => {
-  if (siblingData.appointmentType === "appointment") {
+export const addAdminTitle: FieldHook = async ({ req, siblingData }) => {
+  if (siblingData.appointmentType === 'appointment') {
     const customer = (
       await req.payload.find({
-        collection: "users",
+        collection: 'users',
         where: {
           id: {
             equals: siblingData.customer,
           },
         },
       })
-    ).docs;
+    ).docs
 
-    return `${customer[0].firstName} ${customer[0].lastName}`;
-  } else if (siblingData.appointmentType === "blockout") {
-    return null;
+    return `${customer[0].firstName} ${customer[0].lastName}`
+  } else if (siblingData.appointmentType === 'blockout') {
+    return null
   }
-};
+}
