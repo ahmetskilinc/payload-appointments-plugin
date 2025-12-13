@@ -22,7 +22,7 @@ export async function createAppointment(host: TeamMember, services: Service[], s
       start: moment(start).toISOString(),
     },
     overrideAccess: false,
-    user: customer.id,
+    user: customer?.id,
   })
 
   if (!response.id) {
