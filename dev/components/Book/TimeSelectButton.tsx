@@ -5,14 +5,15 @@ import { cn } from '../../lib/utils'
 
 const TimeSelectButton = ({
   availability,
-  chosenDateTime,
-  setChosenDateTime,
+  selectedTime,
+  setSelectedTime,
 }: {
   availability: string
-  chosenDateTime: Date
-  setChosenDateTime: React.Dispatch<React.SetStateAction<Date>>
+  selectedTime: string | null
+  setSelectedTime: (time: string | null) => void
 }) => {
-  const isSelected = moment(availability).format('HH:mm') === moment(chosenDateTime).format('HH:mm')
+  const isSelected =
+    selectedTime && moment(availability).format('HH:mm') === moment(selectedTime).format('HH:mm')
 
   return (
     <button
@@ -26,7 +27,7 @@ const TimeSelectButton = ({
           : 'bg-white border border-gray-200 text-gray-700 hover:border-violet-300 hover:text-violet-600',
       )}
       key={JSON.stringify(availability)}
-      onClick={() => setChosenDateTime(moment(availability).toDate())}
+      onClick={() => setSelectedTime(availability)}
       type="button"
     >
       {moment(availability).format('HH:mm')}

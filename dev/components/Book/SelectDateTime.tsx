@@ -13,17 +13,28 @@ import { filterByDateAndPeriod } from '../../lib/filterByDateAndPeriod'
 import TimeSelectButton from './TimeSelectButton'
 
 const SelectDateTime: React.FC<{
-  chosenDateTime: Date
   chosenServices: Service[]
   chosenStaff: null | TeamMember
-  setChosenDateTime: React.Dispatch<React.SetStateAction<Date>>
-}> = ({ chosenDateTime, chosenServices, chosenStaff, setChosenDateTime }) => {
+  selectedDate: string
+  selectedTime: string | null
+  setSelectedDate: (date: string) => void
+  setSelectedTime: (time: string | null) => void
+}> = ({
+  chosenServices,
+  chosenStaff,
+  selectedDate,
+  selectedTime,
+  setSelectedDate,
+  setSelectedTime,
+}) => {
   const [slots, setSlots] = useState<null | string[]>(null)
   const [loading, setLoading] = useState<boolean>(false)
 
+  const calendarDate = moment(selectedDate).toDate()
+
   useEffect(() => {
     const services = chosenServices.map((service) => service.id).join(',')
-    const day = moment(chosenDateTime).toISOString()
+    const day = moment(selectedDate).toISOString()
     const getAvailabilities = async () => {
       setLoading(true)
       const data = await fetchPublic(
@@ -39,26 +50,31 @@ const SelectDateTime: React.FC<{
     }
 
     void getAvailabilities()
-  }, [chosenDateTime])
+  }, [selectedDate, chosenServices, chosenStaff?.id])
 
-  const morningSlots = slots ? filterByDateAndPeriod('morning', chosenDateTime, slots) : []
-  const afternoonSlots = slots ? filterByDateAndPeriod('afternoon', chosenDateTime, slots) : []
-  const eveningSlots = slots ? filterByDateAndPeriod('evening', chosenDateTime, slots) : []
+  const morningSlots = slots ? filterByDateAndPeriod('morning', calendarDate, slots) : []
+  const afternoonSlots = slots ? filterByDateAndPeriod('afternoon', calendarDate, slots) : []
+  const eveningSlots = slots ? filterByDateAndPeriod('evening', calendarDate, slots) : []
+
+  const handleDateChange = (value: Date) => {
+    setSelectedDate(moment(value).format('YYYY-MM-DD'))
+    setSelectedTime(null)
+  }
 
   return (
     <div>
       <Calendar
-        defaultValue={chosenDateTime}
+        defaultValue={calendarDate}
         locale="en-GB"
         maxDate={new Date(new Date().setMonth(new Date().getMonth() + 1))}
         maxDetail="month"
         minDate={new Date()}
         minDetail="month"
-        onChange={(value) => setChosenDateTime(new Date(value!.toString()))}
-        value={chosenDateTime}
+        onChange={(value) => handleDateChange(new Date(value!.toString()))}
+        value={calendarDate}
       />
       {!loading ? (
-        chosenDateTime && slots && slots.length > 0 ? (
+        slots && slots.length > 0 ? (
           <div className="space-y-6 mt-8">
             {morningSlots.length > 0 && (
               <div>
@@ -82,9 +98,9 @@ const SelectDateTime: React.FC<{
                   {morningSlots.map((availability) => (
                     <TimeSelectButton
                       availability={availability}
-                      chosenDateTime={chosenDateTime}
                       key={availability}
-                      setChosenDateTime={setChosenDateTime}
+                      selectedTime={selectedTime}
+                      setSelectedTime={setSelectedTime}
                     />
                   ))}
                 </div>
@@ -112,9 +128,9 @@ const SelectDateTime: React.FC<{
                   {afternoonSlots.map((availability) => (
                     <TimeSelectButton
                       availability={availability}
-                      chosenDateTime={chosenDateTime}
                       key={availability}
-                      setChosenDateTime={setChosenDateTime}
+                      selectedTime={selectedTime}
+                      setSelectedTime={setSelectedTime}
                     />
                   ))}
                 </div>
@@ -142,9 +158,9 @@ const SelectDateTime: React.FC<{
                   {eveningSlots.map((availability) => (
                     <TimeSelectButton
                       availability={availability}
-                      chosenDateTime={chosenDateTime}
                       key={availability}
-                      setChosenDateTime={setChosenDateTime}
+                      selectedTime={selectedTime}
+                      setSelectedTime={setSelectedTime}
                     />
                   ))}
                 </div>

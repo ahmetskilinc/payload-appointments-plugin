@@ -27,6 +27,11 @@ const BookNow: React.FC<{
   )
   const [hostId, setHostId] = useQueryState('host', parseAsString.withDefault(''))
   const [isGuest, setIsGuest] = useQueryState('guest', parseAsBoolean.withDefault(true))
+  const [selectedDate, setSelectedDate] = useQueryState(
+    'date',
+    parseAsString.withDefault(moment().format('YYYY-MM-DD')),
+  )
+  const [selectedTime, setSelectedTime] = useQueryState('time', parseAsString)
 
   const chosenServices = useMemo(() => {
     return services.filter((service) => serviceIds.includes(service.id.toString()))
@@ -35,6 +40,13 @@ const BookNow: React.FC<{
   const chosenStaff = useMemo(() => {
     return teamMembers.find((member) => member.id.toString() === hostId) || null
   }, [teamMembers, hostId])
+
+  const chosenDateTime = useMemo(() => {
+    if (selectedTime) {
+      return moment(selectedTime).toDate()
+    }
+    return moment(selectedDate).toDate()
+  }, [selectedDate, selectedTime])
 
   const setChosenServices = (newServices: Service[] | ((prev: Service[]) => Service[])) => {
     if (typeof newServices === 'function') {
@@ -49,7 +61,6 @@ const BookNow: React.FC<{
     setHostId(staff?.id.toString() || '')
   }
 
-  const [chosenDateTime, setChosenDateTime] = useState<Date>(moment().toDate())
   const [bookingLoading, setBookingLoading] = useState<boolean>(false)
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
@@ -87,7 +98,7 @@ const BookNow: React.FC<{
     } else if (stepIndex === 1) {
       return !chosenStaff
     } else if (stepIndex === 2) {
-      return !chosenDateTime
+      return !selectedTime
     }
   }
 
@@ -150,6 +161,8 @@ const BookNow: React.FC<{
     setStepIndex(0)
     setServiceIds([])
     setHostId('')
+    setSelectedDate(moment().format('YYYY-MM-DD'))
+    setSelectedTime(null)
     setCustomerDetails({
       email: '',
       firstName: '',
@@ -266,10 +279,12 @@ const BookNow: React.FC<{
           <div className={cn(stepIndex === 2 ? 'block' : 'hidden')}>
             {stepIndex === 2 ? (
               <SelectDateTime
-                chosenDateTime={chosenDateTime}
                 chosenServices={chosenServices}
                 chosenStaff={chosenStaff}
-                setChosenDateTime={setChosenDateTime}
+                selectedDate={selectedDate}
+                selectedTime={selectedTime}
+                setSelectedDate={setSelectedDate}
+                setSelectedTime={setSelectedTime}
               />
             ) : null}
           </div>

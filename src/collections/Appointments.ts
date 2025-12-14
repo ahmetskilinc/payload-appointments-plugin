@@ -68,13 +68,6 @@ const Appointments: CollectionConfig = {
           return false
         },
       },
-      filterOptions: ({ data }) => {
-        return {
-          roles: {
-            equals: 'customer',
-          },
-        }
-      },
       label: 'Customer',
       relationTo: 'users',
     },

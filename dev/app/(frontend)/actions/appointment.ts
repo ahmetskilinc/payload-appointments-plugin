@@ -11,6 +11,8 @@ import { getDashboardData } from '../../../lib/dashboardData'
 export async function createAppointment(host: TeamMember, services: Service[], start: Date) {
   const customer = await getDashboardData()
 
+  console.log('customer', customer)
+
   if (!customer) {
     return {
       message: 'You must be logged in to book as a customer',
@@ -30,8 +32,6 @@ export async function createAppointment(host: TeamMember, services: Service[], s
       services: services.map((service) => service.id),
       start: moment(start).toISOString(),
     },
-    overrideAccess: false,
-    user: customer?.id,
   })
 
   if (!response.id) {

@@ -43,7 +43,7 @@
 }
 
 .react-calendar__month-view__days {
-  @apply gap-1!;
+  @apply gap-1! grid-cols-7! grid!;
 }
 
 .react-calendar__tile {
