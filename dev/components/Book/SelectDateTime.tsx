@@ -8,7 +8,7 @@ import MoonLoader from 'react-spinners/MoonLoader'
 
 import type { Service, TeamMember } from '../../payload-types'
 
-import { fetchWithAuth } from '../../lib/api'
+import { fetchPublic } from '../../lib/api'
 import { filterByDateAndPeriod } from '../../lib/filterByDateAndPeriod'
 import TimeSelectButton from './TimeSelectButton'
 
@@ -26,7 +26,7 @@ const SelectDateTime: React.FC<{
     const day = moment(chosenDateTime).toISOString()
     const getAvailabilities = async () => {
       setLoading(true)
-      const data = await fetchWithAuth(
+      const data = await fetchPublic(
         `/api/get-available-appointment-slots?services=${services}&host=${chosenStaff?.id}&day=${day}`,
         {
           method: 'get',

@@ -1,7 +1,8 @@
 'use client'
 
 import moment from 'moment'
-import React, { useState } from 'react'
+import { parseAsArrayOf, parseAsBoolean, parseAsInteger, parseAsString, useQueryState } from 'nuqs'
+import React, { useMemo, useState } from 'react'
 
 import type { Service, TeamMember } from '../../payload-types'
 
@@ -19,14 +20,39 @@ const BookNow: React.FC<{
   services: Service[]
   teamMembers: TeamMember[]
 }> = ({ isAuthenticated, services, teamMembers }) => {
-  const [chosenStaff, setChosenStaff] = useState<TeamMember | null>(null)
-  const [chosenServices, setChosenServices] = useState<Service[]>([])
+  const [stepIndex, setStepIndex] = useQueryState('step', parseAsInteger.withDefault(0))
+  const [serviceIds, setServiceIds] = useQueryState(
+    'services',
+    parseAsArrayOf(parseAsString).withDefault([]),
+  )
+  const [hostId, setHostId] = useQueryState('host', parseAsString.withDefault(''))
+  const [isGuest, setIsGuest] = useQueryState('guest', parseAsBoolean.withDefault(true))
+
+  const chosenServices = useMemo(() => {
+    return services.filter((service) => serviceIds.includes(service.id))
+  }, [services, serviceIds])
+
+  const chosenStaff = useMemo(() => {
+    return teamMembers.find((member) => member.id === hostId) || null
+  }, [teamMembers, hostId])
+
+  const setChosenServices = (newServices: Service[] | ((prev: Service[]) => Service[])) => {
+    if (typeof newServices === 'function') {
+      const updated = newServices(chosenServices)
+      setServiceIds(updated.map((s) => s.id))
+    } else {
+      setServiceIds(newServices.map((s) => s.id))
+    }
+  }
+
+  const setChosenStaff = (staff: TeamMember | null) => {
+    setHostId(staff?.id || '')
+  }
+
   const [chosenDateTime, setChosenDateTime] = useState<Date>(moment().toDate())
-  const [stepIndex, setStepIndex] = useState<number>(0)
   const [bookingLoading, setBookingLoading] = useState<boolean>(false)
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
-  const [isGuest, setIsGuest] = useState<boolean>(true)
   const [customerDetails, setCustomerDetails] = useState<{
     email: string
     firstName: string
@@ -119,6 +145,20 @@ const BookNow: React.FC<{
     }
   }
 
+  const resetBooking = () => {
+    setBookingSuccess(false)
+    setStepIndex(0)
+    setServiceIds([])
+    setHostId('')
+    setCustomerDetails({
+      email: '',
+      firstName: '',
+      lastName: '',
+      notes: '',
+      phone: '',
+    })
+  }
+
   if (bookingSuccess) {
     return (
       <div className="max-w-3xl mx-auto text-center py-12">
@@ -128,23 +168,7 @@ const BookNow: React.FC<{
             Your appointment has been successfully booked. You will receive a confirmation email
             shortly.
           </p>
-          <Button
-            onClick={() => {
-              setBookingSuccess(false)
-              setStepIndex(0)
-              setChosenServices([])
-              setChosenStaff(null)
-              setCustomerDetails({
-                email: '',
-                firstName: '',
-                lastName: '',
-                notes: '',
-                phone: '',
-              })
-            }}
-          >
-            Book Another Appointment
-          </Button>
+          <Button onClick={resetBooking}>Book Another Appointment</Button>
         </div>
       </div>
     )

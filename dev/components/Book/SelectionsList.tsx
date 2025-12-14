@@ -9,7 +9,7 @@ const SelectionsList: React.FC<{
   chosenDateTime?: Date | null
   chosenServices?: null | Service[]
   chosenStaff: null | TeamMember
-  setStepIndex: React.Dispatch<React.SetStateAction<number>>
+  setStepIndex: (value: number) => void
 }> = ({ chosenDateTime, chosenServices, chosenStaff, setStepIndex }) => {
   return (
     <React.Fragment>

@@ -29,7 +29,11 @@ const buildConfigWithMemoryDB = async () => {
       },
     }),
     editor: lexicalEditor(),
-    plugins: [appointmentsPlugin({})],
+    plugins: [
+      appointmentsPlugin({
+        seedData: true,
+      }),
+    ],
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
     sharp,
     typescript: {

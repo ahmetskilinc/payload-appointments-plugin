@@ -1,3 +1,5 @@
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
+
 import Header from '../../components/Header/index'
 import './globals.css'
 
@@ -10,8 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <Header />
-        {children}
+        <NuqsAdapter>
+          <Header />
+          {children}
+        </NuqsAdapter>
       </body>
     </html>
   )

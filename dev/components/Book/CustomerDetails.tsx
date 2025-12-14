@@ -29,7 +29,7 @@ const CustomerDetails: React.FC<{
       phone: string
     }>
   >
-  setIsGuest: React.Dispatch<React.SetStateAction<boolean>>
+  setIsGuest: (value: boolean) => void
 }> = ({
   chosenDateTime,
   chosenServices,

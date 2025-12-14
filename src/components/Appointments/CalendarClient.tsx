@@ -54,7 +54,7 @@ export default function CalendarClient({
 
   useEffect(() => {
     if (!isDrawerOpen) {
-      void fetchAppointments()
+      fetchAppointments()
     }
   }, [isDrawerOpen, fetchAppointments])
 

@@ -12,7 +12,7 @@ const Selections: React.FC<{
   chosenDateTime: Date | null
   chosenServices: Service[]
   chosenStaff: null | TeamMember
-  setStepIndex: React.Dispatch<React.SetStateAction<number>>
+  setStepIndex: (value: number) => void
 }> = ({ chosenDateTime, chosenServices, chosenStaff, setStepIndex }) => {
   return (
     <Disclosure as="div" className="col-span-12 md:col-span-4 !mt-0" defaultOpen={true}>

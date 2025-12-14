@@ -84,7 +84,20 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       return Response.json({ error: 'Opening times not configured for this day' }, { status: 400 })
     }
 
-    const { closing, opening } = openingTimes[dayOfWeek]
+    const dayConfig = openingTimes[dayOfWeek] as {
+      isOpen: boolean
+      opening: string | null
+      closing: string | null
+    }
+
+    if (!dayConfig.isOpen || !dayConfig.opening || !dayConfig.closing) {
+      return Response.json({
+        availableSlots: [],
+        filteredSlots: [],
+      })
+    }
+
+    const { closing, opening } = dayConfig
 
     const openingMoment = moment(opening)
     const closingMoment = moment(closing)

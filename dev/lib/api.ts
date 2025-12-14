@@ -17,3 +17,8 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
 
   return response
 }
+
+export async function fetchPublic(url: string, options: RequestInit = {}) {
+  const response = await fetch(url, options)
+  return response
+}

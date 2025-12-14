@@ -6,9 +6,11 @@ import Services from './collections/Services'
 import TeamMembers from './collections/TeamMembers'
 import { getAppointmentsForDayAndHost } from './endpoints/getAppointmentsForDayAndHost'
 import OpeningTimes from './globals/OpeningTimes'
+import { seedAppointmentsData } from './seed'
 
 export type AppointmentsPluginConfig = {
   disabled?: boolean
+  seedData?: boolean
   showDashboardCards?: boolean
   showNavItems?: boolean
 }
@@ -16,6 +18,7 @@ export type AppointmentsPluginConfig = {
 export const appointmentsPlugin =
   ({
     disabled = false,
+    seedData = false,
     showDashboardCards = true,
     showNavItems = true,
   }: AppointmentsPluginConfig) =>
@@ -91,7 +94,14 @@ export const appointmentsPlugin =
       if (incomingOnInit) {
         await incomingOnInit(payload)
       }
+
+      if (seedData) {
+        await seedAppointmentsData(payload)
+      }
     }
 
     return config
   }
+
+export { seedAppointmentsData } from './seed'
+export { openingTimesSeed, servicesSeed, teamMembersSeed } from './seed/data'

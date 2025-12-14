@@ -15,7 +15,13 @@ const Appointment = ({ event }: { event: BigCalendarAppointment }) => {
     <>
       <DocumentDrawerToggler className="event">
         <div className="appointment">
-          <p className="event__label">{event.customer.firstName + ' ' + event.customer.lastName}</p>
+          <p className="event__label">
+            {event.bookedBy === 'customer'
+              ? // @ts-ignore
+                event.customer.firstName + ' ' + event.customer.lastName
+              : // @ts-ignore
+                event.guestCustomer.firstName + ' ' + event.guestCustomer.lastName}
+          </p>
           <p className="event__start-end">
             {moment(event.start).format('HH:mm')} - {moment(event.end).format('HH:mm')} -{' '}
             {event.services.map((service) => service.title).join(', ')}
