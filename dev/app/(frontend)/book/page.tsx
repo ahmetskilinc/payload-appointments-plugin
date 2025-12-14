@@ -1,10 +1,15 @@
 import configPromise from '@payload-config'
+import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import React from 'react'
 
 import BookNow from '../../../components/Book'
 
 const Page = async () => {
+  const cookieStore = await cookies()
+  const session = cookieStore.get('payload-token')
+  const isAuthenticated = !!session?.value
+
   const payload = await getPayload({ config: configPromise })
   const teamMembers = (
     await payload.find({
@@ -27,7 +32,7 @@ const Page = async () => {
 
   return (
     <div className="py-20 px-6">
-      <BookNow services={services} teamMembers={teamMembers} />
+      <BookNow isAuthenticated={isAuthenticated} services={services} teamMembers={teamMembers} />
     </div>
   )
 }

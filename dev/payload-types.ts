@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     appointments: Appointment;
+    guestCustomers: GuestCustomer;
     teamMembers: TeamMember;
     services: Service;
     'payload-kv': PayloadKv;
@@ -84,6 +85,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
+    guestCustomers: GuestCustomersSelect<false> | GuestCustomersSelect<true>;
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -169,6 +171,8 @@ export interface Appointment {
   appointmentType: 'appointment' | 'blockout';
   host?: (number | null) | TeamMember;
   customer?: (number | null) | User;
+  guestCustomer?: (number | null) | GuestCustomer;
+  bookedBy?: ('customer' | 'guest') | null;
   services?: (number | Service)[] | null;
   title?: string | null;
   start?: string | null;
@@ -201,6 +205,19 @@ export interface TeamMember {
    * Enable to allow this team member to take appointments
    */
   takingAppointments?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guestCustomers".
+ */
+export interface GuestCustomer {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -255,6 +272,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'appointments';
         value: number | Appointment;
+      } | null)
+    | ({
+        relationTo: 'guestCustomers';
+        value: number | GuestCustomer;
       } | null)
     | ({
         relationTo: 'teamMembers';
@@ -340,11 +361,25 @@ export interface AppointmentsSelect<T extends boolean = true> {
   appointmentType?: T;
   host?: T;
   customer?: T;
+  guestCustomer?: T;
+  bookedBy?: T;
   services?: T;
   title?: T;
   start?: T;
   end?: T;
   adminTitle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guestCustomers_select".
+ */
+export interface GuestCustomersSelect<T extends boolean = true> {
+  email?: T;
+  firstName?: T;
+  lastName?: T;
+  phone?: T;
   updatedAt?: T;
   createdAt?: T;
 }

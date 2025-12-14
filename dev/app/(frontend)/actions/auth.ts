@@ -44,6 +44,11 @@ export async function getAuthToken() {
   return (await cookies()).get('payload-token')?.value
 }
 
+export async function isAuthenticated() {
+  const token = (await cookies()).get('payload-token')
+  return !!token?.value
+}
+
 export async function signup(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string

@@ -1,6 +1,6 @@
 import configPromise from '@payload-config'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getPayload } from 'payload'
 
 import AppointmentsList from '../../components/Appointments'
@@ -14,7 +14,25 @@ export default async function Dashboard() {
   const session = cookieStore.get('payload-token')
 
   if (!session) {
-    redirect('/login')
+    return (
+      <div className="w-screen flex flex-col items-center justify-center py-20 px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-3xl font-bold mb-4">Welcome to Appointments</h1>
+          <p className="text-gray-600 mb-8">
+            Book your appointment today. No account required - you can book as a guest or sign in to
+            manage your appointments.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button asChild>
+              <Link href="/book">Book an Appointment</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   let dashboardData

@@ -1,10 +1,11 @@
 import type { Appointment } from '../types'
 
-// import { RenderedEmail } from '../emails/AppointmentCreatedEmail'
 import { formatAppointmentDate } from './formatDate'
 
 export const appointmentCreatedEmail = (appointment: Appointment) => {
-  if (!appointment?.customer?.email) {
+  const customerEmail = appointment.customer?.email || appointment.guestCustomer?.email
+
+  if (!customerEmail) {
     throw new Error('Customer email is required for sending appointment confirmation')
   }
 
@@ -13,9 +14,8 @@ export const appointmentCreatedEmail = (appointment: Appointment) => {
 
   return {
     from: process.env.APPOINTMENT_EMAIL_FROM || 'noreply@yourdomain.com',
-    // html: await RenderedEmail({ doc: appointment }),
     subject: `Appointment Confirmation - ${formattedDate}`,
     text: `Your appointment for ${serviceNames} has been confirmed for ${formattedDate}.`,
-    to: appointment.customer.email,
+    to: customerEmail,
   }
 }

@@ -1,6 +1,7 @@
 import type { Config } from 'payload'
 
 import Appointments from './collections/Appointments'
+import GuestCustomers from './collections/GuestCustomers'
 import Services from './collections/Services'
 import TeamMembers from './collections/TeamMembers'
 import { getAppointmentsForDayAndHost } from './endpoints/getAppointmentsForDayAndHost'
@@ -43,7 +44,13 @@ export const appointmentsPlugin =
       config.admin.components.beforeDashboard = []
     }
 
-    config.collections = [...(config.collections || []), Appointments, TeamMembers, Services]
+    config.collections = [
+      ...(config.collections || []),
+      Appointments,
+      GuestCustomers,
+      TeamMembers,
+      Services,
+    ]
     config.globals = [...(config.globals || []), OpeningTimes]
 
     config.admin = {

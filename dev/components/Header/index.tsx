@@ -7,6 +7,7 @@ import { getDashboardData } from '../../lib/dashboardData'
 
 export default async function Header() {
   const dashboardData = await getDashboardData()
+  const isLoggedIn = dashboardData && dashboardData.id
 
   return (
     <header className="bg-white shadow-sm">
@@ -18,19 +19,25 @@ export default async function Header() {
             </Link>
           </div>
           <nav className="ml-6 flex items-center space-x-4">
-            {dashboardData && dashboardData.id ? (
+            <Button asChild variant="ghost">
+              <Link href="/book">Book An Appointment</Link>
+            </Button>
+            {isLoggedIn ? (
               <>
                 <Button asChild variant="ghost">
-                  <Link href="/">Home</Link>
-                </Button>
-                <Button asChild variant="ghost">
-                  <Link href="/book">Book An Appointment</Link>
+                  <Link href="/">My Appointments</Link>
                 </Button>
                 <form action={logout}>
-                  <Button type="submit">Logout</Button>
+                  <Button type="submit" variant="outline">
+                    Logout
+                  </Button>
                 </form>
               </>
-            ) : null}
+            ) : (
+              <Button asChild variant="outline">
+                <Link href="/login">Sign In</Link>
+              </Button>
+            )}
           </nav>
         </div>
       </div>

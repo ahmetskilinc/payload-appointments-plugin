@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 
 import type { Service, TeamMember } from '../../payload-types'
 
-import { createAppointment } from '../../app/(frontend)/actions/appointment'
+import { createAppointment, createGuestAppointment } from '../../app/(frontend)/actions/appointment'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 import CustomerDetails from './CustomerDetails'
@@ -14,17 +14,19 @@ import SelectDateTime from './SelectDateTime'
 import Selections from './Selections'
 import ServicesList from './ServicesList'
 
-const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
-  services,
-  teamMembers,
-}) => {
+const BookNow: React.FC<{
+  isAuthenticated: boolean
+  services: Service[]
+  teamMembers: TeamMember[]
+}> = ({ isAuthenticated, services, teamMembers }) => {
   const [chosenStaff, setChosenStaff] = useState<TeamMember | null>(null)
   const [chosenServices, setChosenServices] = useState<Service[]>([])
   const [chosenDateTime, setChosenDateTime] = useState<Date>(moment().toDate())
   const [stepIndex, setStepIndex] = useState<number>(0)
   const [bookingLoading, setBookingLoading] = useState<boolean>(false)
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false)
-  const [bookingSuccessMessage, setBookingSuccessMessage] = useState<boolean>(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
+  const [isGuest, setIsGuest] = useState<boolean>(true)
   const [customerDetails, setCustomerDetails] = useState<{
     email: string
     firstName: string
@@ -61,6 +63,91 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
     } else if (stepIndex === 2) {
       return !chosenDateTime
     }
+  }
+
+  const isBookDisabled = () => {
+    if (isAuthenticated) {
+      return false
+    }
+    if (!isGuest) {
+      return true
+    }
+    return (
+      !customerDetails.firstName ||
+      !customerDetails.lastName ||
+      !customerDetails.email ||
+      !customerDetails.phone
+    )
+  }
+
+  const handleBooking = async () => {
+    setBookingLoading(true)
+    setBookingError(null)
+
+    try {
+      let result
+
+      if (isAuthenticated) {
+        result = await createAppointment(chosenStaff as TeamMember, chosenServices, chosenDateTime)
+      } else if (isGuest) {
+        result = await createGuestAppointment(
+          chosenStaff as TeamMember,
+          chosenServices,
+          chosenDateTime,
+          {
+            email: customerDetails.email,
+            firstName: customerDetails.firstName,
+            lastName: customerDetails.lastName,
+            phone: customerDetails.phone,
+          },
+        )
+      } else {
+        setBookingError('Please sign in or continue as a guest')
+        setBookingLoading(false)
+        return
+      }
+
+      if (result.success) {
+        setBookingSuccess(true)
+      } else {
+        setBookingError(result.message)
+      }
+    } catch (error) {
+      setBookingError('An error occurred while booking your appointment')
+    } finally {
+      setBookingLoading(false)
+    }
+  }
+
+  if (bookingSuccess) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-12">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-8">
+          <h2 className="text-2xl font-bold text-green-800 mb-4">Booking Confirmed!</h2>
+          <p className="text-green-700 mb-6">
+            Your appointment has been successfully booked. You will receive a confirmation email
+            shortly.
+          </p>
+          <Button
+            onClick={() => {
+              setBookingSuccess(false)
+              setStepIndex(0)
+              setChosenServices([])
+              setChosenStaff(null)
+              setCustomerDetails({
+                email: '',
+                firstName: '',
+                lastName: '',
+                notes: '',
+                phone: '',
+              })
+            }}
+          >
+            Book Another Appointment
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -126,46 +213,39 @@ const BookNow: React.FC<{ services: Service[]; teamMembers: TeamMember[] }> = ({
               chosenServices={chosenServices}
               chosenStaff={chosenStaff}
               customerDetails={customerDetails}
+              isAuthenticated={isAuthenticated}
+              isGuest={isGuest}
               setCustomerDetails={setCustomerDetails}
+              setIsGuest={setIsGuest}
             />
           </div>
         </div>
       </div>
       <div className="grid grid-cols-12 gap-4 md:gap-8 mt-6">
-        <div className="col-span-12 md:col-span-8 md:col-start-5 flex justify-between">
-          {stepIndex !== 0 ? (
-            <Button onClick={prevStep} variant="outline">
-              Back
-            </Button>
-          ) : (
-            <span className="" />
+        <div className="col-span-12 md:col-span-8 md:col-start-5 flex flex-col gap-2">
+          {bookingError && (
+            <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md p-2">
+              {bookingError}
+            </p>
           )}
-          {stepIndex <= 2 ? (
-            <Button disabled={isContinueDisabled()} onClick={nextStep}>
-              Continue
-            </Button>
-          ) : (
-            <Button
-              // disabled={!chosenStaff?.id && }
-              onClick={() => {
-                setBookingLoading(true)
-                createAppointment(chosenStaff as TeamMember, chosenServices, chosenDateTime).then(
-                  (res) => {
-                    if (res.success) {
-                      setBookingLoading(false)
-                      setBookingSuccess(true)
-                    } else {
-                      setBookingLoading(false)
-                      setBookingSuccess(false)
-                    }
-                  },
-                )
-              }}
-              type="button"
-            >
-              {bookingLoading ? 'Booking' : 'Book now'}
-            </Button>
-          )}
+          <div className="flex justify-between">
+            {stepIndex !== 0 ? (
+              <Button onClick={prevStep} variant="outline">
+                Back
+              </Button>
+            ) : (
+              <span className="" />
+            )}
+            {stepIndex <= 2 ? (
+              <Button disabled={isContinueDisabled()} onClick={nextStep}>
+                Continue
+              </Button>
+            ) : (
+              <Button disabled={isBookDisabled() || bookingLoading} onClick={handleBooking}>
+                {bookingLoading ? 'Booking...' : 'Book now'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

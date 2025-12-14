@@ -1,14 +1,15 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../access/authenticated'
+import { anyone } from '../access/anyone'
 import { addAdminTitle } from '../hooks/addAdminTitle'
 import { sendCustomerEmail } from '../hooks/sendCustomerEmail'
 import { setEndDateTime } from '../hooks/setEndDateTime'
+import { validateCustomerOrGuest } from '../hooks/validateCustomerOrGuest'
 
 const Appointments: CollectionConfig = {
   slug: 'appointments',
   access: {
-    create: authenticated,
+    create: anyone,
   },
   admin: {
     group: 'Appointments',
@@ -61,7 +62,7 @@ const Appointments: CollectionConfig = {
       type: 'relationship',
       admin: {
         condition: (siblingData) => {
-          if (siblingData.appointmentType === 'appointment') {
+          if (siblingData.appointmentType === 'appointment' && !siblingData.guestCustomer) {
             return true
           }
           return false
@@ -76,7 +77,38 @@ const Appointments: CollectionConfig = {
       },
       label: 'Customer',
       relationTo: 'users',
-      required: true,
+    },
+    {
+      name: 'guestCustomer',
+      type: 'relationship',
+      admin: {
+        condition: (siblingData) => {
+          if (siblingData.appointmentType === 'appointment' && !siblingData.customer) {
+            return true
+          }
+          return false
+        },
+      },
+      label: 'Guest Customer',
+      relationTo: 'guestCustomers',
+    },
+    {
+      name: 'bookedBy',
+      type: 'select',
+      admin: {
+        condition: (siblingData) => siblingData.appointmentType === 'appointment',
+      },
+      label: 'Booked by',
+      options: [
+        {
+          label: 'Customer',
+          value: 'customer',
+        },
+        {
+          label: 'Guest',
+          value: 'guest',
+        },
+      ],
     },
     {
       name: 'services',
@@ -170,6 +202,7 @@ const Appointments: CollectionConfig = {
   ],
   hooks: {
     afterChange: [sendCustomerEmail],
+    beforeValidate: [validateCustomerOrGuest],
   },
   labels: {
     plural: 'Appointments',
