@@ -1,6 +1,6 @@
 {
-  "name": "appointments-plugin",
-  "version": "1.0.0",
+  "name": "payload-appointments-plugin",
+  "version": "3.0.0",
   "description": "A blank template to get started with Payload 3.0",
   "license": "MIT",
   "type": "module",
