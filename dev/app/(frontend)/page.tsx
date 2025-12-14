@@ -39,11 +39,11 @@ export default async function Dashboard() {
             Schedule appointments in seconds. No account required — book as a guest or sign in to
             manage your bookings.
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-col gap-2 items-center sm:flex-row sm:gap-4 sm:justify-center">
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 shadow-lg shadow-violet-500/25 px-8"
+              className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 shadow-lg shadow-violet-500/25 px-8"
             >
               <Link href="/book">Book an Appointment</Link>
             </Button>
@@ -51,7 +51,7 @@ export default async function Dashboard() {
               asChild
               variant="outline"
               size="lg"
-              className="border-gray-200 hover:bg-gray-50 px-8"
+              className="w-full sm:w-auto border-gray-200 hover:bg-gray-50 px-8"
             >
               <Link href="/login">Sign In</Link>
             </Button>
