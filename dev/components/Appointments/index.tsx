@@ -1,26 +1,27 @@
-import moment from 'moment'
+import moment from 'moment';
 
-import type { Appointment, Service } from '../../payload-types'
+import type { Appointment, Service } from '../../payload-types';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 type Props = {
-  appointments: Appointment[]
-}
+  appointments: Appointment[];
+};
 
 const Appointments = ({ appointments }: Props) =>
   appointments && appointments.length ? (
-    appointments.map((appointment: Appointment) => {
+    appointments.map((appointment: Appointment, index: number) => {
       return (
         <Card
-          className="border-0 shadow-md shadow-gray-200/50 hover:shadow-lg transition-shadow duration-200"
+          className="border-0 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-gray-900/10 transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm animate-fade-in-up"
           key={appointment.id}
+          style={{ animationDelay: `${index * 0.05}s` }}
         >
           <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gray-900 flex items-center justify-center shadow-lg shadow-gray-900/25">
                 <svg
-                  className="w-5 h-5 text-violet-600"
+                  className="w-7 h-7 text-white"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -34,10 +35,23 @@ const Appointments = ({ appointments }: Props) =>
                 </svg>
               </div>
               <div>
-                <CardTitle className="text-base font-semibold text-gray-900">
-                  {moment(appointment.start).format('dddd, MMM Do YYYY')}
+                <CardTitle className="text-lg font-bold text-gray-900">
+                  {moment(appointment.start).format('dddd, MMM Do')}
                 </CardTitle>
-                <CardDescription className="text-violet-600 font-medium">
+                <CardDescription className="text-gray-900 font-semibold flex items-center gap-2 mt-0.5">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
                   {moment(appointment.start).format('HH:mm')}
                   {' - '}
                   {moment(appointment.end).format('HH:mm')}
@@ -46,10 +60,10 @@ const Appointments = ({ appointments }: Props) =>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-2 border-t border-gray-100 pt-3">
+            <div className="space-y-3 border-t border-gray-100 pt-4">
               {appointment.services?.map((service, index) => {
                 if (typeof service === 'string') {
-                  return
+                  return;
                 }
                 const previousServicesDuration = appointment
                   .services!.slice(0, index)
@@ -57,20 +71,38 @@ const Appointments = ({ appointments }: Props) =>
                     (total: number, s) =>
                       total + (typeof s === 'string' ? 0 : (s as unknown as Service).duration),
                     0,
-                  )
+                  );
                 const serviceStartTime = moment(appointment.start).add(
                   previousServicesDuration,
                   'minutes',
-                )
-                const startsAt = serviceStartTime.format('HH:mm')
+                );
+                const startsAt = serviceStartTime.format('HH:mm');
                 return (
-                  <div className="flex items-center gap-2" key={index}>
-                    <span className="text-xs font-medium text-gray-400 w-12">{startsAt}</span>
+                  <div
+                    className="flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 hover:bg-gray-100/80 transition-colors"
+                    key={index}
+                  >
+                    <span className="text-xs font-bold text-gray-900 bg-gray-100 px-2.5 py-1 rounded-lg tabular-nums">
+                      {startsAt}
+                    </span>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-semibold text-gray-900">
                         {service && typeof service === 'object' ? service.title : ''}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                          />
+                        </svg>
                         with{' '}
                         {typeof appointment.host !== 'string' &&
                         typeof appointment.host === 'object'
@@ -79,18 +111,18 @@ const Appointments = ({ appointments }: Props) =>
                       </p>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </CardContent>
         </Card>
-      )
+      );
     })
   ) : (
-    <div className="text-center py-12">
-      <div className="mx-auto w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+    <div className="text-center py-16 animate-fade-in-up">
+      <div className="mx-auto w-20 h-20 rounded-3xl bg-gradient-to-br bg-gray-100 flex items-center justify-center mb-5 shadow-lg shadow-gray-900/5">
         <svg
-          className="w-8 h-8 text-gray-400"
+          className="w-10 h-10 text-gray-400"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -103,9 +135,11 @@ const Appointments = ({ appointments }: Props) =>
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-1">No appointments yet</h3>
-      <p className="text-gray-500 text-sm">Book your first appointment to get started</p>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">No appointments yet</h3>
+      <p className="text-gray-500 max-w-xs mx-auto">
+        Book your first appointment to get started with your schedule
+      </p>
     </div>
-  )
+  );
 
-export default Appointments
+export default Appointments;

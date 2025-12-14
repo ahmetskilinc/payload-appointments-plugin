@@ -1,17 +1,247 @@
 @import 'tailwindcss';
 
+@theme {
+  --font-sans:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius: 0.75rem;
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-fade-in-up: fade-in-up 0.5s ease-out;
+  --animate-fade-in-down: fade-in-down 0.5s ease-out;
+  --animate-scale-in: scale-in 0.3s ease-out;
+  --animate-slide-in-right: slide-in-right 0.4s ease-out;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-gradient: gradient 8s ease infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in-down {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes gradient {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+}
+
 @layer base {
   :root {
-    --radius: 0.625rem;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-gray-200;
+  }
+
+  html {
+    @apply scroll-smooth;
   }
 
   body {
-    @apply bg-gradient-to-br from-slate-50 via-white to-violet-50/30 min-h-screen antialiased;
+    @apply bg-gradient-to-br from-gray-50 via-white to-slate-50/40 min-h-screen antialiased text-gray-900;
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-gray-200 text-gray-900;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl shadow-gray-900/5;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-gray-100/80 shadow-xl shadow-gray-900/5 rounded-2xl;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient;
+  }
+
+  .gradient-border {
+    @apply relative;
+  }
+
+  .gradient-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] p-[1px] bg-gradient-to-r from-gray-400 via-gray-500 to-gray-400;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .btn-primary {
+    @apply bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-gray-700 font-medium rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .input-field {
+    @apply w-full h-12 px-4 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:ring-4 focus:ring-gray-500/10 focus:outline-none transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:shadow-gray-900/5 hover:-translate-y-1;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-gray-500 max-w-2xl;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700;
+  }
+
+  .badge-green {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700;
+  }
+
+  .divider {
+    @apply h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent;
+  }
+
+  .glow {
+    @apply relative;
+  }
+
+  .glow::after {
+    content: '';
+    @apply absolute inset-0 rounded-[inherit] bg-gray-900 opacity-0 blur-xl transition-opacity duration-500 -z-10;
+  }
+
+  .glow:hover::after {
+    @apply opacity-10;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    @apply animate-fade-in;
+  }
+
+  .stagger-1 {
+    animation-delay: 0.1s;
+  }
+  .stagger-2 {
+    animation-delay: 0.2s;
+  }
+  .stagger-3 {
+    animation-delay: 0.3s;
+  }
+  .stagger-4 {
+    animation-delay: 0.4s;
+  }
+  .stagger-5 {
+    animation-delay: 0.5s;
   }
 }
 
 .react-calendar {
-  @apply border-0! bg-white! font-sans! w-full! rounded-xl! shadow-sm! p-4!;
+  @apply border-0! bg-white! font-sans! w-full! rounded-2xl! shadow-lg! shadow-gray-900/5! p-5! border! border-gray-100!;
 }
 
 .react-calendar__navigation {
@@ -19,7 +249,7 @@
 }
 
 .react-calendar__navigation button {
-  @apply text-gray-700! bg-transparent! rounded-lg! min-w-10! h-10! font-medium! hover:bg-gray-100! disabled:opacity-30! disabled:hover:bg-transparent!;
+  @apply text-gray-700! bg-transparent! rounded-xl! min-w-10! h-10! font-medium! hover:bg-gray-100! hover:text-gray-900! disabled:opacity-30! disabled:hover:bg-transparent! transition-colors! duration-200!;
 }
 
 .react-calendar__navigation__label {
@@ -31,7 +261,7 @@
 }
 
 .react-calendar__month-view__weekdays {
-  @apply text-xs! font-medium! text-gray-500! uppercase! tracking-wide! mb-2!;
+  @apply text-xs! font-semibold! text-gray-400! uppercase! tracking-wider! mb-2!;
 }
 
 .react-calendar__month-view__weekdays__weekday {
@@ -47,7 +277,7 @@
 }
 
 .react-calendar__tile {
-  @apply p-2! rounded-lg! text-sm! font-medium! text-gray-700! bg-transparent! transition-all! aspect-square! flex! items-center! justify-center!;
+  @apply p-2! rounded-xl! text-sm! font-medium! text-gray-700! bg-transparent! transition-all! duration-200! aspect-square! flex! items-center! justify-center!;
 }
 
 .react-calendar__tile:enabled:hover,
@@ -56,21 +286,21 @@
 }
 
 .react-calendar__tile--now {
-  @apply bg-violet-100! text-violet-700! font-semibold!;
+  @apply bg-gray-100! text-gray-900! font-semibold!;
 }
 
 .react-calendar__tile--now:enabled:hover,
 .react-calendar__tile--now:enabled:focus {
-  @apply bg-violet-200!;
+  @apply bg-gray-200!;
 }
 
 .react-calendar__tile--active {
-  @apply bg-violet-600! text-white! font-semibold!;
+  @apply bg-gray-900! text-white! font-semibold! shadow-md! shadow-gray-900/25!;
 }
 
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  @apply bg-violet-700!;
+  @apply bg-gray-800!;
 }
 
 .react-calendar__tile:disabled {

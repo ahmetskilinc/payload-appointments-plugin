@@ -1,30 +1,30 @@
-import moment from 'moment'
-import React from 'react'
+import moment from 'moment';
+import React from 'react';
 
-import { cn } from '../../lib/utils'
+import { cn } from '../../lib/utils';
 
 const TimeSelectButton = ({
   availability,
   selectedTime,
   setSelectedTime,
 }: {
-  availability: string
-  selectedTime: string | null
-  setSelectedTime: (time: string | null) => void
+  availability: string;
+  selectedTime: string | null;
+  setSelectedTime: (time: string | null) => void;
 }) => {
   const isSelected =
-    selectedTime && moment(availability).format('HH:mm') === moment(selectedTime).format('HH:mm')
+    selectedTime && moment(availability).format('HH:mm') === moment(selectedTime).format('HH:mm');
 
   return (
     <button
       className={cn(
-        'py-2.5 px-3 rounded-lg cursor-pointer font-medium',
+        'py-3 px-4 rounded-xl cursor-pointer font-semibold',
         'tabular-nums',
-        'transition-all duration-200',
+        'transition-all duration-300',
         'text-sm',
         isSelected
-          ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/25'
-          : 'bg-white border border-gray-200 text-gray-700 hover:border-violet-300 hover:text-violet-600',
+          ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/25 scale-105'
+          : 'bg-white border-2 border-gray-100 text-gray-700 hover:border-gray-300 hover:text-gray-900 hover:shadow-md hover:-translate-y-0.5',
       )}
       key={JSON.stringify(availability)}
       onClick={() => setSelectedTime(availability)}
@@ -32,7 +32,7 @@ const TimeSelectButton = ({
     >
       {moment(availability).format('HH:mm')}
     </button>
-  )
-}
+  );
+};
 
-export default TimeSelectButton
+export default TimeSelectButton;
