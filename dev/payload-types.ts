@@ -81,6 +81,9 @@ export interface Config {
     users: {
       appointments: 'appointments';
     };
+    guestCustomers: {
+      appointments: 'appointments';
+    };
   };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
@@ -218,6 +221,11 @@ export interface GuestCustomer {
   firstName: string;
   lastName: string;
   phone?: string | null;
+  appointments?: {
+    docs?: (number | Appointment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -380,6 +388,7 @@ export interface GuestCustomersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
   phone?: T;
+  appointments?: T;
   updatedAt?: T;
   createdAt?: T;
 }

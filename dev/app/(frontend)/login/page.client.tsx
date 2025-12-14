@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useState } from 'react'
+import Link from 'next/link';
+import { useState } from 'react';
 
-import { Button } from '../../../components/ui/button'
+import { Button } from '../../../components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,30 +11,35 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../../../components/ui/card'
-import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
-import { login } from '../actions/auth'
+} from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
+import { Label } from '../../../components/ui/label';
+import { login } from '../actions/auth';
 
 export default function LoginPageClient() {
-  const [error, setError] = useState<null | string>(null)
-  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<null | string>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true)
-    setError(null)
-    const result = await login(formData)
-    if (result?.error) {
-      setError(result.error)
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await login(formData);
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch {
+      setError('An error occurred while logging in');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false)
   }
 
   return (
     <div className="flex items-center justify-center p-4 py-16">
       <Card className="w-full max-w-md border-0 shadow-xl shadow-gray-200/50">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-4 shadow-lg shadow-violet-500/25">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-linear-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-4 shadow-lg shadow-violet-500/25">
             <svg
               className="w-6 h-6 text-white"
               fill="none"
@@ -90,7 +95,7 @@ export default function LoginPageClient() {
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Button
-              className="w-full h-11 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+              className="w-full h-11 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
               type="submit"
               disabled={loading}
             >
@@ -106,5 +111,5 @@ export default function LoginPageClient() {
         </form>
       </Card>
     </div>
-  )
+  );
 }
