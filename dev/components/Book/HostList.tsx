@@ -8,13 +8,13 @@ import { cn } from '../../lib/utils'
 
 const HostList: React.FC<{
   chosenStaff: null | TeamMember
-  setChosenStaff: React.Dispatch<React.SetStateAction<null | TeamMember>>
+  setChosenStaff: (staff: TeamMember | null) => void
   teamMembers: TeamMember[]
 }> = ({ chosenStaff, setChosenStaff, teamMembers }) => {
   return (
     <div className="space-y-3">
       {teamMembers.map((staff) => {
-        const isSelected = chosenStaff?.id === staff.id
+        const isSelected = chosenStaff?.id.toString() === staff.id.toString()
         const isDisabled = !staff.takingAppointments
         return (
           <label
@@ -32,7 +32,7 @@ const HostList: React.FC<{
               className={cn(
                 'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors',
                 isSelected
-                  ? 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white'
+                  ? 'bg-linear-to-br from-violet-500 to-indigo-600 text-white'
                   : 'bg-gray-100 text-gray-600',
               )}
             >

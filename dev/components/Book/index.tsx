@@ -29,24 +29,24 @@ const BookNow: React.FC<{
   const [isGuest, setIsGuest] = useQueryState('guest', parseAsBoolean.withDefault(true))
 
   const chosenServices = useMemo(() => {
-    return services.filter((service) => serviceIds.includes(service.id))
+    return services.filter((service) => serviceIds.includes(service.id.toString()))
   }, [services, serviceIds])
 
   const chosenStaff = useMemo(() => {
-    return teamMembers.find((member) => member.id === hostId) || null
+    return teamMembers.find((member) => member.id.toString() === hostId) || null
   }, [teamMembers, hostId])
 
   const setChosenServices = (newServices: Service[] | ((prev: Service[]) => Service[])) => {
     if (typeof newServices === 'function') {
       const updated = newServices(chosenServices)
-      setServiceIds(updated.map((s) => s.id))
+      setServiceIds(updated.map((s) => s.id.toString()))
     } else {
-      setServiceIds(newServices.map((s) => s.id))
+      setServiceIds(newServices.map((s) => s.id.toString()))
     }
   }
 
   const setChosenStaff = (staff: TeamMember | null) => {
-    setHostId(staff?.id || '')
+    setHostId(staff?.id.toString() || '')
   }
 
   const [chosenDateTime, setChosenDateTime] = useState<Date>(moment().toDate())
@@ -163,7 +163,7 @@ const BookNow: React.FC<{
     return (
       <div className="max-w-lg mx-auto text-center py-16">
         <div className="bg-white rounded-2xl p-8 shadow-xl shadow-gray-200/50 border-0">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 shadow-lg shadow-green-500/25">
+          <div className="mx-auto w-16 h-16 rounded-full bg-linear-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 shadow-lg shadow-green-500/25">
             <svg
               className="w-8 h-8 text-white"
               fill="none"
@@ -181,7 +181,7 @@ const BookNow: React.FC<{
           </p>
           <Button
             onClick={resetBooking}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+            className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
           >
             Book Another Appointment
           </Button>
@@ -332,7 +332,7 @@ const BookNow: React.FC<{
               <Button
                 disabled={isContinueDisabled()}
                 onClick={nextStep}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+                className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
               >
                 Continue
                 <svg
@@ -353,7 +353,7 @@ const BookNow: React.FC<{
               <Button
                 disabled={isBookDisabled() || bookingLoading}
                 onClick={handleBooking}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+                className="bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
               >
                 {bookingLoading ? 'Booking...' : 'Confirm Booking'}
               </Button>
