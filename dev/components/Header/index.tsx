@@ -37,7 +37,7 @@ export default async function Header() {
           </div>
           <nav className="ml-6 flex items-center space-x-2">
             <Button asChild variant="ghost" className="text-gray-600 hover:text-gray-900">
-              <Link href="/book">Book An Appointment</Link>
+              <Link href="/book">Book</Link>
             </Button>
             {isLoggedIn ? (
               <>
