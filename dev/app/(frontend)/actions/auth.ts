@@ -18,11 +18,11 @@ export async function login(formData: FormData) {
       data: { email, password },
     })
 
-    if (result.user.roles === 'admin') {
-      throw new Error('Login failed')
-    }
+    // if (result.user.roles === 'admin') {
+    //   throw new Error('Login failed')
+    // }
 
-    ;(await cookies()).set('payload-token', result.token!, {
+    ;(await cookies()).set('payload-appointment-plugin-token', result.token!, {
       httpOnly: true,
       maxAge: result.exp!,
       path: '/',

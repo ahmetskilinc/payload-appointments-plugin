@@ -39,9 +39,6 @@ const Users: CollectionConfig = {
     {
       name: 'appointments',
       type: 'join',
-      admin: {
-        condition: (siblingData) => ['customer'].includes(siblingData.roles),
-      },
       collection: 'appointments',
       defaultLimit: 0,
       maxDepth: 999,

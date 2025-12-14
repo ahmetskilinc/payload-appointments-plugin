@@ -39,6 +39,15 @@ const GuestCustomers: CollectionConfig = {
       type: 'text',
       label: 'Phone',
     },
+
+    {
+      name: 'appointments',
+      type: 'join',
+      collection: 'appointments',
+      defaultLimit: 0,
+      maxDepth: 999,
+      on: 'guestCustomer',
+    },
   ],
   labels: {
     plural: 'Guest Customers',
