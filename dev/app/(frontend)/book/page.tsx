@@ -31,7 +31,11 @@ const Page = async () => {
   ).docs
 
   return (
-    <div className="py-20 px-6">
+    <div className="py-12 px-6">
+      <div className="max-w-4xl mx-auto mb-10">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Book an Appointment</h1>
+        <p className="text-gray-500">Choose your services and pick a time that works for you</p>
+      </div>
       <BookNow isAuthenticated={isAuthenticated} services={services} teamMembers={teamMembers} />
     </div>
   )

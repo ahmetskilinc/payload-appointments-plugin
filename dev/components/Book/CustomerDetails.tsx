@@ -5,6 +5,7 @@ import React from 'react'
 
 import type { Service, TeamMember } from '../../payload-types'
 
+import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 
 const CustomerDetails: React.FC<{
@@ -40,34 +41,56 @@ const CustomerDetails: React.FC<{
   setCustomerDetails,
   setIsGuest,
 }) => {
+  const inputClasses =
+    'block w-full h-11 rounded-xl border border-gray-200 px-4 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:outline-none text-sm transition-colors'
+  const textareaClasses =
+    'block w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 focus:outline-none text-sm transition-colors resize-none'
+
   if (isAuthenticated) {
     return (
-      <div className="flex flex-col gap-4 mt-6">
-        <div className="bg-green-50 border border-green-200 rounded-md p-4">
-          <p className="text-green-800 font-medium">You are logged in</p>
-          <p className="text-green-700 text-sm">
-            Your appointment will be booked under your account.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="w-full block" htmlFor="notes">
-            <span className="text-sm font-semibold leading-6 text-gray-900">Notes (optional)</span>
-            <div className="mt-2.5">
-              <textarea
-                className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                id="notes"
-                name="notes"
-                onChange={(e) => {
-                  setCustomerDetails({
-                    ...customerDetails,
-                    notes: e.currentTarget.value,
-                  })
-                }}
-                placeholder="Any additional notes for your appointment"
-                rows={3}
-                value={customerDetails.notes}
-              />
+      <div className="flex flex-col gap-6">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-xl p-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
             </div>
+            <div>
+              <p className="text-green-800 font-semibold">You&apos;re signed in</p>
+              <p className="text-green-700 text-sm">
+                Your appointment will be booked under your account
+              </p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label className="w-full block" htmlFor="notes">
+            <span className="text-sm font-medium text-gray-700 mb-2 block">Notes (optional)</span>
+            <textarea
+              className={textareaClasses}
+              id="notes"
+              name="notes"
+              onChange={(e) => {
+                setCustomerDetails({
+                  ...customerDetails,
+                  notes: e.currentTarget.value,
+                })
+              }}
+              placeholder="Any special requests or additional information..."
+              rows={3}
+              value={customerDetails.notes}
+            />
           </label>
         </div>
       </div>
@@ -75,141 +98,159 @@ const CustomerDetails: React.FC<{
   }
 
   return (
-    <div className="flex flex-col gap-4 mt-6">
-      <div className="flex gap-2">
-        <Button
+    <div className="flex flex-col gap-6">
+      <div className="bg-white rounded-xl border border-gray-100 p-1 flex gap-1">
+        <button
+          className={cn(
+            'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all',
+            !isGuest
+              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+          )}
           onClick={() => setIsGuest(false)}
           type="button"
-          variant={!isGuest ? 'default' : 'outline'}
         >
           Sign in to book
-        </Button>
-        <Button
+        </button>
+        <button
+          className={cn(
+            'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all',
+            isGuest
+              ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+          )}
           onClick={() => setIsGuest(true)}
           type="button"
-          variant={isGuest ? 'default' : 'outline'}
         >
           Continue as guest
-        </Button>
+        </button>
       </div>
 
       {!isGuest ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-6">
-          <p className="text-gray-800 font-medium mb-2">Sign in to your account</p>
-          <p className="text-gray-600 text-sm mb-4">
-            Sign in to manage your appointments and view your booking history.
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-6 text-center">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-6 h-6 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+              />
+            </svg>
+          </div>
+          <p className="text-gray-900 font-semibold mb-1">Sign in to your account</p>
+          <p className="text-gray-500 text-sm mb-4">
+            Manage your appointments and view booking history
           </p>
-          <Button asChild>
+          <Button
+            asChild
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+          >
             <Link href="/login">Go to Sign In</Link>
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-gray-600">
-            Enter your details below to book as a guest. You'll receive a confirmation email.
+        <div className="flex flex-col gap-5">
+          <p className="text-sm text-gray-500 bg-violet-50 border border-violet-100 rounded-lg p-3">
+            Enter your details below to book as a guest. You&apos;ll receive a confirmation email.
           </p>
-          <div className="flex gap-4 w-full">
-            <label className="w-full" htmlFor="firstName">
-              <span className="text-sm font-semibold leading-6 text-gray-900">First Name *</span>
-              <div className="mt-2.5">
-                <input
-                  className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                  id="firstName"
-                  name="firstName"
-                  onChange={(e) => {
-                    setCustomerDetails({
-                      ...customerDetails,
-                      firstName: e.currentTarget.value,
-                    })
-                  }}
-                  placeholder="John"
-                  required
-                  type="text"
-                  value={customerDetails.firstName}
-                />
-              </div>
-            </label>
-            <label className="w-full" htmlFor="lastName">
-              <span className="text-sm font-semibold leading-6 text-gray-900">Last Name *</span>
-              <div className="mt-2.5">
-                <input
-                  className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                  id="lastName"
-                  name="lastName"
-                  onChange={(e) => {
-                    setCustomerDetails({
-                      ...customerDetails,
-                      lastName: e.currentTarget.value,
-                    })
-                  }}
-                  placeholder="Doe"
-                  required
-                  type="text"
-                  value={customerDetails.lastName}
-                />
-              </div>
-            </label>
-          </div>
-          <div className="flex gap-4 w-full">
-            <label className="w-full" htmlFor="email">
-              <span className="text-sm font-semibold leading-6 text-gray-900">Email *</span>
-              <div className="mt-2.5">
-                <input
-                  className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                  id="email"
-                  name="email"
-                  onChange={(e) => {
-                    setCustomerDetails({
-                      ...customerDetails,
-                      email: e.currentTarget.value,
-                    })
-                  }}
-                  placeholder="john@example.com"
-                  required
-                  type="email"
-                  value={customerDetails.email}
-                />
-              </div>
-            </label>
-            <label className="w-full" htmlFor="phone">
-              <span className="text-sm font-semibold leading-6 text-gray-900">Phone *</span>
-              <div className="mt-2.5">
-                <input
-                  className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                  id="phone"
-                  name="phone"
-                  onChange={(e) => {
-                    setCustomerDetails({
-                      ...customerDetails,
-                      phone: e.currentTarget.value,
-                    })
-                  }}
-                  placeholder="+1 234 567 8900"
-                  required
-                  type="tel"
-                  value={customerDetails.phone}
-                />
-              </div>
-            </label>
-          </div>
-          <label className="w-full block" htmlFor="notes">
-            <span className="text-sm font-semibold leading-6 text-gray-900">Notes (optional)</span>
-            <div className="mt-2.5">
-              <textarea
-                className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
-                id="notes"
-                name="notes"
+          <div className="grid grid-cols-2 gap-4">
+            <label htmlFor="firstName">
+              <span className="text-sm font-medium text-gray-700 mb-2 block">First Name *</span>
+              <input
+                className={inputClasses}
+                id="firstName"
+                name="firstName"
                 onChange={(e) => {
                   setCustomerDetails({
                     ...customerDetails,
-                    notes: e.currentTarget.value,
+                    firstName: e.currentTarget.value,
                   })
                 }}
-                placeholder="Any additional notes for your appointment"
-                rows={3}
-                value={customerDetails.notes}
+                placeholder="John"
+                required
+                type="text"
+                value={customerDetails.firstName}
               />
-            </div>
+            </label>
+            <label htmlFor="lastName">
+              <span className="text-sm font-medium text-gray-700 mb-2 block">Last Name *</span>
+              <input
+                className={inputClasses}
+                id="lastName"
+                name="lastName"
+                onChange={(e) => {
+                  setCustomerDetails({
+                    ...customerDetails,
+                    lastName: e.currentTarget.value,
+                  })
+                }}
+                placeholder="Doe"
+                required
+                type="text"
+                value={customerDetails.lastName}
+              />
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <label htmlFor="email">
+              <span className="text-sm font-medium text-gray-700 mb-2 block">Email *</span>
+              <input
+                className={inputClasses}
+                id="email"
+                name="email"
+                onChange={(e) => {
+                  setCustomerDetails({
+                    ...customerDetails,
+                    email: e.currentTarget.value,
+                  })
+                }}
+                placeholder="john@example.com"
+                required
+                type="email"
+                value={customerDetails.email}
+              />
+            </label>
+            <label htmlFor="phone">
+              <span className="text-sm font-medium text-gray-700 mb-2 block">Phone *</span>
+              <input
+                className={inputClasses}
+                id="phone"
+                name="phone"
+                onChange={(e) => {
+                  setCustomerDetails({
+                    ...customerDetails,
+                    phone: e.currentTarget.value,
+                  })
+                }}
+                placeholder="+1 234 567 8900"
+                required
+                type="tel"
+                value={customerDetails.phone}
+              />
+            </label>
+          </div>
+          <label htmlFor="notes">
+            <span className="text-sm font-medium text-gray-700 mb-2 block">Notes (optional)</span>
+            <textarea
+              className={textareaClasses}
+              id="notes"
+              name="notes"
+              onChange={(e) => {
+                setCustomerDetails({
+                  ...customerDetails,
+                  notes: e.currentTarget.value,
+                })
+              }}
+              placeholder="Any special requests or additional information..."
+              rows={3}
+              value={customerDetails.notes}
+            />
           </label>
         </div>
       )}

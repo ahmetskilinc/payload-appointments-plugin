@@ -12,16 +12,18 @@ const TimeSelectButton = ({
   chosenDateTime: Date
   setChosenDateTime: React.Dispatch<React.SetStateAction<Date>>
 }) => {
+  const isSelected = moment(availability).format('HH:mm') === moment(chosenDateTime).format('HH:mm')
+
   return (
     <button
       className={cn(
-        'bg-indigo-500 py-2.5 hover:bg-indigo-600 text-white rounded-sm cursor-pointer',
+        'py-2.5 px-3 rounded-lg cursor-pointer font-medium',
         'tabular-nums',
-        'transition-colors',
+        'transition-all duration-200',
         'text-sm',
-        moment(availability).format('HH:mm') === moment(chosenDateTime).format('HH:mm')
-          ? 'bg-red-500 hover:bg-red-600'
-          : null,
+        isSelected
+          ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/25'
+          : 'bg-white border border-gray-200 text-gray-700 hover:border-violet-300 hover:text-violet-600',
       )}
       key={JSON.stringify(availability)}
       onClick={() => setChosenDateTime(moment(availability).toDate())}

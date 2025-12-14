@@ -161,22 +161,38 @@ const BookNow: React.FC<{
 
   if (bookingSuccess) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-12">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-          <h2 className="text-2xl font-bold text-green-800 mb-4">Booking Confirmed!</h2>
-          <p className="text-green-700 mb-6">
-            Your appointment has been successfully booked. You will receive a confirmation email
-            shortly.
+      <div className="max-w-lg mx-auto text-center py-16">
+        <div className="bg-white rounded-2xl p-8 shadow-xl shadow-gray-200/50 border-0">
+          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 shadow-lg shadow-green-500/25">
+            <svg
+              className="w-8 h-8 text-white"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
+          <p className="text-gray-500 mb-8">
+            Your appointment has been successfully booked. You&apos;ll receive a confirmation email
+            shortly with all the details.
           </p>
-          <Button onClick={resetBooking}>Book Another Appointment</Button>
+          <Button
+            onClick={resetBooking}
+            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+          >
+            Book Another Appointment
+          </Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="grid grid-cols-12 gap-4 md:gap-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="grid grid-cols-12 gap-6 md:gap-10">
         <Selections
           chosenDateTime={chosenDateTime}
           chosenServices={chosenServices}
@@ -184,24 +200,50 @@ const BookNow: React.FC<{
           setStepIndex={setStepIndex}
         />
         <div className="col-span-12 md:col-span-8">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start mb-6">
             {stepIndex === 0 ? (
               <div>
-                <p className="text-base mb-1">Available services</p>
-                <p className="text-xs mb-6 text-gray-500">Select one or more services</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 text-xs font-semibold flex items-center justify-center">
+                    1
+                  </span>
+                  <h2 className="text-lg font-semibold text-gray-900">Choose your services</h2>
+                </div>
+                <p className="text-sm text-gray-500 ml-8">
+                  Select one or more services for your appointment
+                </p>
               </div>
             ) : stepIndex === 1 ? (
               <div>
-                <p className="text-base mb-1">Available staff</p>
-                <p className="text-xs mb-6 text-gray-500">Select one staff member</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 text-xs font-semibold flex items-center justify-center">
+                    2
+                  </span>
+                  <h2 className="text-lg font-semibold text-gray-900">Select your host</h2>
+                </div>
+                <p className="text-sm text-gray-500 ml-8">Choose who you&apos;d like to see</p>
               </div>
             ) : stepIndex === 2 ? (
               <div>
-                <p className="text-base mb-1">Available dates and times</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 text-xs font-semibold flex items-center justify-center">
+                    3
+                  </span>
+                  <h2 className="text-lg font-semibold text-gray-900">Pick a date & time</h2>
+                </div>
+                <p className="text-sm text-gray-500 ml-8">
+                  Select an available slot that works for you
+                </p>
               </div>
             ) : stepIndex === 3 ? (
               <div>
-                <p className="text-base mb-1">Your details</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-600 text-xs font-semibold flex items-center justify-center">
+                    4
+                  </span>
+                  <h2 className="text-lg font-semibold text-gray-900">Your details</h2>
+                </div>
+                <p className="text-sm text-gray-500 ml-8">Complete your booking information</p>
               </div>
             ) : null}
           </div>
@@ -245,28 +287,75 @@ const BookNow: React.FC<{
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-12 gap-4 md:gap-8 mt-6">
-        <div className="col-span-12 md:col-span-8 md:col-start-5 flex flex-col gap-2">
+      <div className="grid grid-cols-12 gap-6 md:gap-10 mt-8">
+        <div className="col-span-12 md:col-span-8 md:col-start-5 flex flex-col gap-3">
           {bookingError && (
-            <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-md p-2">
+            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-100 rounded-lg p-3">
+              <svg
+                className="w-4 h-4 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                />
+              </svg>
               {bookingError}
-            </p>
+            </div>
           )}
           <div className="flex justify-between">
             {stepIndex !== 0 ? (
-              <Button onClick={prevStep} variant="outline">
+              <Button onClick={prevStep} variant="outline" className="border-gray-200">
+                <svg
+                  className="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                  />
+                </svg>
                 Back
               </Button>
             ) : (
-              <span className="" />
+              <span />
             )}
             {stepIndex <= 2 ? (
-              <Button disabled={isContinueDisabled()} onClick={nextStep}>
+              <Button
+                disabled={isContinueDisabled()}
+                onClick={nextStep}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+              >
                 Continue
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                  />
+                </svg>
               </Button>
             ) : (
-              <Button disabled={isBookDisabled() || bookingLoading} onClick={handleBooking}>
-                {bookingLoading ? 'Booking...' : 'Book now'}
+              <Button
+                disabled={isBookDisabled() || bookingLoading}
+                onClick={handleBooking}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0"
+              >
+                {bookingLoading ? 'Booking...' : 'Confirm Booking'}
               </Button>
             )}
           </div>
