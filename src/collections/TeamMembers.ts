@@ -1,6 +1,8 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload';
 
-import { authenticated } from '../access/authenticated'
+import { authenticated } from '../access/authenticated';
+
+const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 const TeamMembers: CollectionConfig = {
   slug: 'teamMembers',
@@ -50,9 +52,9 @@ const TeamMembers: CollectionConfig = {
         beforeValidate: [
           ({ data, value }) => {
             if (!value && data?.firstName && data?.lastName) {
-              return `${data.firstName} ${data.lastName}`
+              return `${data.firstName} ${data.lastName}`;
             }
-            return value
+            return value;
           },
         ],
       },
@@ -70,21 +72,106 @@ const TeamMembers: CollectionConfig = {
       defaultValue: false,
       label: 'Available for Appointments',
     },
-    // {
-    //   name: "maxAppointmentsPerDay",
-    //   type: "number",
-    //   label: "Max Daily Appointments",
-    //   defaultValue: 8,
-    //   required: true,
-    //   min: 1,
-    //   max: 50,
-    //   admin: {
-    //     description: "Maximum number of appointments this team member can take per day",
-    //     condition: (data) => data.takingAppointments === true,
-    //   },
-    // },
+    {
+      name: 'useCustomHours',
+      type: 'checkbox',
+      admin: {
+        condition: (data) => data.takingAppointments === true,
+        description: 'Override global opening times with custom hours for this team member',
+      },
+      defaultValue: false,
+      label: 'Use Custom Working Hours',
+    },
+    {
+      name: 'customHours',
+      type: 'group',
+      admin: {
+        condition: (data) => data.takingAppointments === true && data.useCustomHours === true,
+      },
+      fields: daysOfWeek.map((day) => ({
+        name: day,
+        type: 'group',
+        fields: [
+          {
+            name: 'isWorking',
+            type: 'checkbox',
+            defaultValue: false,
+            label: `Working on ${day.charAt(0).toUpperCase() + day.slice(1)}`,
+          },
+          {
+            type: 'row',
+            admin: { condition: (_: any, siblingData: any) => siblingData?.isWorking },
+            fields: [
+              {
+                name: 'start',
+                type: 'date',
+                admin: {
+                  condition: (_: any, siblingData: any) => siblingData?.isWorking,
+                  date: {
+                    displayFormat: 'h:mm a',
+                    pickerAppearance: 'timeOnly',
+                  },
+                  width: '50%',
+                },
+                label: 'Start Time',
+              },
+              {
+                name: 'end',
+                type: 'date',
+                admin: {
+                  condition: (_: any, siblingData: any) => siblingData?.isWorking,
+                  date: {
+                    displayFormat: 'h:mm a',
+                    pickerAppearance: 'timeOnly',
+                  },
+                  width: '50%',
+                },
+                label: 'End Time',
+              },
+            ],
+          },
+        ],
+      })),
+      label: 'Custom Working Hours',
+    },
+    {
+      name: 'maxAppointmentsPerDay',
+      type: 'number',
+      admin: {
+        condition: (data) => data.takingAppointments === true,
+        description:
+          'Maximum number of appointments this team member can take per day (0 = unlimited)',
+      },
+      defaultValue: 0,
+      label: 'Max Daily Appointments',
+      max: 50,
+      min: 0,
+    },
+    {
+      name: 'icalToken',
+      type: 'text',
+      admin: {
+        condition: (data) => data.takingAppointments === true,
+        description: 'Token for subscribing to iCal feed (auto-generated)',
+        readOnly: true,
+      },
+      hooks: {
+        beforeValidate: [
+          async ({ value, operation }) => {
+            if (operation === 'create' || !value) {
+              const crypto = await import('crypto');
+              return crypto.randomBytes(32).toString('hex');
+            }
+            return value;
+          },
+        ],
+      },
+      index: true,
+      label: 'iCal Feed Token',
+      unique: true,
+    },
   ],
   timestamps: true,
-}
+};
 
-export default TeamMembers
+export default TeamMembers;

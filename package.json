@@ -24,6 +24,16 @@
       "import": "./src/views/AppointmentsList/index.tsx",
       "types": "./src/views/AppointmentsList/index.tsx",
       "default": "./src/views/AppointmentsList/index.tsx"
+    },
+    "./AnalyticsView": {
+      "import": "./src/views/Analytics/index.tsx",
+      "types": "./src/views/Analytics/index.tsx",
+      "default": "./src/views/Analytics/index.tsx"
+    },
+    "./EmailHtmlPreview": {
+      "import": "./src/components/EmailHtmlPreview/index.tsx",
+      "types": "./src/components/EmailHtmlPreview/index.tsx",
+      "default": "./src/components/EmailHtmlPreview/index.tsx"
     }
   },
   "main": "./src/index.ts",

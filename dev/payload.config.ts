@@ -1,18 +1,20 @@
-import { postgresAdapter } from '@payloadcms/db-postgres'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { appointmentsPlugin } from 'appointments-plugin'
-import path from 'path'
-import { buildConfig } from 'payload'
-import sharp from 'sharp'
-import { fileURLToPath } from 'url'
+import { postgresAdapter } from '@payloadcms/db-postgres';
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import nodemailer from 'nodemailer';
+import { appointmentsPlugin } from 'payload-appointments-plugin';
+import path from 'path';
+import { buildConfig } from 'payload';
+import sharp from 'sharp';
+import { fileURLToPath } from 'url';
 
-import Users from './collections/Users'
+import Users from './collections/Users';
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 if (!process.env.ROOT_DIR) {
-  process.env.ROOT_DIR = dirname
+  process.env.ROOT_DIR = dirname;
 }
 
 const buildConfigWithMemoryDB = async () => {
@@ -34,12 +36,23 @@ const buildConfigWithMemoryDB = async () => {
         seedData: true,
       }),
     ],
+    email: nodemailerAdapter({
+      defaultFromAddress: 'akx9@icloud.com',
+      defaultFromName: 'Booking App',
+      transport: nodemailer.createTransport({
+        service: 'iCloud',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      }),
+    }),
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
     sharp,
     typescript: {
       outputFile: path.resolve(dirname, 'payload-types.ts'),
     },
-  })
-}
+  });
+};
 
-export default buildConfigWithMemoryDB()
+export default buildConfigWithMemoryDB();
