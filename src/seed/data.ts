@@ -1,5 +1,5 @@
 export const openingTimesSeed = {
-  timezone: 'Europe/London',
+  timezone: 'Europe/London' as const,
   monday: {
     isOpen: true,
     opening: '2024-01-01T09:00:00.000Z',
