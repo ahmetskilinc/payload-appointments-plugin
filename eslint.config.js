@@ -1,3 +1,4 @@
+import { defineConfig } from 'eslint/config';
 // @ts-check
 import nextTs from 'eslint-config-next/typescript';
 
@@ -21,7 +22,7 @@ export const defaultESLintIgnores = [
   '**/temp/',
 ];
 
-export default [
+const eslintConfig = defineConfig([
   ...nextTs,
   {
     rules: {
@@ -42,4 +43,15 @@ export default [
       },
     },
   },
-];
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    plugins: {
+      '@next/next': nextPlugin,
+    },
+    rules: {
+      ...nextPlugin.configs.recommended.rules,
+    },
+  },
+]);
+
+export default eslintConfig;
