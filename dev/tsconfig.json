@@ -17,9 +17,9 @@
     "baseUrl": "./",
     "paths": {
       "@payload-config": ["./payload.config.ts"],
-      "appointments-plugin": ["../src/index.ts"],
-      "appointments-plugin/client": ["../src/exports/client.ts"],
-      "appointments-plugin/rsc": ["../src/exports/rsc.ts"]
+      "payload-appointments-plugin": ["../src/index.ts"],
+      "payload-appointments-plugin/client": ["../src/exports/client.ts"],
+      "payload-appointments-plugin/rsc": ["../src/exports/rsc.ts"]
     },
     "noEmit": true,
     "emitDeclarationOnly": false

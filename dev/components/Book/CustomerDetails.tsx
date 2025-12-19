@@ -31,16 +31,7 @@ const CustomerDetails: React.FC<{
     }>
   >;
   setIsGuest: (value: boolean) => void;
-}> = ({
-  chosenDateTime,
-  chosenServices,
-  chosenStaff,
-  customerDetails,
-  isAuthenticated,
-  isGuest,
-  setCustomerDetails,
-  setIsGuest,
-}) => {
+}> = ({ customerDetails, isAuthenticated, isGuest, setCustomerDetails, setIsGuest }) => {
   const inputClasses =
     'block w-full h-12 rounded-xl border-2 border-gray-100 px-4 text-gray-900 placeholder:text-gray-400 bg-white focus:border-gray-400 focus:ring-4 focus:ring-gray-500/10 focus:outline-none text-sm transition-all duration-200';
   const textareaClasses =
@@ -49,9 +40,9 @@ const CustomerDetails: React.FC<{
   if (isAuthenticated) {
     return (
       <div className="flex flex-col gap-6 animate-fade-in-up">
-        <div className="glass-card p-6 bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100/50">
+        <div className="glass-card p-6 bg-linear-to-br from-emerald-50 to-green-50 border-emerald-100/50">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
               <svg
                 className="w-7 h-7 text-white"
                 fill="none"
@@ -156,7 +147,7 @@ const CustomerDetails: React.FC<{
 
       {!isGuest ? (
         <div className="glass-card p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br bg-gray-100 flex items-center justify-center mx-auto mb-5">
+          <div className="w-16 h-16 rounded-2xl bg-linear-to-br bg-gray-100 flex items-center justify-center mx-auto mb-5">
             <svg
               className="w-8 h-8 text-gray-500"
               fill="none"
@@ -198,7 +189,7 @@ const CustomerDetails: React.FC<{
         </div>
       ) : (
         <div className="flex flex-col gap-5">
-          <div className="bg-gradient-to-br bg-gray-50 border border-gray-100 rounded-xl p-4 flex items-center gap-3">
+          <div className="bg-linear-to-br bg-gray-50 border border-gray-100 rounded-xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
               <svg
                 className="w-5 h-5 text-gray-900"

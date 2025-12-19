@@ -1,18 +1,18 @@
-import { postgresAdapter } from '@payloadcms/db-postgres'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { appointmentsPlugin } from 'appointments-plugin'
-import path from 'path'
-import { buildConfig } from 'payload'
-import sharp from 'sharp'
-import { fileURLToPath } from 'url'
+import { postgresAdapter } from '@payloadcms/db-postgres';
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import { appointmentsPlugin } from 'payload-appointments-plugin';
+import path from 'path';
+import { buildConfig } from 'payload';
+import sharp from 'sharp';
+import { fileURLToPath } from 'url';
 
-import Users from './collections/Users'
+import Users from './collections/Users';
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
 if (!process.env.ROOT_DIR) {
-  process.env.ROOT_DIR = dirname
+  process.env.ROOT_DIR = dirname;
 }
 
 const buildConfigWithMemoryDB = async () => {
@@ -39,7 +39,7 @@ const buildConfigWithMemoryDB = async () => {
     typescript: {
       outputFile: path.resolve(dirname, 'payload-types.ts'),
     },
-  })
-}
+  });
+};
 
-export default buildConfigWithMemoryDB()
+export default buildConfigWithMemoryDB();
