@@ -59,7 +59,7 @@ export const servicesSeed = [
     paidService: true,
     price: 50,
     paymentRequired: true,
-    depositType: 'full',
+    depositType: 'full' as const,
   },
   {
     title: 'Extended Session',
@@ -71,7 +71,7 @@ export const servicesSeed = [
     paidService: true,
     price: 75,
     paymentRequired: true,
-    depositType: 'percentage',
+    depositType: 'percentage' as const,
     depositAmount: 50,
   },
   {
