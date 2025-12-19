@@ -1,5 +1,5 @@
 import configPromise from '@payload-config';
-import { getPayload } from 'payload';
+import { getPayload, Where } from 'payload';
 
 import WaitlistStatusClient from './page.client';
 
@@ -44,19 +44,16 @@ export default async function WaitlistStatusPage({ params }: { params: Promise<{
   const serviceId = typeof entry.service === 'object' ? entry.service?.id : entry.service;
   const hostId = typeof entry.host === 'object' ? entry.host?.id : entry.host;
 
-  const whereClause: any = {
+  const whereClause: Where = {
     and: [
       { service: { equals: serviceId } },
       { status: { equals: 'waiting' } },
       { createdAt: { less_than: entry.createdAt } },
+      ...(hostId
+        ? [{ or: [{ host: { equals: hostId } }, { host: { exists: false } }] }]
+        : []),
     ],
   };
-
-  if (hostId) {
-    whereClause.and.push({
-      or: [{ host: { equals: hostId } }, { host: { exists: false } }],
-    });
-  }
 
   const aheadCount = await payload.count({
     collection: 'waitlist',
@@ -65,6 +62,6 @@ export default async function WaitlistStatusPage({ params }: { params: Promise<{
 
   const position = aheadCount.totalDocs + 1;
 
-  return <WaitlistStatusClient entry={entry as any} position={position} />;
+  return <WaitlistStatusClient entry={entry} position={position} />;
 }
 

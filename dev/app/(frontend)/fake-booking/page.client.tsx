@@ -60,8 +60,8 @@ export function FakeBookingClient({ hosts, services }: Props) {
     });
 
     const response = await createAppointment(
-      randomHost as any,
-      randomServices as any,
+      randomHost,
+      randomServices,
       randomDate,
       'Test booking from fake booking page',
     );

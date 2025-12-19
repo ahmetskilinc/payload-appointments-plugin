@@ -29,7 +29,7 @@ export function CancelButton({ appointmentId, disabled }: CancelButtonProps) {
       } else {
         setError(result.message);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while cancelling');
     } finally {
       setIsLoading(false);

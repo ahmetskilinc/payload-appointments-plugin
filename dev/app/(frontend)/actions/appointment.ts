@@ -3,7 +3,7 @@
 import configPromise from '@payload-config';
 import moment from 'moment';
 import { revalidatePath } from 'next/cache';
-import { getPayload } from 'payload';
+import { getPayload, Where } from 'payload';
 
 import type { TeamMember, Service } from '../../../payload-types';
 
@@ -419,19 +419,16 @@ export async function getWaitlistPosition(waitlistId: string | number) {
     const serviceId = typeof entry.service === 'object' ? entry.service?.id : entry.service;
     const hostId = typeof entry.host === 'object' ? entry.host?.id : entry.host;
 
-    const whereClause: any = {
+    const whereClause: Where = {
       and: [
         { service: { equals: serviceId } },
         { status: { equals: 'waiting' } },
         { createdAt: { less_than: entry.createdAt } },
+        ...(hostId
+          ? [{ or: [{ host: { equals: hostId } }, { host: { exists: false } }] }]
+          : []),
       ],
     };
-
-    if (hostId) {
-      whereClause.and.push({
-        or: [{ host: { equals: hostId } }, { host: { exists: false } }],
-      });
-    }
 
     const aheadCount = await payload.count({
       collection: 'waitlist',

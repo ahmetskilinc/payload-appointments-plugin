@@ -27,7 +27,7 @@ export function CancelByTokenButton({ token }: CancelByTokenButtonProps) {
       } else {
         setError(result.message);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while cancelling');
     } finally {
       setIsLoading(false);

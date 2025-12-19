@@ -10,22 +10,22 @@ import { Button } from '../../../../components/ui/button';
 
 interface WaitlistEntry {
   id: string | number;
-  status: string;
+  status?: string | null;
   notifiedAt?: string | null;
   expiresAt?: string | null;
   createdAt: string;
-  service: {
+  service: number | {
     id: string | number;
     title: string;
   };
-  host?: {
+  host?: number | {
     id: string | number;
     firstName?: string;
     lastName?: string;
     preferredNameAppointments?: string;
   } | null;
-  preferredDates?: { date: string }[];
-  notes?: string;
+  preferredDates?: { date: string }[] | null;
+  notes?: string | null;
 }
 
 interface WaitlistStatusClientProps {
@@ -95,9 +95,12 @@ export default function WaitlistStatusClient({ entry, position }: WaitlistStatus
     }
   };
 
-  const hostName = entry.host
-    ? entry.host.preferredNameAppointments || `${entry.host.firstName} ${entry.host.lastName}`
+  const host = typeof entry.host === 'object' ? entry.host : null;
+  const hostName = host
+    ? host.preferredNameAppointments || `${host.firstName} ${host.lastName}`
     : null;
+  const service = typeof entry.service === 'object' ? entry.service : null;
+  const serviceTitle = service?.title || 'Unknown Service';
 
   return (
     <div className="max-w-lg mx-auto py-8">
@@ -159,7 +162,7 @@ export default function WaitlistStatusClient({ entry, position }: WaitlistStatus
           <div className="space-y-4">
             <div className="flex justify-between py-3 border-b border-gray-100">
               <span className="text-gray-500">Service</span>
-              <span className="font-medium text-gray-900">{entry.service.title}</span>
+              <span className="font-medium text-gray-900">{serviceTitle}</span>
             </div>
             {hostName && (
               <div className="flex justify-between py-3 border-b border-gray-100">

@@ -86,7 +86,7 @@ const WaitlistJoin: React.FC<WaitlistJoinProps> = ({
       } else {
         setError(result.message);
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while joining the waitlist');
     } finally {
       setLoading(false);
