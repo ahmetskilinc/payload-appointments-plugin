@@ -177,7 +177,3 @@ export const appointmentsPlugin =
 
     return config;
   };
-
-export { seedAppointmentsData } from './seed';
-export { openingTimesSeed, servicesSeed, teamMembersSeed } from './seed/data';
-export type { PaymentHooks } from './types';

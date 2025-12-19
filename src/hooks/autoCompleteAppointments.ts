@@ -39,4 +39,3 @@ export const autoCompleteAppointments: CollectionAfterChangeHook = async ({
 
   return doc;
 };
-
