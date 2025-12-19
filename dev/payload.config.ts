@@ -31,11 +31,7 @@ const buildConfigWithMemoryDB = async () => {
       },
     }),
     editor: lexicalEditor(),
-    plugins: [
-      appointmentsPlugin({
-        seedData: true,
-      }),
-    ],
+    plugins: [appointmentsPlugin({})],
     email: nodemailerAdapter({
       defaultFromAddress: 'akx9@icloud.com',
       defaultFromName: 'Booking App',
