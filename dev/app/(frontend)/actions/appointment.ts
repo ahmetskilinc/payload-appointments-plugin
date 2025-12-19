@@ -281,8 +281,8 @@ export async function joinWaitlist(
     const entry = await payload.create({
       collection: 'waitlist',
       data: {
-        service: serviceId,
-        host: hostId || undefined,
+        service: Number(serviceId),
+        host: hostId ? Number(hostId) : undefined,
         customer: customer?.id,
         preferredDates: preferredDates?.map((date) => ({ date })) || [],
         preferredTimeRange: preferredTimeRange || undefined,
@@ -326,8 +326,8 @@ export async function joinWaitlistAsGuest(
     const entry = await payload.create({
       collection: 'waitlist',
       data: {
-        service: serviceId,
-        host: hostId || undefined,
+        service: Number(serviceId),
+        host: hostId ? Number(hostId) : undefined,
         guestCustomer: guestCustomer.id,
         preferredDates: preferredDates?.map((date) => ({ date })) || [],
         preferredTimeRange: preferredTimeRange || undefined,

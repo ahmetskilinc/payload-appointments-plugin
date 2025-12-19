@@ -55,10 +55,10 @@ export const waitlistJoin: PayloadHandler = async (req: PayloadRequest) => {
     const entry = await req.payload.create({
       collection: 'waitlist',
       data: {
-        service: body.serviceId,
-        host: body.hostId,
-        customer: body.customerId,
-        guestCustomer: body.guestCustomerId,
+        service: Number(body.serviceId),
+        host: body.hostId ? Number(body.hostId) : undefined,
+        customer: body.customerId ? Number(body.customerId) : undefined,
+        guestCustomer: body.guestCustomerId ? Number(body.guestCustomerId) : undefined,
         preferredDates,
         preferredTimeRange: body.preferredTimeRange,
         notes: body.notes,

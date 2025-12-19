@@ -39,7 +39,13 @@ export const paymentWebhook: PayloadHandler = async (req: PayloadRequest) => {
       paidAt?: string;
     };
 
-    let newPaymentStatus: string;
+    let newPaymentStatus:
+      | 'pending'
+      | 'not-required'
+      | 'deposit-paid'
+      | 'paid'
+      | 'refunded'
+      | 'partial-refund';
     let newAmountPaid = currentPayment.amountPaid || 0;
 
     switch (status) {
