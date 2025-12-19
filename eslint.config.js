@@ -1,4 +1,5 @@
 // @ts-check
+import nextTs from 'eslint-config-next/typescript';
 
 export const defaultESLintIgnores = [
   '**/.temp',
@@ -18,9 +19,10 @@ export const defaultESLintIgnores = [
   '**/build/',
   '**/node_modules/',
   '**/temp/',
-]
+];
 
 export default [
+  ...nextTs,
   {
     rules: {
       'no-restricted-exports': 'off',
@@ -40,4 +42,4 @@ export default [
       },
     },
   },
-]
+];

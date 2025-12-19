@@ -158,6 +158,7 @@ const BookNow: React.FC<{
         setBookingError(result.message);
       }
     } catch (error) {
+      console.error(error);
       setBookingError('An error occurred while booking your appointment');
     } finally {
       setBookingLoading(false);
@@ -184,7 +185,7 @@ const BookNow: React.FC<{
     return (
       <div className="max-w-lg mx-auto text-center py-16 animate-scale-in">
         <div className="glass-card p-10">
-          <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-8 shadow-2xl shadow-green-500/30 animate-float">
+          <div className="mx-auto w-20 h-20 rounded-full bg-linear-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-8 shadow-2xl shadow-green-500/30 animate-float">
             <svg
               className="w-10 h-10 text-white"
               fill="none"
