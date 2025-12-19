@@ -310,3 +310,4 @@ const WaitlistJoin: React.FC<WaitlistJoinProps> = ({
 };
 
 export default WaitlistJoin;
+

@@ -19,3 +19,4 @@ export const appointmentCancelledEmail = (appointment: Appointment) => {
     to: customerEmail,
   };
 };
+

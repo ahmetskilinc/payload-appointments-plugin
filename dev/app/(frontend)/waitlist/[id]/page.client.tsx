@@ -244,3 +244,4 @@ export default function WaitlistStatusClient({ entry, position }: WaitlistStatus
     </div>
   );
 }
+

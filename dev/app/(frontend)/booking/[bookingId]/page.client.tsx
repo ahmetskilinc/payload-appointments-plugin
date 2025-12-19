@@ -127,3 +127,4 @@ export function CancelButton({ appointmentId, disabled }: CancelButtonProps) {
     </Button>
   );
 }
+

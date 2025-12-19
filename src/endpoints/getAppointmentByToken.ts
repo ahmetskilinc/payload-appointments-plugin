@@ -34,3 +34,4 @@ export const getAppointmentByToken: PayloadHandler = async (req: PayloadRequest)
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 };
+

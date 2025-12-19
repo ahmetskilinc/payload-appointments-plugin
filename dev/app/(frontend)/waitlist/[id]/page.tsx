@@ -67,3 +67,4 @@ export default async function WaitlistStatusPage({ params }: { params: Promise<{
 
   return <WaitlistStatusClient entry={entry as any} position={position} />;
 }
+

@@ -289,3 +289,4 @@ export default async function CancelPage({ params }: { params: Promise<{ token: 
     </div>
   );
 }
+
