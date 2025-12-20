@@ -16,6 +16,33 @@
       text-decoration: underline;
       font-weight: bold;
     }
+
+    &--pending {
+      background-color: #f59e0b;
+      border-color: #fbbf24;
+    }
+
+    &--confirmed {
+      background-color: #7469b6;
+      border-color: #8d80d3;
+    }
+
+    &--cancelled {
+      background-color: #6b7280;
+      border-color: #9ca3af;
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+
+    &--completed {
+      background-color: #10b981;
+      border-color: #34d399;
+    }
+
+    &--no-show {
+      background-color: #ef4444;
+      border-color: #f87171;
+    }
   }
   .blockout {
     height: 100%;
@@ -39,5 +66,15 @@
   }
   .event__services {
     margin-bottom: 6px;
+  }
+  .event__status {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+    margin-top: 4px;
   }
 }

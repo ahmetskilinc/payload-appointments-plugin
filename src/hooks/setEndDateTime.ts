@@ -1,14 +1,14 @@
-import type { FieldHook } from 'payload'
+import type { FieldHook } from 'payload';
 
-import moment from 'moment'
+import moment from 'moment';
 
 export const setEndDateTime: FieldHook = async ({ req, siblingData }) => {
   if (siblingData.appointmentType !== 'appointment') {
-    return siblingData.end
+    return siblingData.end;
   }
 
   if (!siblingData.services?.length) {
-    return moment(siblingData.start).format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+    return moment(siblingData.start).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
   }
 
   try {
@@ -21,17 +21,23 @@ export const setEndDateTime: FieldHook = async ({ req, siblingData }) => {
           in: siblingData.services,
         },
       },
-    })
+    });
 
     const totalDuration = services.docs.reduce(
       (total, service) => total + (service.duration || 0),
       0,
-    )
+    );
+
+    const maxBufferTime = services.docs.reduce(
+      (max, service) => Math.max(max, service.bufferTime || 0),
+      0,
+    );
+
     return moment(siblingData.start)
-      .add(totalDuration, 'minutes')
-      .format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+      .add(totalDuration + maxBufferTime, 'minutes')
+      .format('YYYY-MM-DDTHH:mm:ss.SSSZ');
   } catch (error) {
-    req.payload.logger.error(`Error calculating end time: ${error}`)
-    return moment(siblingData.start).format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+    req.payload.logger.error(`Error calculating end time: ${error}`);
+    return moment(siblingData.start).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
   }
-}
+};

@@ -1,5 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres';
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import nodemailer from 'nodemailer';
 import { appointmentsPlugin } from 'payload-appointments-plugin';
 import path from 'path';
 import { buildConfig } from 'payload';
@@ -29,11 +31,18 @@ const buildConfigWithMemoryDB = async () => {
       },
     }),
     editor: lexicalEditor(),
-    plugins: [
-      appointmentsPlugin({
-        seedData: true,
+    plugins: [appointmentsPlugin({})],
+    email: nodemailerAdapter({
+      defaultFromAddress: 'akx9@icloud.com',
+      defaultFromName: 'Booking App',
+      transport: nodemailer.createTransport({
+        service: 'iCloud',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
       }),
-    ],
+    }),
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
     sharp,
     typescript: {

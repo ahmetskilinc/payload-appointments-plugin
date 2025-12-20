@@ -10,18 +10,25 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components'
-import { render } from '@react-email/render'
-import moment from 'moment'
-import { Appointment } from '../types'
+} from '@react-email/components';
+import { render } from '@react-email/render';
+import { Appointment } from '../types';
+import {
+  formatDateInTimezone,
+  formatTimeRangeInTimezone,
+  getTimezoneAbbreviation,
+} from '../utilities/formatDate';
 
 interface Props {
-  doc?: Appointment
+  cancelUrl?: string;
+  doc?: Appointment;
+  timezone?: string;
 }
 
-export const Email = ({ doc }: Props) => {
-  const customerFirstName = doc?.customer?.firstName || doc?.guestCustomer?.firstName
-  const customerLastName = doc?.customer?.lastName || doc?.guestCustomer?.lastName
+export const Email = ({ cancelUrl, doc, timezone = 'UTC' }: Props) => {
+  const customerFirstName = doc?.customer?.firstName || doc?.guestCustomer?.firstName;
+  const customerLastName = doc?.customer?.lastName || doc?.guestCustomer?.lastName;
+  const tzAbbr = doc?.start ? getTimezoneAbbreviation(doc.start, timezone) : '';
 
   return (
     <Html>
@@ -43,15 +50,19 @@ export const Email = ({ doc }: Props) => {
                 <Text className="m-0">
                   New time:{' '}
                   <span className="font-bold">
-                    {moment(doc?.start).format('HH:mm')} - {moment(doc?.end).format('HH:mm')}
+                    {doc?.start && doc?.end
+                      ? `${formatTimeRangeInTimezone(doc.start, doc.end, timezone)} ${tzAbbr}`
+                      : ''}
                   </span>
                 </Text>
                 <Text>
                   New date:{' '}
-                  <span className="font-bold">{moment(doc?.start).format('MMMM Do YYYY')}</span>
+                  <span className="font-bold">
+                    {doc?.start ? formatDateInTimezone(doc.start, timezone) : ''}
+                  </span>
                 </Text>
                 <Text>
-                  Service{doc?.services.length! > 1}:{' '}
+                  Service{doc?.services && doc.services.length > 1 ? 's' : ''}:{' '}
                   <span className="font-bold">
                     {doc?.services.map((service) => service.title).join(', ')}
                   </span>
@@ -60,12 +71,23 @@ export const Email = ({ doc }: Props) => {
                   Host: <span className="font-bold">{doc?.host.preferredNameAppointments}</span>
                 </Text>
               </Container>
-              <Hr className="border-neutral-300" />
-              <Button href="https://linear.app">Reschedule</Button>{' '}
-              <Button href="https://linear.app">Cancel</Button>
+              {cancelUrl && (
+                <>
+                  <Hr className="border-neutral-300" />
+                  <Text className="text-neutral-600 text-sm">
+                    Need to make changes? Use the link below to cancel your appointment.
+                  </Text>
+                  <Button
+                    href={cancelUrl}
+                    className="bg-neutral-800 text-white px-4 py-2 rounded-md"
+                  >
+                    Cancel Appointment
+                  </Button>
+                </>
+              )}
               <Hr className="border-neutral-300" />
               <Text className="mb-0">
-                Regard,
+                Regards,
                 <br />
                 Your Payload team
               </Text>
@@ -85,9 +107,9 @@ export const Email = ({ doc }: Props) => {
         </Body>
       </Tailwind>
     </Html>
-  )
-}
+  );
+};
 
 export const RenderedEmail = (data: Props) => {
-  return render(<Email {...data} />)
-}
+  return render(<Email {...data} />);
+};

@@ -164,7 +164,7 @@ export default async function Dashboard() {
   let dashboardData;
   try {
     dashboardData = await getDashboardData();
-  } catch (error) {
+  } catch {
     return (
       <div className="flex items-center justify-center min-h-[50vh] p-8">
         <div className="glass-card p-8 max-w-md text-center animate-fade-in-up">

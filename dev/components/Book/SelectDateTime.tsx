@@ -1,7 +1,7 @@
 'use client';
 
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import 'react-calendar/dist/Calendar.css';
 import Calendar from 'react-calendar';
 import MoonLoader from 'react-spinners/MoonLoader';
@@ -11,10 +11,19 @@ import type { Service, TeamMember } from '../../payload-types';
 import { fetchPublic } from '../../lib/api';
 import { filterByDateAndPeriod } from '../../lib/filterByDateAndPeriod';
 import TimeSelectButton from './TimeSelectButton';
+import WaitlistJoin from './WaitlistJoin';
+
+type BookingWindow = {
+  minLeadTime: number;
+  maxAdvanceBooking: number;
+  earliestBookableTime: string | null;
+  latestBookableDate: string | null;
+};
 
 const SelectDateTime: React.FC<{
   chosenServices: Service[];
   chosenStaff: null | TeamMember;
+  isAuthenticated?: boolean;
   selectedDate: string;
   selectedTime: string | null;
   setSelectedDate: (date: string) => void;
@@ -22,6 +31,7 @@ const SelectDateTime: React.FC<{
 }> = ({
   chosenServices,
   chosenStaff,
+  isAuthenticated = false,
   selectedDate,
   selectedTime,
   setSelectedDate,
@@ -29,6 +39,7 @@ const SelectDateTime: React.FC<{
 }) => {
   const [slots, setSlots] = useState<null | string[]>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [bookingWindow, setBookingWindow] = useState<BookingWindow | null>(null);
 
   const calendarDate = moment(selectedDate).toDate();
 
@@ -44,13 +55,23 @@ const SelectDateTime: React.FC<{
         },
       );
 
-      const slots = await data.json();
-      setSlots(slots.filteredSlots);
+      const result = await data.json();
+      setSlots(result.filteredSlots);
+      if (result.bookingWindow) {
+        setBookingWindow(result.bookingWindow);
+      }
       setLoading(false);
     };
 
     void getAvailabilities();
   }, [selectedDate, chosenServices, chosenStaff?.id]);
+
+  const maxCalendarDate = useMemo(() => {
+    if (bookingWindow?.latestBookableDate) {
+      return moment(bookingWindow.latestBookableDate).toDate();
+    }
+    return new Date(new Date().setMonth(new Date().getMonth() + 3));
+  }, [bookingWindow]);
 
   const morningSlots = slots ? filterByDateAndPeriod('morning', calendarDate, slots) : [];
   const afternoonSlots = slots ? filterByDateAndPeriod('afternoon', calendarDate, slots) : [];
@@ -67,7 +88,7 @@ const SelectDateTime: React.FC<{
         <Calendar
           defaultValue={calendarDate}
           locale="en-GB"
-          maxDate={new Date(new Date().setMonth(new Date().getMonth() + 1))}
+          maxDate={maxCalendarDate}
           maxDetail="month"
           minDate={new Date()}
           minDetail="month"
@@ -185,24 +206,32 @@ const SelectDateTime: React.FC<{
             )}
           </div>
         ) : slots && slots.length === 0 ? (
-          <div className="mt-8 text-center py-12 glass-card animate-fade-in-up">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+          <div className="mt-8 space-y-6 animate-fade-in-up">
+            <div className="text-center py-12 glass-card">
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-gray-900 font-semibold text-lg mb-1">No available slots</p>
+              <p className="text-gray-500">Try selecting a different date or join the waitlist</p>
             </div>
-            <p className="text-gray-900 font-semibold text-lg mb-1">No available slots</p>
-            <p className="text-gray-500">Try selecting a different date</p>
+            <WaitlistJoin
+              isAuthenticated={isAuthenticated}
+              services={chosenServices}
+              host={chosenStaff}
+              selectedDate={selectedDate}
+            />
           </div>
         ) : null
       ) : (

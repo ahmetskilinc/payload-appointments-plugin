@@ -1,0 +1,53 @@
+.email-html-preview {
+  margin-top: 1rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--theme-elevation-800);
+  }
+
+  &__toggle {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background: var(--theme-elevation-150);
+    }
+  }
+
+  &__container {
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  &__iframe {
+    width: 100%;
+    min-height: 500px;
+    border: none;
+    display: block;
+  }
+
+  &__empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--theme-elevation-500);
+    background: var(--theme-elevation-50);
+    border-radius: 8px;
+  }
+}

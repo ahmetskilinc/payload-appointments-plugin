@@ -131,6 +131,7 @@ const BookNow: React.FC<{
           chosenStaff as TeamMember,
           chosenServices,
           chosenDateTime as Date,
+          customerDetails.notes || undefined,
         );
       } else if (isGuest) {
         result = await createGuestAppointment(
@@ -143,6 +144,7 @@ const BookNow: React.FC<{
             lastName: customerDetails.lastName,
             phone: customerDetails.phone,
           },
+          customerDetails.notes || undefined,
         );
       } else {
         setBookingError('Please sign in or continue as a guest');
@@ -367,6 +369,7 @@ const BookNow: React.FC<{
               <SelectDateTime
                 chosenServices={chosenServices}
                 chosenStaff={chosenStaff}
+                isAuthenticated={isAuthenticated}
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
                 setSelectedDate={setSelectedDate}

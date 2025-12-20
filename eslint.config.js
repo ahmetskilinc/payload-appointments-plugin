@@ -1,6 +1,7 @@
 import { defineConfig } from 'eslint/config';
 // @ts-check
 import nextTs from 'eslint-config-next/typescript';
+import nextPlugin from '@next/eslint-plugin-next';
 
 export const defaultESLintIgnores = [
   '**/.temp',

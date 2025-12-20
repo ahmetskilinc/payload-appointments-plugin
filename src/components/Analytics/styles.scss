@@ -1,0 +1,220 @@
+.collection-list.analytics-view {
+  > .list-header {
+    padding-left: var(--gutter-h) !important;
+    padding-right: var(--gutter-h) !important;
+    padding-bottom: var(--base);
+    border-bottom: 1px solid var(--theme-elevation-100);
+  }
+}
+
+.before-dashboard-analytics {
+  padding-top: var(--base);
+  padding-bottom: var(--base);
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 var(--base);
+    color: var(--theme-elevation-900);
+  }
+}
+
+.analytics-filters {
+  padding-left: var(--gutter-h) !important;
+  padding-right: var(--gutter-h) !important;
+  padding-block: var(--base);
+  border-bottom: 1px solid var(--theme-elevation-100);
+  margin-bottom: var(--base);
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--base);
+    align-items: flex-end;
+  }
+
+  .field-type {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &.date,
+    &.select {
+      min-width: 150px;
+    }
+  }
+
+  .field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--theme-elevation-800);
+  }
+
+  .date-input,
+  .select-input {
+    padding: 8px 12px;
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: var(--style-radius-s);
+    background: var(--theme-input-bg);
+    color: var(--theme-elevation-800);
+    font-size: 0.875rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--theme-elevation-400);
+    }
+  }
+}
+
+.analytics-content {
+  padding-left: var(--gutter-h) !important;
+  padding-right: var(--gutter-h) !important;
+  padding-bottom: var(--base);
+}
+
+.analytics-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--base);
+  margin-bottom: calc(var(--base) * 1.5);
+}
+
+.analytics-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--base);
+  margin-bottom: calc(var(--base) * 1.5);
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-m);
+  padding: var(--base);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--theme-elevation-600);
+    margin: 0;
+  }
+
+  &__icon {
+    color: var(--theme-elevation-400);
+  }
+
+  &__value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--theme-elevation-900);
+    margin: 0 0 4px;
+  }
+
+  &__description {
+    font-size: 0.75rem;
+    color: var(--theme-elevation-500);
+    margin: 0;
+  }
+
+  &__trend {
+    font-size: 0.75rem;
+    margin-top: 4px;
+
+    &--positive {
+      color: var(--theme-success-500);
+    }
+
+    &--negative {
+      color: var(--theme-error-500);
+    }
+  }
+}
+
+.analytics-card {
+  background: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-100);
+  border-radius: var(--style-radius-m);
+  overflow: hidden;
+
+  &__header {
+    padding: var(--base);
+    border-bottom: 1px solid var(--theme-elevation-100);
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--theme-elevation-900);
+    margin: 0 0 4px;
+  }
+
+  &__description {
+    font-size: 0.75rem;
+    color: var(--theme-elevation-500);
+    margin: 0;
+  }
+
+  &__content {
+    padding: var(--base);
+
+    &--empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      color: var(--theme-elevation-500);
+    }
+  }
+}
+
+.utilization-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--theme-elevation-600);
+    background: var(--theme-elevation-100);
+  }
+
+  td {
+    border-bottom: 1px solid var(--theme-elevation-100);
+    color: var(--theme-elevation-800);
+  }
+
+  .text-right {
+    text-align: right;
+  }
+
+  .text-success {
+    color: var(--theme-success-500);
+  }
+
+  .text-error {
+    color: var(--theme-error-500);
+  }
+
+  .font-medium {
+    font-weight: 500;
+  }
+}
