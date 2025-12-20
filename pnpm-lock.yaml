@@ -202,6 +202,9 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.18)
     devDependencies:
+      '@next/eslint-plugin-next':
+        specifier: ^15.5.8
+        version: 15.5.9
       '@types/nodemailer':
         specifier: ^7.0.4
         version: 7.0.4
@@ -1402,6 +1405,9 @@ packages:
 
   '@next/env@15.5.9':
     resolution: {integrity: sha512-4GlTZ+EJM7WaW2HEZcyU317tIQDjkQIyENDLxYJfSWlfqguN+dHkZgyQTV/7ykvobU7yEH5gKvreNrH4B6QgIg==}
+
+  '@next/eslint-plugin-next@15.5.9':
+    resolution: {integrity: sha512-kUzXx0iFiXw27cQAViE1yKWnz/nF8JzRmwgMRTMh8qMY90crNsdXJRh2e+R0vBpFR3kk1yvAR7wev7+fCCb79Q==}
 
   '@next/eslint-plugin-next@16.0.10':
     resolution: {integrity: sha512-b2NlWN70bbPLmfyoLvvidPKWENBYYIe017ZGUpElvQjDytCWgxPJx7L9juxHt0xHvNVA08ZHJdOyhGzon/KJuw==}
@@ -7702,6 +7708,10 @@ snapshots:
     optional: true
 
   '@next/env@15.5.9': {}
+
+  '@next/eslint-plugin-next@15.5.9':
+    dependencies:
+      fast-glob: 3.3.1
 
   '@next/eslint-plugin-next@16.0.10':
     dependencies:

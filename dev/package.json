@@ -42,6 +42,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^15.5.8",
     "@types/nodemailer": "^7.0.4",
     "autoprefixer": "^10.4.22",
     "copyfiles": "^2.4.1",
