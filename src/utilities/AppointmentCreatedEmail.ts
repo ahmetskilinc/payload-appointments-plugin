@@ -1,4 +1,4 @@
-import { getPublicServerUrl } from 'src/lib/utils';
+import { getPublicServerUrl } from '../lib/utils';
 import type { Appointment } from '../types';
 
 import { formatAppointmentDate } from './formatDate';
