@@ -1,3 +1,4 @@
+import { getPublicServerUrl } from 'src/lib/utils';
 import type { Appointment } from '../types';
 
 import { formatAppointmentDate } from './formatDate';
@@ -11,7 +12,7 @@ export const appointmentUpdatedEmail = (appointment: Appointment) => {
 
   const formattedDate = formatAppointmentDate(appointment.start);
   const serviceNames = appointment.services.map((service) => service.title).join(', ');
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.PAYLOAD_PUBLIC_SERVER_URL || '';
+  const baseUrl = getPublicServerUrl();
   const cancelUrl = appointment.cancellationToken
     ? `${baseUrl}/cancel/${appointment.cancellationToken}`
     : '';
