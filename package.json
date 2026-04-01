@@ -50,7 +50,7 @@
     "test:int": "vitest"
   },
   "dependencies": {
-    "@payloadcms/next": "3.68.3",
+    "@payloadcms/next": "3.78.0",
     "@payloadcms/ui": "3.68.3",
     "@react-email/components": "^1.0.1",
     "@react-email/render": "^2.0.0",

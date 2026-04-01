@@ -18,7 +18,7 @@
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@payloadcms/db-postgres": "3.68.3",
-    "@payloadcms/next": "3.68.3",
+    "@payloadcms/next": "3.78.0",
     "@payloadcms/richtext-lexical": "3.68.3",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
