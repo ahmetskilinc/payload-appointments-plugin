@@ -196,7 +196,7 @@ export default function CalendarClient({
         <DnDCalendar
           components={components}
           date={currentDate}
-          defaultView={view}
+          view={view}
           events={remappedAppointments}
           localizer={localizer}
           max={new Date(1970, 0, 0, 19, 0, 0, 0)}
