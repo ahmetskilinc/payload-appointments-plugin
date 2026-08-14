@@ -17,6 +17,22 @@
     margin: 0 0 var(--base);
     color: var(--theme-elevation-900);
   }
+
+  // The dashboard template already provides horizontal gutters — neutralize
+  // the view-context gutter paddings so content isn't double-indented.
+  .analytics-filters,
+  .analytics-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+// ChartContainer sizes itself with Tailwind utility classes, which the admin
+// panel doesn't load — give charts an explicit height so recharts can render.
+.analytics-card [data-slot='chart'] {
+  height: 300px;
+  width: 100%;
+  aspect-ratio: auto;
 }
 
 .analytics-filters {
