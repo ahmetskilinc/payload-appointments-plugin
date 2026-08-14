@@ -58,32 +58,81 @@ const createOpeningTimesGlobal = (slugs: AppointmentsPluginSlugs): GlobalConfig 
           label: `Open on ${day.charAt(0).toUpperCase() + day.slice(1)}`,
         },
         {
-          type: 'row' as const,
-          admin: { condition: (_: unknown, siblingData?: { isOpen?: boolean }) => Boolean(siblingData?.isOpen) },
-          fields: timesOfDay.map((time) => ({
-            name: `${time}`,
-            type: 'date' as const,
-            admin: {
-              condition: (_: unknown, siblingData?: { isOpen?: boolean }) => Boolean(siblingData?.isOpen),
-              date: {
-                displayFormat: 'h:mm a',
-                pickerAppearance: 'timeOnly' as const,
-              },
-              width: '50%',
+          name: 'intervals',
+          type: 'array' as const,
+          admin: {
+            condition: (_: unknown, siblingData?: { isOpen?: boolean }) =>
+              Boolean(siblingData?.isOpen),
+            description: 'Bookable time ranges for this day (e.g. morning and afternoon)',
+          },
+          fields: [
+            {
+              type: 'row' as const,
+              fields: timesOfDay.map((time) => ({
+                name: `${time}`,
+                type: 'date' as const,
+                admin: {
+                  date: {
+                    displayFormat: 'h:mm a',
+                    pickerAppearance: 'timeOnly' as const,
+                  },
+                  width: '50%',
+                },
+                label: `${time.charAt(0).toUpperCase() + time.slice(1)}`,
+                required: true,
+              })),
             },
-            label: `${time.charAt(0).toUpperCase() + time.slice(1)}`,
-            // Only required when the day is marked open — a hard `required: true`
-            // would make the global unsaveable for closed days.
-            validate: (value: unknown, { siblingData }: { siblingData?: { isOpen?: boolean } }) => {
-              if (siblingData?.isOpen && !value) {
-                return `${time.charAt(0).toUpperCase() + time.slice(1)} time is required when open`;
-              }
-              return true;
-            },
-          })),
+          ],
+          label: 'Open intervals',
+          labels: {
+            plural: 'Intervals',
+            singular: 'Interval',
+          },
+          // Only required when the day is marked open — a hard `minRows` would
+          // make the global unsaveable for closed days.
+          validate: (value: unknown, { siblingData }: { siblingData?: { isOpen?: boolean } }) => {
+            if (siblingData?.isOpen && (!Array.isArray(value) || value.length === 0)) {
+              return 'At least one interval is required when open';
+            }
+            return true;
+          },
         },
       ],
     })),
+    {
+      name: 'holidays',
+      type: 'array' as const,
+      admin: {
+        description: 'Dates the business is closed — no slots are offered on these days',
+      },
+      fields: [
+        {
+          type: 'row' as const,
+          fields: [
+            {
+              name: 'date',
+              type: 'date' as const,
+              admin: {
+                date: { pickerAppearance: 'dayOnly' as const },
+                width: '50%',
+              },
+              required: true,
+            },
+            {
+              name: 'name',
+              type: 'text' as const,
+              admin: { width: '50%' },
+              label: 'Name',
+            },
+          ],
+        },
+      ],
+      label: 'Holidays',
+      labels: {
+        plural: 'Holidays',
+        singular: 'Holiday',
+      },
+    },
   ],
   label: 'Opening Times',
 });

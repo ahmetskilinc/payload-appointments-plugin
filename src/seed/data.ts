@@ -1,40 +1,21 @@
+const weekdayIntervals = [
+  { opening: '2024-01-01T09:00:00.000Z', closing: '2024-01-01T12:30:00.000Z' },
+  { opening: '2024-01-01T13:30:00.000Z', closing: '2024-01-01T17:00:00.000Z' },
+];
+
 export const openingTimesSeed = {
   timezone: 'Europe/London' as const,
-  monday: {
-    isOpen: true,
-    opening: '2024-01-01T09:00:00.000Z',
-    closing: '2024-01-01T17:00:00.000Z',
-  },
-  tuesday: {
-    isOpen: true,
-    opening: '2024-01-01T09:00:00.000Z',
-    closing: '2024-01-01T17:00:00.000Z',
-  },
-  wednesday: {
-    isOpen: true,
-    opening: '2024-01-01T09:00:00.000Z',
-    closing: '2024-01-01T17:00:00.000Z',
-  },
-  thursday: {
-    isOpen: true,
-    opening: '2024-01-01T09:00:00.000Z',
-    closing: '2024-01-01T17:00:00.000Z',
-  },
-  friday: {
-    isOpen: true,
-    opening: '2024-01-01T09:00:00.000Z',
-    closing: '2024-01-01T17:00:00.000Z',
-  },
+  monday: { isOpen: true, intervals: weekdayIntervals },
+  tuesday: { isOpen: true, intervals: weekdayIntervals },
+  wednesday: { isOpen: true, intervals: weekdayIntervals },
+  thursday: { isOpen: true, intervals: weekdayIntervals },
+  friday: { isOpen: true, intervals: weekdayIntervals },
   saturday: {
     isOpen: true,
-    opening: '2024-01-01T10:00:00.000Z',
-    closing: '2024-01-01T16:00:00.000Z',
+    intervals: [{ opening: '2024-01-01T10:00:00.000Z', closing: '2024-01-01T16:00:00.000Z' }],
   },
-  sunday: {
-    isOpen: false,
-    opening: null,
-    closing: null,
-  },
+  sunday: { isOpen: false, intervals: [] },
+  holidays: [],
 };
 
 export const servicesSeed = [

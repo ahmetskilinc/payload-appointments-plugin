@@ -5,7 +5,7 @@
 
 Appointment scheduling for your Payload app:
 
-- **Appointments, Services, Team Members, Guest Customers, Waitlist, Sent Emails** collections and an **Opening Times** global.
+- **Appointments, Services, Team Members, Guest Customers, Waitlist, Sent Emails** collections and an **Opening Times** global (multiple intervals per day + holiday dates).
 - Admin **schedule calendar view** (`/admin/appointments/schedule`) and **analytics dashboard** (`/admin/appointments/analytics`).
 - Availability engine with buffer times, lead times, max-advance booking, per-host custom hours, and business-timezone handling.
 - Recurring appointments (weekly / bi-weekly / monthly series).
@@ -314,7 +314,7 @@ pnpm build
 - [x] Collection/slug overrides via plugin options
 - [ ] Variable service pricing (per hour, etc.)
 - [ ] RRULE-based iCal recurrence
-- [ ] Per-day multiple intervals + holiday dates in opening times
+- [x] Per-day multiple intervals + holiday dates in opening times
 - [ ] E2E test suite
 
 Contributions welcome.

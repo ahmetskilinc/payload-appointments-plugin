@@ -3,15 +3,20 @@ export interface PluginTypes {
   showNavItems?: boolean;
 }
 
+export type OpeningInterval = {
+  closing: string;
+  opening: string;
+};
+
 export type OpeningTimes = {
   [key: string]: {
-    closing: string;
+    intervals?: OpeningInterval[] | null;
     isOpen: boolean;
-    opening: string;
   };
 } & {
   createdAt: string;
   globalType: 'openingTime';
+  holidays?: { date: string; name?: string | null }[] | null;
   id: string;
   timezone: string;
   updatedAt: string;
