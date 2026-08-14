@@ -12,7 +12,7 @@ export type PublicAppointment = {
   status?: string | null;
 };
 
-export const toPublicAppointment = (doc: Record<string, unknown>): PublicAppointment => {
+export const toPublicAppointment = (doc: unknown): PublicAppointment => {
   const appointment = doc as {
     cancelledAt?: string | null;
     end: string;

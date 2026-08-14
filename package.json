@@ -151,7 +151,10 @@
       "sharp",
       "esbuild",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "graphql": "^16.14.2"
+    }
   },
   "registry": "https://registry.npmjs.org/"
 }

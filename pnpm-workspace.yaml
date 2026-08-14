@@ -1,3 +1,5 @@
 packages:
   - './'
   - './dev'
+overrides:
+  graphql: ^16.14.2

@@ -48,6 +48,7 @@
     "copyfiles": "^2.4.1",
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
+    "graphql": "^16.14.2",
     "postcss": "^8.5.26",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"

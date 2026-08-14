@@ -52,15 +52,21 @@ export const waitlistJoin: PayloadHandler = async (req: PayloadRequest) => {
 
     const preferredDates = body.preferredDates?.map((date) => ({ date })) || [];
 
-    // IDs are passed through untouched so both numeric (Postgres) and
-    // ObjectId/string (MongoDB) adapters work.
+    // Numeric strings become numbers (Postgres serial ids); anything else is
+    // passed through as-is (MongoDB ObjectIds). The casts satisfy apps whose
+    // generated types pin relationship ids to one adapter's id type.
+    const normalizeId = (value: string): number | string =>
+      /^\d+$/.test(value) ? Number(value) : value;
+
     const entry = await req.payload.create({
       collection: 'waitlist',
       data: {
-        service: body.serviceId,
-        host: body.hostId || undefined,
-        customer: body.customerId || undefined,
-        guestCustomer: body.guestCustomerId || undefined,
+        service: normalizeId(body.serviceId) as number,
+        host: body.hostId ? (normalizeId(body.hostId) as number) : undefined,
+        customer: body.customerId ? (normalizeId(body.customerId) as number) : undefined,
+        guestCustomer: body.guestCustomerId
+          ? (normalizeId(body.guestCustomerId) as number)
+          : undefined,
         preferredDates,
         preferredTimeRange: body.preferredTimeRange,
         notes: body.notes,
