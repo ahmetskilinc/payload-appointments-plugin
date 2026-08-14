@@ -1,5 +1,6 @@
 import type { CollectionBeforeChangeHook } from 'payload';
 
+import { getSlugs } from '../slugs';
 import { calculateAmountDue } from '../utilities/deposit';
 
 export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
@@ -20,7 +21,7 @@ export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
   );
 
   const services = await req.payload.find({
-    collection: 'services',
+    collection: getSlugs(req.payload.config).services,
     depth: 0,
     limit: 100,
     req,

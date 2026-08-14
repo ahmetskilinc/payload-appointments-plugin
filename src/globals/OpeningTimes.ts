@@ -1,5 +1,7 @@
 import type { GlobalConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { authenticated } from '../access/authenticated';
 
 const timesOfDay = ['opening', 'closing'];
@@ -26,8 +28,8 @@ const commonTimezones = [
   { label: 'São Paulo (BRT)', value: 'America/Sao_Paulo' },
 ];
 
-const OpeningTimes: GlobalConfig = {
-  slug: 'openingTimes',
+const createOpeningTimesGlobal = (slugs: AppointmentsPluginSlugs): GlobalConfig => ({
+  slug: slugs.openingTimes,
   access: {
     read: () => true,
     update: authenticated,
@@ -84,6 +86,6 @@ const OpeningTimes: GlobalConfig = {
     })),
   ],
   label: 'Opening Times',
-};
+});
 
-export default OpeningTimes;
+export default createOpeningTimesGlobal;

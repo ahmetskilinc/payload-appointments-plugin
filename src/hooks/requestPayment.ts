@@ -2,6 +2,8 @@ import type { CollectionAfterChangeHook } from 'payload';
 
 import type { Appointment, PaymentHooks } from '../types';
 
+import { getSlugs } from '../slugs';
+
 /**
  * Calls the consumer's `onPaymentRequired` hook when a new appointment is
  * created that needs payment, and stores the returned provider payment id.
@@ -30,7 +32,7 @@ export const createRequestPaymentHook =
 
       if (paymentId) {
         await req.payload.update({
-          collection: 'appointments',
+          collection: getSlugs(req.payload.config).appointments,
           id: doc.id,
           context: {
             skipAutoComplete: true,

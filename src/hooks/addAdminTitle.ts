@@ -1,5 +1,7 @@
 import type { FieldHook } from 'payload';
 
+import { getSlugs } from '../slugs';
+
 const toId = (value: unknown): number | string | undefined =>
   value && typeof value === 'object'
     ? (value as { id: number | string }).id
@@ -14,11 +16,13 @@ export const addAdminTitle: FieldHook = async ({ req, siblingData, value }) => {
     return value;
   }
 
+  const slugs = getSlugs(req.payload.config);
+
   try {
     if (siblingData.bookedBy === 'customer' && siblingData.customer) {
       const customer = await req.payload.findByID({
         id: toId(siblingData.customer) as number | string,
-        collection: 'users',
+        collection: slugs.users,
         depth: 0,
         disableErrors: true,
         req,
@@ -30,7 +34,7 @@ export const addAdminTitle: FieldHook = async ({ req, siblingData, value }) => {
     } else if (siblingData.bookedBy === 'guest' && siblingData.guestCustomer) {
       const guest = await req.payload.findByID({
         id: toId(siblingData.guestCustomer) as number | string,
-        collection: 'guestCustomers',
+        collection: slugs.guestCustomers,
         depth: 0,
         disableErrors: true,
         req,

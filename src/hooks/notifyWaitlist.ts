@@ -2,6 +2,7 @@ import type { CollectionAfterChangeHook, Payload, PayloadRequest } from 'payload
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
 import { getEmailFromAddress } from '../utilities/emailFrom';
 
 const WAITLIST_EXPIRY_HOURS = 2;
@@ -32,7 +33,7 @@ export const notifyWaitlistEntry = async (
   const expiresAt = moment().add(WAITLIST_EXPIRY_HOURS, 'hours').toISOString();
 
   await payload.update({
-    collection: 'waitlist',
+    collection: getSlugs(payload.config).waitlist,
     id: entry.id,
     data: {
       status: 'notified',
@@ -104,7 +105,7 @@ export const notifyWaitlist: CollectionAfterChangeHook = async ({
   }
 
   const waitlistEntries = await req.payload.find({
-    collection: 'waitlist',
+    collection: getSlugs(req.payload.config).waitlist,
     depth: 1,
     limit: 1,
     req,

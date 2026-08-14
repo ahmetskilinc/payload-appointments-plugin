@@ -2,6 +2,7 @@ import type { Payload } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
 import { findAll } from './findAll';
 
 export type DateRange = {
@@ -124,7 +125,7 @@ export async function fetchAppointmentsInRange(
   dateRange: DateRange,
 ): Promise<AppointmentDoc[]> {
   return findAll<AppointmentDoc>({
-    collection: 'appointments',
+    collection: getSlugs(payload.config).appointments,
     depth: 1,
     payload,
     select: {

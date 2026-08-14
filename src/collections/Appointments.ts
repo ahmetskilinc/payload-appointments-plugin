@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { anyone } from '../access/anyone';
 import { authenticated } from '../access/authenticated';
 import { addAdminTitle } from '../hooks/addAdminTitle';
@@ -13,8 +15,8 @@ import { setEndDateTime } from '../hooks/setEndDateTime';
 import { validateCustomerOrGuest } from '../hooks/validateCustomerOrGuest';
 import { validateNoOverlap } from '../hooks/validateNoOverlap';
 
-const Appointments: CollectionConfig = {
-  slug: 'appointments',
+const createAppointmentsCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.appointments,
   access: {
     create: anyone,
     delete: authenticated,
@@ -93,7 +95,7 @@ const Appointments: CollectionConfig = {
       },
       index: true,
       label: 'Host',
-      relationTo: 'teamMembers',
+      relationTo: slugs.teamMembers,
       required: true,
     },
     {
@@ -108,7 +110,7 @@ const Appointments: CollectionConfig = {
         },
       },
       label: 'Customer',
-      relationTo: 'users',
+      relationTo: slugs.users,
     },
     {
       name: 'guestCustomer',
@@ -122,7 +124,7 @@ const Appointments: CollectionConfig = {
         },
       },
       label: 'Guest Customer',
-      relationTo: 'guestCustomers',
+      relationTo: slugs.guestCustomers,
     },
     {
       name: 'bookedBy',
@@ -155,7 +157,7 @@ const Appointments: CollectionConfig = {
       },
       hasMany: true,
       label: 'Services',
-      relationTo: 'services',
+      relationTo: slugs.services,
       required: true,
     },
     {
@@ -431,6 +433,6 @@ const Appointments: CollectionConfig = {
     plural: 'Appointments',
     singular: 'Appointment',
   },
-};
+});
 
-export default Appointments;
+export default createAppointmentsCollection;

@@ -166,15 +166,15 @@ export default function CalendarClient({
     () => ({
       event: ({ event }) => {
         if (event.appointmentType === 'appointment') {
-          return <Appointment event={event} />;
+          return <Appointment collectionSlug={collectionSlug} event={event} />;
         }
         if (event.appointmentType === 'blockout') {
-          return <Blockout event={event} />;
+          return <Blockout collectionSlug={collectionSlug} event={event} />;
         }
         return null;
       },
     }),
-    [],
+    [collectionSlug],
   );
 
   return (

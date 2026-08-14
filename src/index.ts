@@ -1,11 +1,11 @@
-import type { Config } from 'payload';
+import type { CollectionConfig, Config, Field, GlobalConfig } from 'payload';
 
-import Appointments from './collections/Appointments';
-import GuestCustomers from './collections/GuestCustomers';
-import SentEmails from './collections/SentEmails';
-import Services from './collections/Services';
-import TeamMembers from './collections/TeamMembers';
-import Waitlist from './collections/Waitlist';
+import createAppointmentsCollection from './collections/Appointments';
+import createGuestCustomersCollection from './collections/GuestCustomers';
+import createSentEmailsCollection from './collections/SentEmails';
+import createServicesCollection from './collections/Services';
+import createTeamMembersCollection from './collections/TeamMembers';
+import createWaitlistCollection from './collections/Waitlist';
 import { cancelAppointment } from './endpoints/cancelAppointment';
 import { cancelAppointmentByToken } from './endpoints/cancelAppointmentByToken';
 import { cancelRecurringAppointment } from './endpoints/cancelRecurringAppointment';
@@ -18,16 +18,63 @@ import { updateRecurringAppointment } from './endpoints/updateRecurringAppointme
 import { waitlistJoin } from './endpoints/waitlistJoin';
 import { waitlistLeave } from './endpoints/waitlistLeave';
 import { waitlistPosition } from './endpoints/waitlistPosition';
-import OpeningTimes from './globals/OpeningTimes';
+import createOpeningTimesGlobal from './globals/OpeningTimes';
 import { createRequestPaymentHook } from './hooks/requestPayment';
 import { autoCompleteTask } from './jobs/autoCompleteTask';
 import { expireWaitlistTask } from './jobs/expireWaitlistTask';
 import { seedAppointmentsData } from './seed';
+import { defaultSlugs } from './slugs';
 
+import type { AppointmentsPluginSlugs } from './slugs';
 import type { PaymentHooks } from './types';
 
+export type { AppointmentsPluginSlugs } from './slugs';
+export { getSlugs } from './slugs';
+
+type FieldsOverride = (args: { defaultFields: Field[] }) => Field[];
+
+/**
+ * Override a plugin collection. Properties are shallow-merged over the
+ * defaults, except:
+ * - `slug` renames the collection (all internal references follow it)
+ * - `access` and `admin` are merged one level deep with the defaults
+ * - `hooks` are appended after the plugin's own hooks, never replacing them
+ * - `fields` is a function receiving the default fields and returning the
+ *   final field array
+ */
+export type CollectionOverride = {
+  fields?: FieldsOverride;
+} & Omit<Partial<CollectionConfig>, 'fields'>;
+
+/** Same override semantics as {@link CollectionOverride}, for a global. */
+export type GlobalOverride = {
+  fields?: FieldsOverride;
+} & Omit<Partial<GlobalConfig>, 'fields'>;
+
+export type AppointmentsPluginCollectionOverrides = {
+  appointments?: CollectionOverride;
+  guestCustomers?: CollectionOverride;
+  sentEmails?: CollectionOverride;
+  services?: CollectionOverride;
+  teamMembers?: CollectionOverride;
+  waitlist?: CollectionOverride;
+};
+
+export type AppointmentsPluginGlobalOverrides = {
+  openingTimes?: GlobalOverride;
+};
+
 export type AppointmentsPluginConfig = {
+  /**
+   * Per-collection config overrides, including `slug` renames.
+   * See {@link CollectionOverride} for merge semantics.
+   */
+  collections?: AppointmentsPluginCollectionOverrides;
   disabled?: boolean;
+  /**
+   * Per-global config overrides, including `slug` renames.
+   */
+  globals?: AppointmentsPluginGlobalOverrides;
   paymentHooks?: PaymentHooks;
   seedData?: boolean;
   showDashboardCards?: boolean;
@@ -40,9 +87,64 @@ export type AppointmentsPluginConfig = {
   webhookSecret?: string;
 };
 
+type HookArrays = { [key: string]: unknown } | undefined;
+
+const mergeHooks = <T extends HookArrays>(base: T, override: T): T => {
+  if (!override) {
+    return base;
+  }
+  const merged: { [key: string]: unknown } = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    if (!Array.isArray(value)) {
+      continue;
+    }
+    const existing = merged[key];
+    merged[key] = [...(Array.isArray(existing) ? existing : []), ...value];
+  }
+  return merged as T;
+};
+
+const applyCollectionOverride = (
+  base: CollectionConfig,
+  override?: CollectionOverride,
+): CollectionConfig => {
+  if (!override) {
+    return base;
+  }
+  const { access, admin, fields, hooks, ...rest } = override;
+  return {
+    ...base,
+    ...rest,
+    // The factory already received the resolved slug.
+    slug: base.slug,
+    access: { ...base.access, ...access },
+    admin: { ...base.admin, ...admin },
+    fields: typeof fields === 'function' ? fields({ defaultFields: base.fields }) : base.fields,
+    hooks: mergeHooks(base.hooks, hooks),
+  };
+};
+
+const applyGlobalOverride = (base: GlobalConfig, override?: GlobalOverride): GlobalConfig => {
+  if (!override) {
+    return base;
+  }
+  const { access, admin, fields, hooks, ...rest } = override;
+  return {
+    ...base,
+    ...rest,
+    slug: base.slug,
+    access: { ...base.access, ...access },
+    admin: { ...base.admin, ...admin },
+    fields: typeof fields === 'function' ? fields({ defaultFields: base.fields }) : base.fields,
+    hooks: mergeHooks(base.hooks, hooks),
+  };
+};
+
 export const appointmentsPlugin =
   ({
+    collections: collectionOverrides,
     disabled = false,
+    globals: globalOverrides,
     paymentHooks,
     seedData = false,
     showDashboardCards = true,
@@ -50,9 +152,32 @@ export const appointmentsPlugin =
     webhookSecret,
   }: AppointmentsPluginConfig = {}) =>
   (config: Config): Config => {
+    const slugs: AppointmentsPluginSlugs = {
+      appointments: collectionOverrides?.appointments?.slug ?? defaultSlugs.appointments,
+      guestCustomers: collectionOverrides?.guestCustomers?.slug ?? defaultSlugs.guestCustomers,
+      openingTimes: globalOverrides?.openingTimes?.slug ?? defaultSlugs.openingTimes,
+      sentEmails: collectionOverrides?.sentEmails?.slug ?? defaultSlugs.sentEmails,
+      services: collectionOverrides?.services?.slug ?? defaultSlugs.services,
+      teamMembers: collectionOverrides?.teamMembers?.slug ?? defaultSlugs.teamMembers,
+      // The plugin references the app's auth collection in relationships.
+      users: typeof config.admin?.user === 'string' ? config.admin.user : defaultSlugs.users,
+      waitlist: collectionOverrides?.waitlist?.slug ?? defaultSlugs.waitlist,
+    };
+
+    // Hooks, endpoints, jobs, and admin views resolve the slugs at runtime via
+    // `getSlugs(config)` instead of importing hardcoded literals.
+    config.custom = {
+      ...config.custom,
+      appointmentsPlugin: {
+        ...(config.custom?.appointmentsPlugin ?? {}),
+        slugs,
+      },
+    };
+
     // Collections and globals are always registered — even when the plugin is
     // disabled — so that toggling `disabled` never changes the database schema.
     // (Hooks don't affect the schema, so appending the payment hook here is safe.)
+    const Appointments = createAppointmentsCollection(slugs);
     const appointmentsCollection = paymentHooks
       ? {
           ...Appointments,
@@ -68,14 +193,17 @@ export const appointmentsPlugin =
 
     config.collections = [
       ...(config.collections || []),
-      appointmentsCollection,
-      GuestCustomers,
-      SentEmails,
-      TeamMembers,
-      Services,
-      Waitlist,
+      applyCollectionOverride(appointmentsCollection, collectionOverrides?.appointments),
+      applyCollectionOverride(createGuestCustomersCollection(slugs), collectionOverrides?.guestCustomers),
+      applyCollectionOverride(createSentEmailsCollection(slugs), collectionOverrides?.sentEmails),
+      applyCollectionOverride(createTeamMembersCollection(slugs), collectionOverrides?.teamMembers),
+      applyCollectionOverride(createServicesCollection(slugs), collectionOverrides?.services),
+      applyCollectionOverride(createWaitlistCollection(slugs), collectionOverrides?.waitlist),
     ];
-    config.globals = [...(config.globals || []), OpeningTimes];
+    config.globals = [
+      ...(config.globals || []),
+      applyGlobalOverride(createOpeningTimesGlobal(slugs), globalOverrides?.openingTimes),
+    ];
 
     if (disabled) {
       return config;

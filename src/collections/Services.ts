@@ -1,9 +1,11 @@
 import type { CollectionConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { authenticated } from '../access/authenticated';
 
-const Services: CollectionConfig = {
-  slug: 'services',
+const createServicesCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.services,
   access: {
     create: authenticated,
     delete: authenticated,
@@ -143,6 +145,6 @@ const Services: CollectionConfig = {
     singular: 'Service',
   },
   timestamps: true,
-};
+});
 
-export default Services;
+export default createServicesCollection;

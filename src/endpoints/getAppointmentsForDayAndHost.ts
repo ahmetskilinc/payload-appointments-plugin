@@ -2,6 +2,7 @@ import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 import moment from 'moment-timezone';
 
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 import {
   curateSlots,
@@ -74,7 +75,7 @@ const filterSlotsForHost = async (
   }
 
   const existingAppointments = await findAll<StoredAppointment>({
-    collection: 'appointments',
+    collection: getSlugs(req.payload.config).appointments,
     payload: req.payload,
     where: { and: conditions },
   });
@@ -103,10 +104,11 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
     }
 
     const hostId = typeof host === 'string' ? host : undefined;
+    const slugs = getSlugs(req.payload.config);
 
     const servicesArray = [...new Set(services.split(','))];
     const servicesData = await req.payload.find({
-      collection: 'services',
+      collection: slugs.services,
       depth: 0,
       limit: servicesArray.length,
       where: {
@@ -159,7 +161,7 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
 
     // All wall-clock math happens in the business timezone.
     const openingTimes = await req.payload.findGlobal({
-      slug: 'openingTimes',
+      slug: slugs.openingTimes,
       depth: 0,
     });
     const timezone = (openingTimes?.timezone as string) || 'UTC';
@@ -184,7 +186,7 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
     if (hostId) {
       const teamMember = (await req.payload.findByID({
         id: hostId,
-        collection: 'teamMembers',
+        collection: slugs.teamMembers,
         depth: 0,
         disableErrors: true,
       })) as unknown as TeamMember | null;

@@ -110,12 +110,55 @@ export default buildConfig({
 
 | Option               | Type           | Default | Description                                                                    |
 | -------------------- | -------------- | ------- | ------------------------------------------------------------------------------ |
+| `collections`        | `object`       | —       | Per-collection overrides, including `slug` renames (see below).                |
+| `globals`            | `object`       | —       | Per-global overrides for `openingTimes`, including `slug`.                     |
 | `disabled`           | `boolean`      | `false` | Disables endpoints/UI/hooks. Collections stay registered so the schema is stable. |
 | `seedData`           | `boolean`      | `false` | Seeds example opening times, services, and team members on init.               |
 | `showDashboardCards` | `boolean`      | `true`  | Show appointment cards on the admin dashboard.                                 |
 | `showNavItems`       | `boolean`      | `true`  | Show schedule/analytics links in the admin nav.                                |
 | `webhookSecret`      | `string`       | —       | HMAC secret for the payment webhook. The webhook rejects all calls without it. |
 | `paymentHooks`       | `PaymentHooks` | —       | Callbacks to integrate a payment provider (see below).                         |
+
+### Collection & slug overrides
+
+Every collection the plugin registers (`appointments`, `guestCustomers`, `sentEmails`,
+`services`, `teamMembers`, `waitlist`) and the `openingTimes` global can be customized:
+
+```ts
+appointmentsPlugin({
+  collections: {
+    // Rename the collection — every internal reference (relationships,
+    // endpoints, hooks, jobs, admin views) follows the new slug.
+    appointments: { slug: 'bookings' },
+    services: {
+      slug: 'treatments',
+      // Extend (or replace) the default fields.
+      fields: ({ defaultFields }) => [...defaultFields, { name: 'color', type: 'text' }],
+      // Merged one level deep with the defaults.
+      access: { read: () => true },
+      admin: { group: 'Booking' },
+      // Appended after the plugin's own hooks, never replacing them.
+      hooks: { afterChange: [myHook] },
+    },
+  },
+  globals: {
+    openingTimes: { slug: 'businessHours' },
+  },
+});
+```
+
+Override semantics:
+
+- `slug` renames the collection/global; all internal references follow it.
+- `access` and `admin` are merged one level deep with the plugin defaults.
+- `hooks` are appended after the plugin's own hooks (the plugin's booking logic
+  keeps working).
+- `fields` is a function receiving `{ defaultFields }` and returning the final
+  field array.
+- Any other property is shallow-merged over the default config.
+
+Customer relationships point at your auth collection: the plugin reads
+`config.admin.user` (default `users`), so no option is needed for that.
 
 ### Payment hooks
 
@@ -211,7 +254,7 @@ pnpm build
 
 ## Roadmap
 
-- [ ] Collection/slug overrides via plugin options
+- [x] Collection/slug overrides via plugin options
 - [ ] Variable service pricing (per hour, etc.)
 - [ ] RRULE-based iCal recurrence
 - [ ] Per-day multiple intervals + holiday dates in opening times

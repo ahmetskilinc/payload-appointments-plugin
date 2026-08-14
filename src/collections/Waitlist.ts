@@ -1,10 +1,12 @@
 import type { CollectionConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { anyone } from '../access/anyone';
 import { authenticated } from '../access/authenticated';
 
-const Waitlist: CollectionConfig = {
-  slug: 'waitlist',
+const createWaitlistCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.waitlist,
   access: {
     create: anyone,
     delete: authenticated,
@@ -22,7 +24,7 @@ const Waitlist: CollectionConfig = {
       name: 'service',
       type: 'relationship',
       label: 'Service',
-      relationTo: 'services',
+      relationTo: slugs.services,
       required: true,
     },
     {
@@ -32,13 +34,13 @@ const Waitlist: CollectionConfig = {
         description: 'Preferred team member (optional)',
       },
       label: 'Preferred Host',
-      relationTo: 'teamMembers',
+      relationTo: slugs.teamMembers,
     },
     {
       name: 'customer',
       type: 'relationship',
       label: 'Customer',
-      relationTo: 'users',
+      relationTo: slugs.users,
     },
     {
       name: 'guestCustomer',
@@ -47,7 +49,7 @@ const Waitlist: CollectionConfig = {
         condition: (siblingData) => !siblingData.customer,
       },
       label: 'Guest Customer',
-      relationTo: 'guestCustomers',
+      relationTo: slugs.guestCustomers,
     },
     {
       name: 'preferredDates',
@@ -145,6 +147,6 @@ const Waitlist: CollectionConfig = {
     singular: 'Waitlist Entry',
   },
   timestamps: true,
-};
+});
 
-export default Waitlist;
+export default createWaitlistCollection;

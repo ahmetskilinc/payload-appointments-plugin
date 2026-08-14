@@ -2,6 +2,8 @@ import type { PayloadHandler, PayloadRequest } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
+
 export const cancelAppointment: PayloadHandler = async (req: PayloadRequest) => {
   try {
     if (!req.user) {
@@ -14,9 +16,11 @@ export const cancelAppointment: PayloadHandler = async (req: PayloadRequest) => 
       return Response.json({ error: 'Missing or invalid appointment ID' }, { status: 400 });
     }
 
+    const appointmentsSlug = getSlugs(req.payload.config).appointments;
+
     const appointment = await req.payload.findByID({
       id,
-      collection: 'appointments',
+      collection: appointmentsSlug,
       depth: 0,
       disableErrors: true,
       overrideAccess: false,
@@ -42,7 +46,7 @@ export const cancelAppointment: PayloadHandler = async (req: PayloadRequest) => 
 
     const updatedAppointment = await req.payload.update({
       id,
-      collection: 'appointments',
+      collection: appointmentsSlug,
       data: {
         cancelledAt: moment().toISOString(),
         status: 'cancelled',

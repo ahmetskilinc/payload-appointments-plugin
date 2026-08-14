@@ -5,6 +5,7 @@ import type { Appointment } from '../types';
 import { RenderedEmail as AppointmentCancelledRenderedEmail } from '../emails/AppointmentCancelledEmail';
 import { RenderedEmail as AppointmentCreatedRenderedEmail } from '../emails/AppointmentCreatedEmail';
 import { RenderedEmail as AppointmentUpdatedRenderedEmail } from '../emails/AppointmentUpdatedEmail';
+import { getSlugs } from '../slugs';
 import { appointmentCancelledEmail } from '../utilities/AppointmentCancelledEmail';
 import { appointmentCreatedEmail } from '../utilities/AppointmentCreatedEmail';
 import { appointmentUpdatedEmail } from '../utilities/AppointmentUpdatedEmail';
@@ -28,16 +29,18 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
     return;
   }
 
+  const slugs = getSlugs(req.payload.config);
+
   try {
     const appointment = (await req.payload.findByID({
       id: doc.id,
-      collection: 'appointments',
+      collection: slugs.appointments,
       depth: 2,
       req,
     })) as unknown as Appointment;
 
     const openingTimes = await req.payload.findGlobal({
-      slug: 'openingTimes',
+      slug: slugs.openingTimes,
       depth: 0,
       req,
     });
@@ -102,7 +105,7 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
       if (emailSent) {
         try {
           await req.payload.create({
-            collection: 'sentEmails',
+            collection: slugs.sentEmails,
             data: {
               appointment: doc.id,
               emailType,

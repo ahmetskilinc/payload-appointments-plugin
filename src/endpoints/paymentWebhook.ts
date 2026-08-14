@@ -2,6 +2,7 @@ import type { PayloadHandler, PayloadRequest } from 'payload';
 
 import type { Appointment, PaymentHooks } from '../types';
 
+import { getSlugs } from '../slugs';
 import { resolvePaymentStatus } from '../utilities/deposit';
 import {
   verifyWebhookSignature,
@@ -60,8 +61,10 @@ export const createPaymentWebhook =
 
       const { appointmentId, paymentId, status, amountPaid, refundAmount } = body;
 
+      const appointmentsSlug = getSlugs(req.payload.config).appointments;
+
       const appointment = await req.payload.findByID({
-        collection: 'appointments',
+        collection: appointmentsSlug,
         id: appointmentId,
         depth: 0,
         disableErrors: true,
@@ -134,7 +137,7 @@ export const createPaymentWebhook =
       }
 
       const updated = await req.payload.update({
-        collection: 'appointments',
+        collection: appointmentsSlug,
         id: appointmentId,
         data: {
           payment: {

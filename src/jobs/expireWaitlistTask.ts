@@ -1,6 +1,7 @@
 import type { TaskConfig } from 'payload';
 
 import { notifyWaitlistEntry } from '../hooks/notifyWaitlist';
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 
 type WaitlistDoc = {
@@ -23,9 +24,10 @@ export const expireWaitlistTask: TaskConfig<{
   slug: 'appointmentsExpireWaitlist',
   handler: async ({ req }) => {
     const now = new Date().toISOString();
+    const waitlistSlug = getSlugs(req.payload.config).waitlist;
 
     const expiredEntries = await findAll<WaitlistDoc>({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       depth: 0,
       payload: req.payload,
       req,
@@ -40,7 +42,7 @@ export const expireWaitlistTask: TaskConfig<{
     for (const entry of expiredEntries) {
       try {
         await req.payload.update({
-          collection: 'waitlist',
+          collection: waitlistSlug,
           id: entry.id,
           data: {
             status: 'expired',
@@ -62,7 +64,7 @@ export const expireWaitlistTask: TaskConfig<{
 
       const hostId = toId(entry.host);
       const nextInLine = await req.payload.find({
-        collection: 'waitlist',
+        collection: waitlistSlug,
         depth: 1,
         limit: 1,
         req,

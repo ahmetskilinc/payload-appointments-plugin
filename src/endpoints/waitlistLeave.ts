@@ -1,5 +1,7 @@
 import type { PayloadHandler, PayloadRequest } from 'payload';
 
+import { getSlugs } from '../slugs';
+
 export const waitlistLeave: PayloadHandler = async (req: PayloadRequest) => {
   try {
     if (!req.user) {
@@ -12,8 +14,10 @@ export const waitlistLeave: PayloadHandler = async (req: PayloadRequest) => {
       return Response.json({ error: 'Missing waitlist entry ID' }, { status: 400 });
     }
 
+    const waitlistSlug = getSlugs(req.payload.config).waitlist;
+
     const entry = await req.payload.findByID({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       id,
       depth: 0,
       disableErrors: true,
@@ -34,7 +38,7 @@ export const waitlistLeave: PayloadHandler = async (req: PayloadRequest) => {
     }
 
     await req.payload.update({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       id,
       data: {
         status: 'cancelled',

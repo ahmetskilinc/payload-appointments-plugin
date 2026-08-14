@@ -5,9 +5,8 @@ import { redirect } from 'next/navigation';
 
 import type { Appointment, TeamMember } from '../../types';
 
-import Appointments from '../../collections/Appointments';
-import TeamMembers from '../../collections/TeamMembers';
 import { AppointmentProvider } from '../../providers/AppointmentsProvider';
+import { getSlugs } from '../../slugs';
 import AppointmentsListClient from './index.client';
 
 const AppointmentsList: React.FC<AdminViewProps> = async ({
@@ -21,6 +20,8 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
     redirect(`${payload.config.routes.admin}/login`);
   }
 
+  const slugs = getSlugs(payload.config);
+
   const today = new Date();
   const startOfDay = new Date(today);
   startOfDay.setHours(0, 0, 0, 0);
@@ -29,7 +30,7 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
 
   const [appointmentsRes, teamMembersRes] = await Promise.all([
     payload.find({
-      collection: Appointments.slug as 'appointments',
+      collection: slugs.appointments,
       depth: 1,
       limit: 500,
       overrideAccess: false,
@@ -51,7 +52,7 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
       },
     }),
     payload.find({
-      collection: TeamMembers.slug as 'teamMembers',
+      collection: slugs.teamMembers,
       limit: 100,
       overrideAccess: false,
       user,
@@ -74,7 +75,7 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
       >
         <AppointmentsListClient
           apiRoute={apiRoute}
-          collectionSlug={Appointments.slug}
+          collectionSlug={slugs.appointments}
           initialAppointments={appointmentsRes.docs as unknown as Appointment[]}
           initialTeamMembers={teamMembersRes.docs as unknown as TeamMember[]}
         />

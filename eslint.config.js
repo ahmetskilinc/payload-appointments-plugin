@@ -45,6 +45,7 @@ const eslintConfig = defineConfig([
             '*.mjs',
             '*.spec.ts',
             '*.d.ts',
+            'src/*.test.ts',
             'src/utilities/*.test.ts',
           ],
         },

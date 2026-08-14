@@ -2,6 +2,8 @@ import { type CollectionBeforeValidateHook, ValidationError } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
+
 const toId = (value: unknown): number | string =>
   value && typeof value === 'object'
     ? (value as { id: number | string }).id
@@ -39,7 +41,7 @@ export const validateNoOverlap: CollectionBeforeValidateHook = async ({
   } else if (services?.length) {
     const serviceIds = [...new Set((services as unknown[]).map(toId))];
     const foundServices = await req.payload.find({
-      collection: 'services',
+      collection: getSlugs(req.payload.config).services,
       depth: 0,
       limit: serviceIds.length,
       req,
@@ -61,7 +63,7 @@ export const validateNoOverlap: CollectionBeforeValidateHook = async ({
   const currentId = operation === 'update' && originalDoc?.id ? originalDoc.id : null;
 
   const existingAppointments = await req.payload.find({
-    collection: 'appointments',
+    collection: getSlugs(req.payload.config).appointments,
     depth: 0,
     limit: 1,
     req,

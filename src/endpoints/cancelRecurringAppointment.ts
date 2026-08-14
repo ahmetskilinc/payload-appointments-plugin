@@ -2,6 +2,7 @@ import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 
 export type CancelRecurringPayload = {
@@ -25,9 +26,10 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
     }
 
     const { appointmentId, cancelType } = body;
+    const appointmentsSlug = getSlugs(req.payload.config).appointments;
 
     const appointment = await req.payload.findByID({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       id: appointmentId,
       depth: 0,
       disableErrors: true,
@@ -51,7 +53,7 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
 
     if (cancelType === 'single' || !recurrence?.seriesId) {
       await req.payload.update({
-        collection: 'appointments',
+        collection: appointmentsSlug,
         id: appointmentId,
         data: {
           status: 'cancelled',
@@ -77,7 +79,7 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
     }
 
     const seriesAppointments = await findAll<{ id: number | string }>({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       overrideAccess: false,
       payload: req.payload,
       req,
@@ -91,7 +93,7 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
     for (const appt of seriesAppointments) {
       try {
         await req.payload.update({
-          collection: 'appointments',
+          collection: appointmentsSlug,
           id: appt.id,
           data: {
             status: 'cancelled',

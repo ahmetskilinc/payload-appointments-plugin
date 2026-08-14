@@ -1,11 +1,13 @@
 import type { CollectionConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { authenticated } from '../access/authenticated';
 
 const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-const TeamMembers: CollectionConfig = {
-  slug: 'teamMembers',
+const createTeamMembersCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.teamMembers,
   access: {
     create: authenticated,
     delete: authenticated,
@@ -178,6 +180,6 @@ const TeamMembers: CollectionConfig = {
     },
   ],
   timestamps: true,
-};
+});
 
-export default TeamMembers;
+export default createTeamMembersCollection;

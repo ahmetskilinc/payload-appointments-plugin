@@ -1,5 +1,6 @@
 import type { TaskConfig } from 'payload';
 
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 
 /**
@@ -13,9 +14,10 @@ export const autoCompleteTask: TaskConfig<{
   slug: 'appointmentsAutoComplete',
   handler: async ({ req }) => {
     const now = new Date().toISOString();
+    const appointmentsSlug = getSlugs(req.payload.config).appointments;
 
     const pastAppointments = await findAll<{ id: number | string }>({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       payload: req.payload,
       req,
       select: { id: true },
@@ -33,7 +35,7 @@ export const autoCompleteTask: TaskConfig<{
     for (const appointment of pastAppointments) {
       try {
         await req.payload.update({
-          collection: 'appointments',
+          collection: appointmentsSlug,
           id: appointment.id,
           context: {
             skipAutoComplete: true,

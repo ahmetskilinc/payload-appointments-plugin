@@ -1,5 +1,6 @@
 import type { PayloadHandler, PayloadRequest } from 'payload';
 
+import { getSlugs } from '../slugs';
 import { toPublicAppointment } from '../utilities/publicAppointment';
 
 export const getAppointmentByToken: PayloadHandler = async (req: PayloadRequest) => {
@@ -13,7 +14,7 @@ export const getAppointmentByToken: PayloadHandler = async (req: PayloadRequest)
     // Intentionally privileged: the unguessable cancellation token authorizes
     // this read. Only a minimal, PII-safe shape is returned below.
     const appointments = await req.payload.find({
-      collection: 'appointments',
+      collection: getSlugs(req.payload.config).appointments,
       depth: 1,
       limit: 1,
       where: {

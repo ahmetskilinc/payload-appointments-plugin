@@ -1,26 +1,29 @@
 import type { Payload } from 'payload'
 
+import { getSlugs } from '../slugs'
 import { openingTimesSeed, servicesSeed, teamMembersSeed } from './data'
 
 export const seedAppointmentsData = async (payload: Payload): Promise<void> => {
   payload.logger.info('Seeding appointments plugin data...')
 
+  const slugs = getSlugs(payload.config)
+
   try {
     await payload.updateGlobal({
-      slug: 'openingTimes',
+      slug: slugs.openingTimes,
       data: openingTimesSeed,
     })
     payload.logger.info('Seeded opening times')
 
     const existingServices = await payload.find({
-      collection: 'services',
+      collection: slugs.services,
       limit: 1,
     })
 
     if (existingServices.totalDocs === 0) {
       for (const service of servicesSeed) {
         await payload.create({
-          collection: 'services',
+          collection: slugs.services,
           data: service,
         })
       }
@@ -30,14 +33,14 @@ export const seedAppointmentsData = async (payload: Payload): Promise<void> => {
     }
 
     const existingTeamMembers = await payload.find({
-      collection: 'teamMembers',
+      collection: slugs.teamMembers,
       limit: 1,
     })
 
     if (existingTeamMembers.totalDocs === 0) {
       for (const teamMember of teamMembersSeed) {
         await payload.create({
-          collection: 'teamMembers',
+          collection: slugs.teamMembers,
           data: teamMember,
         })
       }
