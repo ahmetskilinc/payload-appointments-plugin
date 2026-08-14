@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload';
+import type { CollectionAfterChangeHook, CollectionConfig } from 'payload';
 
 import type { AppointmentsPluginSlugs } from '../slugs';
 
@@ -15,7 +15,10 @@ import { setEndDateTime } from '../hooks/setEndDateTime';
 import { validateCustomerOrGuest } from '../hooks/validateCustomerOrGuest';
 import { validateNoOverlap } from '../hooks/validateNoOverlap';
 
-const createAppointmentsCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+const createAppointmentsCollection = (
+  slugs: AppointmentsPluginSlugs,
+  options?: { sendCustomerEmailHook?: CollectionAfterChangeHook },
+): CollectionConfig => ({
   slug: slugs.appointments,
   access: {
     create: anyone,
@@ -421,7 +424,7 @@ const createAppointmentsCollection = (slugs: AppointmentsPluginSlugs): Collectio
   ],
   hooks: {
     afterChange: [
-      sendCustomerEmail,
+      options?.sendCustomerEmailHook ?? sendCustomerEmail,
       autoCompleteAppointments,
       generateRecurringAppointments,
       notifyWaitlist,

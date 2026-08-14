@@ -2,6 +2,7 @@ import { type CollectionBeforeValidateHook, ValidationError } from 'payload';
 
 import moment from 'moment';
 
+import { getSettings } from '../settings';
 import { getSlugs } from '../slugs';
 
 const toId = (value: unknown): number | string =>
@@ -57,7 +58,9 @@ export const validateNoOverlap: CollectionBeforeValidateHook = async ({
     );
     endTime = startTime.clone().add(totalDuration, 'minutes');
   } else {
-    endTime = startTime.clone().add(30, 'minutes');
+    endTime = startTime
+      .clone()
+      .add(getSettings(req.payload.config).defaultAppointmentDuration, 'minutes');
   }
 
   const currentId = operation === 'update' && originalDoc?.id ? originalDoc.id : null;

@@ -2,7 +2,8 @@ import type { CollectionConfig, Config } from 'payload';
 
 import { describe, expect, it } from 'vitest';
 
-import { appointmentsPlugin, getSlugs } from './index';
+import { appointmentsPlugin, getSettings, getSlugs } from './index';
+import { defaultSettings } from './settings';
 import { defaultSlugs } from './slugs';
 
 const baseConfig = (): Config =>
@@ -123,6 +124,68 @@ describe('appointmentsPlugin collection/slug overrides', () => {
     const services = findCollection(config, 'services');
     expect(services.fields.some((f) => 'name' in f && f.name === 'color')).toBe(true);
     expect(services.fields.some((f) => 'name' in f && f.name === 'title')).toBe(true);
+  });
+
+  it('resolves default settings and mirrors them to the admin client config', () => {
+    const config = appointmentsPlugin()(baseConfig());
+
+    expect(getSettings(config)).toEqual(defaultSettings);
+    expect(
+      (config.admin?.custom as { appointmentsPlugin?: { settings?: unknown } })?.appointmentsPlugin
+        ?.settings,
+    ).toEqual(defaultSettings);
+  });
+
+  it('applies endpoint path overrides', () => {
+    const config = appointmentsPlugin({
+      endpoints: { analytics: '/booking-analytics', waitlistJoin: '/queue/join' },
+    })(baseConfig());
+
+    const paths = (config.endpoints ?? []).map((e) => e.path);
+    expect(paths).toContain('/booking-analytics');
+    expect(paths).toContain('/queue/join');
+    expect(paths).not.toContain('/appointments-analytics');
+    // Untouched endpoints keep their defaults.
+    expect(paths).toContain('/cancel-appointment');
+  });
+
+  it('applies job slug, view, and admin group overrides', () => {
+    const config = appointmentsPlugin({
+      adminGroup: 'Bookings',
+      jobs: { autoComplete: 'bookingsAutoComplete' },
+      views: { schedule: { label: 'Calendar', path: '/bookings/calendar' } },
+    })(baseConfig());
+
+    const taskSlugs = (config.jobs?.tasks ?? []).map((t) => t.slug);
+    expect(taskSlugs).toContain('bookingsAutoComplete');
+    expect(taskSlugs).toContain('appointmentsExpireWaitlist');
+
+    const settings = getSettings(config);
+    expect(settings.views.schedule).toEqual({ label: 'Calendar', path: '/bookings/calendar' });
+    expect(settings.views.analytics).toEqual(defaultSettings.views.analytics);
+
+    const views = config.admin?.components?.views as Record<string, { path: string }>;
+    expect(views.AppointmentsList.path).toBe('/bookings/calendar');
+
+    for (const collection of config.collections ?? []) {
+      expect(collection.admin?.group).toBe('Bookings');
+    }
+    expect(config.globals?.[0]?.admin?.group).toBe('Bookings');
+  });
+
+  it('resolves tunables into settings', () => {
+    const config = appointmentsPlugin({
+      calendar: { dayStartHour: 7 },
+      cancelPagePath: '/cancel-booking',
+      defaultAppointmentDuration: 45,
+      waitlistExpiryHours: 6,
+    })(baseConfig());
+
+    const settings = getSettings(config);
+    expect(settings.calendar).toEqual({ ...defaultSettings.calendar, dayStartHour: 7 });
+    expect(settings.cancelPagePath).toBe('/cancel-booking');
+    expect(settings.defaultAppointmentDuration).toBe(45);
+    expect(settings.waitlistExpiryHours).toBe(6);
   });
 
   it('merges access and admin overrides one level deep', () => {

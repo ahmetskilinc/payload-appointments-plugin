@@ -1,6 +1,7 @@
 import type { Payload } from 'payload';
 
 import { getPublicServerUrl } from '../lib/utils';
+import { defaultSettings, getSettings } from '../settings';
 import type { Appointment } from '../types';
 
 import { getEmailFromAddress } from './emailFrom';
@@ -16,8 +17,11 @@ export const appointmentCreatedEmail = (appointment: Appointment, payload?: Payl
   const formattedDate = formatAppointmentDate(appointment.start);
   const serviceNames = (appointment.services || []).map((service) => service?.title).join(', ');
   const baseUrl = getPublicServerUrl(payload?.config?.serverURL);
+  const cancelPagePath = payload
+    ? getSettings(payload.config).cancelPagePath
+    : defaultSettings.cancelPagePath;
   const cancelUrl = appointment.cancellationToken
-    ? `${baseUrl}/cancel/${appointment.cancellationToken}`
+    ? `${baseUrl}${cancelPagePath}/${appointment.cancellationToken}`
     : '';
 
   return {

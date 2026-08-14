@@ -1,11 +1,12 @@
 'use client';
 
-import { useStepNav } from '@payloadcms/ui';
+import { useConfig, useStepNav } from '@payloadcms/ui';
 import { useEffect } from 'react';
 
 import type { Appointment, TeamMember } from '../../types';
 
 import Calendar from '../../components/Appointments/index';
+import { getClientSettings } from '../../lib/clientSettings';
 
 interface AppointmentsListClientProps {
   apiRoute: string;
@@ -21,19 +22,21 @@ const AppointmentsListClient: React.FC<AppointmentsListClientProps> = ({
   initialTeamMembers,
 }) => {
   const { setStepNav } = useStepNav();
+  const { config } = useConfig();
+  const label = getClientSettings(config).views.schedule.label;
 
   useEffect(() => {
     setStepNav([
       {
-        label: 'Appointments List',
+        label,
       },
     ]);
-  }, [setStepNav]);
+  }, [label, setStepNav]);
 
   return (
     <div className="collection-list appointments-calendar-view">
       <header className="list-header">
-        <h1>Appointments</h1>
+        <h1>{label}</h1>
       </header>
       <Calendar
         apiRoute={apiRoute}

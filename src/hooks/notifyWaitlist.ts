@@ -2,10 +2,9 @@ import type { CollectionAfterChangeHook, Payload, PayloadRequest } from 'payload
 
 import moment from 'moment';
 
+import { getSettings } from '../settings';
 import { getSlugs } from '../slugs';
 import { getEmailFromAddress } from '../utilities/emailFrom';
-
-const WAITLIST_EXPIRY_HOURS = 2;
 
 type WaitlistEntryDoc = {
   customer?: { email?: string; firstName?: string } | number | string | null;
@@ -30,7 +29,8 @@ export const notifyWaitlistEntry = async (
   entry: WaitlistEntryDoc,
   req?: PayloadRequest,
 ): Promise<void> => {
-  const expiresAt = moment().add(WAITLIST_EXPIRY_HOURS, 'hours').toISOString();
+  const expiryHours = getSettings(payload.config).waitlistExpiryHours;
+  const expiresAt = moment().add(expiryHours, 'hours').toISOString();
 
   await payload.update({
     collection: getSlugs(payload.config).waitlist,
@@ -64,7 +64,7 @@ export const notifyWaitlistEntry = async (
         `Hi${recipient.firstName ? ` ${recipient.firstName}` : ''},`,
         '',
         `Good news — a spot has opened up${serviceTitle ? ` for ${serviceTitle}` : ''}.`,
-        `Please book within ${WAITLIST_EXPIRY_HOURS} hours to keep your place on the waitlist.`,
+        `Please book within ${expiryHours} hours to keep your place on the waitlist.`,
       ].join('\n'),
     });
   } catch (error) {

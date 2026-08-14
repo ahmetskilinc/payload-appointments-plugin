@@ -7,11 +7,13 @@ import { findAll } from '../utilities/findAll';
  * Marks past appointments as completed. Schedule via the Jobs Queue
  * (autorun or a cron trigger) — see the README.
  */
-export const autoCompleteTask: TaskConfig<{
+export const createAutoCompleteTask = (
+  slug = 'appointmentsAutoComplete',
+): TaskConfig<{
   input: object;
   output: { completed: number };
-}> = {
-  slug: 'appointmentsAutoComplete',
+}> => ({
+  slug,
   handler: async ({ req }) => {
     const now = new Date().toISOString();
     const appointmentsSlug = getSlugs(req.payload.config).appointments;
@@ -61,4 +63,4 @@ export const autoCompleteTask: TaskConfig<{
       output: { completed },
     };
   },
-};
+});

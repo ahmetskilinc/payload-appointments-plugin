@@ -17,11 +17,13 @@ const toId = (value: WaitlistDoc['service']): number | string | undefined =>
  * Expires waitlist notifications whose booking window has lapsed, then offers
  * the freed spot to the next waiting entry. Schedule via the Jobs Queue.
  */
-export const expireWaitlistTask: TaskConfig<{
+export const createExpireWaitlistTask = (
+  slug = 'appointmentsExpireWaitlist',
+): TaskConfig<{
   input: object;
   output: { expired: number; notified: number };
-}> = {
-  slug: 'appointmentsExpireWaitlist',
+}> => ({
+  slug,
   handler: async ({ req }) => {
     const now = new Date().toISOString();
     const waitlistSlug = getSlugs(req.payload.config).waitlist;
@@ -100,4 +102,4 @@ export const expireWaitlistTask: TaskConfig<{
       output: { expired, notified },
     };
   },
-};
+});

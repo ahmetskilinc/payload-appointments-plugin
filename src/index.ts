@@ -20,14 +20,32 @@ import { waitlistLeave } from './endpoints/waitlistLeave';
 import { waitlistPosition } from './endpoints/waitlistPosition';
 import createOpeningTimesGlobal from './globals/OpeningTimes';
 import { createRequestPaymentHook } from './hooks/requestPayment';
-import { autoCompleteTask } from './jobs/autoCompleteTask';
-import { expireWaitlistTask } from './jobs/expireWaitlistTask';
+import { createSendCustomerEmailHook } from './hooks/sendCustomerEmail';
+import { createAutoCompleteTask } from './jobs/autoCompleteTask';
+import { createExpireWaitlistTask } from './jobs/expireWaitlistTask';
 import { seedAppointmentsData } from './seed';
+import { defaultSettings } from './settings';
 import { defaultSlugs } from './slugs';
 
+import type { AppointmentsEmailOverrides } from './hooks/sendCustomerEmail';
+import type { AppointmentsPluginSettings } from './settings';
 import type { AppointmentsPluginSlugs } from './slugs';
 import type { PaymentHooks } from './types';
 
+export type {
+  AppointmentEmailOverride,
+  AppointmentEmailRenderArgs,
+  AppointmentEmailType,
+  AppointmentsEmailOverrides,
+} from './hooks/sendCustomerEmail';
+export type {
+  AppointmentsPluginCalendarSettings,
+  AppointmentsPluginEndpointPaths,
+  AppointmentsPluginJobSlugs,
+  AppointmentsPluginSettings,
+  AppointmentsPluginViewSettings,
+} from './settings';
+export { getSettings } from './settings';
 export type { AppointmentsPluginSlugs } from './slugs';
 export { getSlugs } from './slugs';
 
@@ -66,19 +84,80 @@ export type AppointmentsPluginGlobalOverrides = {
 
 export type AppointmentsPluginConfig = {
   /**
+   * Admin group under which all plugin collections and globals appear.
+   * @default 'Appointments'
+   */
+  adminGroup?: string;
+  /**
+   * Schedule calendar display: first/last hour shown and slot step (minutes).
+   */
+  calendar?: { dayEndHour?: number; dayStartHour?: number; step?: number };
+  /**
+   * Frontend page path the emailed cancellation link points at; the token is
+   * appended as the last segment.
+   * @default '/cancel'
+   */
+  cancelPagePath?: string;
+  /**
    * Per-collection config overrides, including `slug` renames.
    * See {@link CollectionOverride} for merge semantics.
    */
   collections?: AppointmentsPluginCollectionOverrides;
+  /**
+   * Fallback appointment length in minutes used when neither an end time nor
+   * services are provided.
+   * @default 30
+   */
+  defaultAppointmentDuration?: number;
   disabled?: boolean;
+  /**
+   * Customize outgoing customer emails per type ('created' | 'updated' |
+   * 'cancelled'): subject, plain text, and/or HTML renderer.
+   */
+  emails?: AppointmentsEmailOverrides;
+  /**
+   * Override API endpoint paths (mounted under Payload's API route). Paths
+   * must start with `/`.
+   */
+  endpoints?: {
+    analytics?: string;
+    appointmentByToken?: string;
+    availableSlots?: string;
+    cancelAppointment?: string;
+    cancelAppointmentByToken?: string;
+    cancelRecurring?: string;
+    icalFeed?: string;
+    paymentWebhook?: string;
+    updateRecurring?: string;
+    waitlistJoin?: string;
+    waitlistLeave?: string;
+    waitlistPosition?: string;
+  };
   /**
    * Per-global config overrides, including `slug` renames.
    */
   globals?: AppointmentsPluginGlobalOverrides;
+  /**
+   * Override the Jobs Queue task slugs.
+   */
+  jobs?: { autoComplete?: string; expireWaitlist?: string };
   paymentHooks?: PaymentHooks;
   seedData?: boolean;
   showDashboardCards?: boolean;
   showNavItems?: boolean;
+  /**
+   * Admin panel view routes (relative to the admin route, must start with
+   * `/`) and their nav labels.
+   */
+  views?: {
+    analytics?: { label?: string; path?: `/${string}` };
+    schedule?: { label?: string; path?: `/${string}` };
+  };
+  /**
+   * Hours a notified waitlist entry has to book before it expires.
+   * @default 2
+   */
+  waitlistExpiryHours?: number;
   /**
    * Shared secret used to verify the HMAC-SHA256 signature of payment webhook
    * calls (sent in the `x-appointments-signature` header). The webhook endpoint
@@ -142,13 +221,22 @@ const applyGlobalOverride = (base: GlobalConfig, override?: GlobalOverride): Glo
 
 export const appointmentsPlugin =
   ({
+    adminGroup = defaultSettings.adminGroup,
+    calendar,
+    cancelPagePath = defaultSettings.cancelPagePath,
     collections: collectionOverrides,
+    defaultAppointmentDuration = defaultSettings.defaultAppointmentDuration,
     disabled = false,
+    emails,
+    endpoints: endpointOverrides,
     globals: globalOverrides,
+    jobs: jobOverrides,
     paymentHooks,
     seedData = false,
     showDashboardCards = true,
     showNavItems = true,
+    views: viewOverrides,
+    waitlistExpiryHours = defaultSettings.waitlistExpiryHours,
     webhookSecret,
   }: AppointmentsPluginConfig = {}) =>
   (config: Config): Config => {
@@ -164,12 +252,31 @@ export const appointmentsPlugin =
       waitlist: collectionOverrides?.waitlist?.slug ?? defaultSlugs.waitlist,
     };
 
-    // Hooks, endpoints, jobs, and admin views resolve the slugs at runtime via
-    // `getSlugs(config)` instead of importing hardcoded literals.
+    const settings: AppointmentsPluginSettings = {
+      adminGroup,
+      calendar: { ...defaultSettings.calendar, ...calendar },
+      cancelPagePath,
+      defaultAppointmentDuration,
+      endpoints: { ...defaultSettings.endpoints, ...endpointOverrides },
+      jobs: { ...defaultSettings.jobs, ...jobOverrides },
+      slugs,
+      views: {
+        analytics: { ...defaultSettings.views.analytics, ...viewOverrides?.analytics },
+        schedule: { ...defaultSettings.views.schedule, ...viewOverrides?.schedule },
+      },
+      waitlistExpiryHours,
+    };
+
+    // Hooks, endpoints, jobs, and admin views resolve slugs and settings at
+    // runtime via `getSlugs(config)` / `getSettings(config)` instead of
+    // importing hardcoded literals. Everything stored here must stay
+    // serializable: the same object is mirrored to `admin.custom` below, which
+    // Payload ships to the admin client.
     config.custom = {
       ...config.custom,
       appointmentsPlugin: {
         ...(config.custom?.appointmentsPlugin ?? {}),
+        settings,
         slugs,
       },
     };
@@ -177,7 +284,10 @@ export const appointmentsPlugin =
     // Collections and globals are always registered — even when the plugin is
     // disabled — so that toggling `disabled` never changes the database schema.
     // (Hooks don't affect the schema, so appending the payment hook here is safe.)
-    const Appointments = createAppointmentsCollection(slugs);
+    const Appointments = createAppointmentsCollection(
+      slugs,
+      emails ? { sendCustomerEmailHook: createSendCustomerEmailHook(emails) } : undefined,
+    );
     const appointmentsCollection = paymentHooks
       ? {
           ...Appointments,
@@ -191,18 +301,42 @@ export const appointmentsPlugin =
         }
       : Appointments;
 
+    const withGroup = (collection: CollectionConfig): CollectionConfig => ({
+      ...collection,
+      admin: { ...collection.admin, group: adminGroup },
+    });
+
     config.collections = [
       ...(config.collections || []),
-      applyCollectionOverride(appointmentsCollection, collectionOverrides?.appointments),
-      applyCollectionOverride(createGuestCustomersCollection(slugs), collectionOverrides?.guestCustomers),
-      applyCollectionOverride(createSentEmailsCollection(slugs), collectionOverrides?.sentEmails),
-      applyCollectionOverride(createTeamMembersCollection(slugs), collectionOverrides?.teamMembers),
-      applyCollectionOverride(createServicesCollection(slugs), collectionOverrides?.services),
-      applyCollectionOverride(createWaitlistCollection(slugs), collectionOverrides?.waitlist),
+      applyCollectionOverride(withGroup(appointmentsCollection), collectionOverrides?.appointments),
+      applyCollectionOverride(
+        withGroup(createGuestCustomersCollection(slugs)),
+        collectionOverrides?.guestCustomers,
+      ),
+      applyCollectionOverride(
+        withGroup(createSentEmailsCollection(slugs)),
+        collectionOverrides?.sentEmails,
+      ),
+      applyCollectionOverride(
+        withGroup(createTeamMembersCollection(slugs)),
+        collectionOverrides?.teamMembers,
+      ),
+      applyCollectionOverride(
+        withGroup(createServicesCollection(slugs)),
+        collectionOverrides?.services,
+      ),
+      applyCollectionOverride(
+        withGroup(createWaitlistCollection(slugs)),
+        collectionOverrides?.waitlist,
+      ),
     ];
+    const openingTimesGlobal = createOpeningTimesGlobal(slugs);
     config.globals = [
       ...(config.globals || []),
-      applyGlobalOverride(createOpeningTimesGlobal(slugs), globalOverrides?.openingTimes),
+      applyGlobalOverride(
+        { ...openingTimesGlobal, admin: { ...openingTimesGlobal.admin, group: adminGroup } },
+        globalOverrides?.openingTimes,
+      ),
     ];
 
     if (disabled) {
@@ -223,6 +357,15 @@ export const appointmentsPlugin =
 
     config.admin = {
       ...config.admin,
+      // Admin client components (nav links, analytics dashboard) read the
+      // settings from the client config, which only receives `admin.custom`.
+      custom: {
+        ...config.admin.custom,
+        appointmentsPlugin: {
+          ...(config.admin.custom?.appointmentsPlugin ?? {}),
+          settings,
+        },
+      },
       components: {
         ...config.admin.components,
         beforeDashboard: [
@@ -238,12 +381,12 @@ export const appointmentsPlugin =
           AppointmentsList: {
             Component: 'payload-appointments-plugin/AppointmentsList',
             exact: true,
-            path: '/appointments/schedule',
+            path: settings.views.schedule.path,
           },
           AnalyticsView: {
             Component: 'payload-appointments-plugin/AnalyticsView',
             exact: true,
-            path: '/appointments/analytics',
+            path: settings.views.analytics.path,
           },
         },
       },
@@ -254,62 +397,62 @@ export const appointmentsPlugin =
       {
         handler: getAppointmentsForDayAndHost,
         method: 'get',
-        path: '/get-available-appointment-slots',
+        path: settings.endpoints.availableSlots,
       },
       {
         handler: cancelAppointment,
         method: 'post',
-        path: '/cancel-appointment',
+        path: settings.endpoints.cancelAppointment,
       },
       {
         handler: getAppointmentByToken,
         method: 'get',
-        path: '/appointment-by-token',
+        path: settings.endpoints.appointmentByToken,
       },
       {
         handler: cancelAppointmentByToken,
         method: 'post',
-        path: '/cancel-appointment-by-token',
+        path: settings.endpoints.cancelAppointmentByToken,
       },
       {
         handler: getAnalytics,
         method: 'get',
-        path: '/appointments-analytics',
+        path: settings.endpoints.analytics,
       },
       {
         handler: createPaymentWebhook({ paymentHooks, webhookSecret }),
         method: 'post',
-        path: '/appointments-payment-webhook',
+        path: settings.endpoints.paymentWebhook,
       },
       {
         handler: updateRecurringAppointment,
         method: 'put',
-        path: '/update-recurring-appointment',
+        path: settings.endpoints.updateRecurring,
       },
       {
         handler: cancelRecurringAppointment,
         method: 'post',
-        path: '/cancel-recurring-appointment',
+        path: settings.endpoints.cancelRecurring,
       },
       {
         handler: getICalFeed,
         method: 'get',
-        path: '/appointments-ical',
+        path: settings.endpoints.icalFeed,
       },
       {
         handler: waitlistJoin,
         method: 'post',
-        path: '/waitlist/join',
+        path: settings.endpoints.waitlistJoin,
       },
       {
         handler: waitlistLeave,
         method: 'delete',
-        path: '/waitlist/leave',
+        path: settings.endpoints.waitlistLeave,
       },
       {
         handler: waitlistPosition,
         method: 'get',
-        path: '/waitlist/position',
+        path: settings.endpoints.waitlistPosition,
       },
     ];
 
@@ -317,7 +460,11 @@ export const appointmentsPlugin =
     // trigger; see the README).
     config.jobs = {
       ...config.jobs,
-      tasks: [...(config.jobs?.tasks || []), autoCompleteTask, expireWaitlistTask],
+      tasks: [
+        ...(config.jobs?.tasks || []),
+        createAutoCompleteTask(settings.jobs.autoComplete),
+        createExpireWaitlistTask(settings.jobs.expireWaitlist),
+      ],
     };
 
     const incomingOnInit = config.onInit;

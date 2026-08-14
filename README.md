@@ -112,6 +112,15 @@ export default buildConfig({
 | -------------------- | -------------- | ------- | ------------------------------------------------------------------------------ |
 | `collections`        | `object`       | —       | Per-collection overrides, including `slug` renames (see below).                |
 | `globals`            | `object`       | —       | Per-global overrides for `openingTimes`, including `slug`.                     |
+| `adminGroup`         | `string`       | `'Appointments'` | Admin group and nav-section label for all plugin collections/globals. |
+| `endpoints`          | `object`       | —       | Override any API endpoint path (see below).                                    |
+| `views`              | `object`       | —       | Admin view routes and nav labels for the schedule and analytics views.         |
+| `jobs`               | `object`       | —       | Override the Jobs Queue task slugs (`autoComplete`, `expireWaitlist`).         |
+| `emails`             | `object`       | —       | Customize outgoing customer emails per type (see below).                       |
+| `cancelPagePath`     | `string`       | `'/cancel'` | Frontend page the emailed cancellation link points at (token appended).    |
+| `calendar`           | `object`       | `{ dayStartHour: 9, dayEndHour: 19, step: 15 }` | Schedule calendar display hours and slot step. |
+| `waitlistExpiryHours`| `number`       | `2`     | Hours a notified waitlist entry has to book before it expires.                 |
+| `defaultAppointmentDuration` | `number` | `30`  | Fallback appointment length (minutes) when no end time or services are given.  |
 | `disabled`           | `boolean`      | `false` | Disables endpoints/UI/hooks. Collections stay registered so the schema is stable. |
 | `seedData`           | `boolean`      | `false` | Seeds example opening times, services, and team members on init.               |
 | `showDashboardCards` | `boolean`      | `true`  | Show appointment cards on the admin dashboard.                                 |
@@ -159,6 +168,54 @@ Override semantics:
 
 Customer relationships point at your auth collection: the plugin reads
 `config.admin.user` (default `users`), so no option is needed for that.
+
+### Routes, views, jobs & tunables
+
+Everything structural is overridable — endpoint paths, admin view routes and
+labels, the admin group, job slugs, and scheduling tunables:
+
+```ts
+appointmentsPlugin({
+  adminGroup: 'Bookings',
+  endpoints: {
+    availableSlots: '/slots',
+    analytics: '/booking-analytics',
+    // ...any of: cancelAppointment, appointmentByToken, cancelAppointmentByToken,
+    // paymentWebhook, updateRecurring, cancelRecurring, icalFeed,
+    // waitlistJoin, waitlistLeave, waitlistPosition
+  },
+  views: {
+    schedule: { path: '/bookings/calendar', label: 'Calendar' },
+    analytics: { path: '/bookings/analytics', label: 'Insights' },
+  },
+  jobs: { autoComplete: 'bookingsAutoComplete', expireWaitlist: 'bookingsExpireWaitlist' },
+  cancelPagePath: '/cancel-booking',
+  calendar: { dayStartHour: 8, dayEndHour: 20, step: 30 },
+  waitlistExpiryHours: 4,
+  defaultAppointmentDuration: 45,
+});
+```
+
+Resolved settings are readable at runtime via `getSettings(payload.config)`
+(exported from the plugin).
+
+### Email overrides
+
+Customize the subject, plain text, and/or HTML of each customer email type
+without giving up the built-in sending/logging pipeline:
+
+```ts
+appointmentsPlugin({
+  emails: {
+    created: {
+      subject: ({ appointment }) => `See you soon, ${appointment.customer?.firstName}!`,
+      html: async ({ appointment, cancelUrl, timezone }) => renderMyEmail({ appointment, cancelUrl, timezone }),
+    },
+    cancelled: { subject: 'Your booking was cancelled' },
+    // 'updated' keeps the defaults
+  },
+});
+```
 
 ### Payment hooks
 

@@ -10,15 +10,33 @@ import { appointmentCancelledEmail } from '../utilities/AppointmentCancelledEmai
 import { appointmentCreatedEmail } from '../utilities/AppointmentCreatedEmail';
 import { appointmentUpdatedEmail } from '../utilities/AppointmentUpdatedEmail';
 
-type EmailType = 'created' | 'updated' | 'cancelled';
+export type AppointmentEmailType = 'created' | 'updated' | 'cancelled';
+type EmailType = AppointmentEmailType;
 
-export const sendCustomerEmail: CollectionAfterChangeHook = async ({
-  context,
-  doc,
-  operation,
-  previousDoc,
-  req,
-}) => {
+export type AppointmentEmailRenderArgs = {
+  appointment: Appointment;
+  cancelUrl?: string;
+  timezone: string;
+  type: AppointmentEmailType;
+};
+
+/**
+ * Customize one outgoing customer email. Defaults are used for anything not
+ * provided.
+ */
+export type AppointmentEmailOverride = {
+  html?: (args: AppointmentEmailRenderArgs) => Promise<string> | string;
+  subject?: string | ((args: AppointmentEmailRenderArgs) => string);
+  text?: (args: AppointmentEmailRenderArgs) => string;
+};
+
+export type AppointmentsEmailOverrides = Partial<
+  Record<AppointmentEmailType, AppointmentEmailOverride>
+>;
+
+export const createSendCustomerEmailHook =
+  (overrides?: AppointmentsEmailOverrides): CollectionAfterChangeHook =>
+  async ({ context, doc, operation, previousDoc, req }) => {
   if (doc.appointmentType !== 'appointment') {
     return;
   }
@@ -76,6 +94,26 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
     }
 
     if (emailData && htmlContent && emailType) {
+      const override = overrides?.[emailType];
+      if (override) {
+        const renderArgs: AppointmentEmailRenderArgs = {
+          appointment,
+          cancelUrl: (emailData as { cancelUrl?: string }).cancelUrl,
+          timezone,
+          type: emailType,
+        };
+        if (override.subject) {
+          emailData.subject =
+            typeof override.subject === 'function' ? override.subject(renderArgs) : override.subject;
+        }
+        if (override.text) {
+          emailData.text = override.text(renderArgs);
+        }
+        if (override.html) {
+          htmlContent = await override.html(renderArgs);
+        }
+      }
+
       let emailSent = false;
 
       try {
@@ -127,3 +165,5 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
     req.payload.logger.error(`Error sending ${operation} email: ${error}`);
   }
 };
+
+export const sendCustomerEmail: CollectionAfterChangeHook = createSendCustomerEmailHook();
