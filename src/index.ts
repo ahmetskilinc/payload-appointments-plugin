@@ -27,11 +27,19 @@ import { createReminderTask } from './jobs/reminderTask';
 import { seedAppointmentsData } from './seed';
 import { defaultSettings } from './settings';
 import { defaultSlugs } from './slugs';
+import {
+  createCollectionRateLimitHook,
+  createRateLimiter,
+  withEndpointRateLimit,
+} from './utilities/rateLimit';
 
 import type { AppointmentsEmailOverrides } from './hooks/sendCustomerEmail';
 import type { AppointmentsPluginSettings } from './settings';
 import type { AppointmentsPluginSlugs } from './slugs';
 import type { PaymentHooks } from './types';
+import type { RateLimitOptions } from './utilities/rateLimit';
+
+export type { RateLimitOptions } from './utilities/rateLimit';
 
 export type {
   AppointmentEmailOverride,
@@ -149,6 +157,14 @@ export type AppointmentsPluginConfig = {
    */
   reminderHours?: number;
   paymentHooks?: PaymentHooks;
+  /**
+   * Per-IP rate limiting for the plugin's public endpoints and for
+   * unauthenticated create operations on publicly writable collections
+   * (appointments, guest customers, waitlist). Fixed-window, in-memory
+   * (per server instance).
+   * @default { max: 60, windowMs: 60000 }
+   */
+  rateLimit?: RateLimitOptions;
   seedData?: boolean;
   showDashboardCards?: boolean;
   showNavItems?: boolean;
@@ -239,6 +255,7 @@ export const appointmentsPlugin =
     globals: globalOverrides,
     jobs: jobOverrides,
     paymentHooks,
+    rateLimit,
     reminderHours = defaultSettings.reminderHours,
     seedData = false,
     showDashboardCards = true,
@@ -315,11 +332,32 @@ export const appointmentsPlugin =
       admin: { ...collection.admin, group: adminGroup },
     });
 
+    const limiter = rateLimit?.disabled ? null : createRateLimiter(rateLimit);
+
+    // Publicly writable collections get their unauthenticated create
+    // operations rate limited per IP.
+    const withPublicCreateLimit = (collection: CollectionConfig): CollectionConfig =>
+      limiter
+        ? {
+            ...collection,
+            hooks: {
+              ...collection.hooks,
+              beforeOperation: [
+                ...(collection.hooks?.beforeOperation || []),
+                createCollectionRateLimitHook(limiter, collection.slug),
+              ],
+            },
+          }
+        : collection;
+
     config.collections = [
       ...(config.collections || []),
-      applyCollectionOverride(withGroup(appointmentsCollection), collectionOverrides?.appointments),
       applyCollectionOverride(
-        withGroup(createGuestCustomersCollection(slugs)),
+        withPublicCreateLimit(withGroup(appointmentsCollection)),
+        collectionOverrides?.appointments,
+      ),
+      applyCollectionOverride(
+        withPublicCreateLimit(withGroup(createGuestCustomersCollection(slugs))),
         collectionOverrides?.guestCustomers,
       ),
       applyCollectionOverride(
@@ -335,7 +373,7 @@ export const appointmentsPlugin =
         collectionOverrides?.services,
       ),
       applyCollectionOverride(
-        withGroup(createWaitlistCollection(slugs)),
+        withPublicCreateLimit(withGroup(createWaitlistCollection(slugs))),
         collectionOverrides?.waitlist,
       ),
     ];
@@ -404,7 +442,7 @@ export const appointmentsPlugin =
     config.endpoints = [
       ...(config.endpoints || []),
       {
-        handler: getAppointmentsForDayAndHost,
+        handler: withEndpointRateLimit(limiter, 'slots', getAppointmentsForDayAndHost),
         method: 'get',
         path: settings.endpoints.availableSlots,
       },
@@ -414,12 +452,12 @@ export const appointmentsPlugin =
         path: settings.endpoints.cancelAppointment,
       },
       {
-        handler: getAppointmentByToken,
+        handler: withEndpointRateLimit(limiter, 'byToken', getAppointmentByToken),
         method: 'get',
         path: settings.endpoints.appointmentByToken,
       },
       {
-        handler: cancelAppointmentByToken,
+        handler: withEndpointRateLimit(limiter, 'cancelByToken', cancelAppointmentByToken),
         method: 'post',
         path: settings.endpoints.cancelAppointmentByToken,
       },
@@ -444,12 +482,12 @@ export const appointmentsPlugin =
         path: settings.endpoints.cancelRecurring,
       },
       {
-        handler: getICalFeed,
+        handler: withEndpointRateLimit(limiter, 'ical', getICalFeed),
         method: 'get',
         path: settings.endpoints.icalFeed,
       },
       {
-        handler: waitlistJoin,
+        handler: withEndpointRateLimit(limiter, 'waitlistJoin', waitlistJoin),
         method: 'post',
         path: settings.endpoints.waitlistJoin,
       },
@@ -459,7 +497,7 @@ export const appointmentsPlugin =
         path: settings.endpoints.waitlistLeave,
       },
       {
-        handler: waitlistPosition,
+        handler: withEndpointRateLimit(limiter, 'waitlistPosition', waitlistPosition),
         method: 'get',
         path: settings.endpoints.waitlistPosition,
       },

@@ -119,6 +119,7 @@ export default buildConfig({
 | `views`              | `object`       | —       | Admin view routes and nav labels for the schedule and analytics views.         |
 | `jobs`               | `object`       | —       | Override the Jobs Queue task slugs (`autoComplete`, `expireWaitlist`, `reminder`). |
 | `reminderHours`      | `number`       | `24`    | Reminder emails go out when an appointment starts within this many hours.      |
+| `rateLimit`          | `object`       | `{ max: 60, windowMs: 60000 }` | Per-IP limit for public endpoints and unauthenticated creates. `{ disabled: true }` turns it off. In-memory per server instance — pair with an edge/WAF limiter on serverless. |
 | `emails`             | `object`       | —       | Customize outgoing customer emails per type (see below).                       |
 | `cancelPagePath`     | `string`       | `'/cancel'` | Frontend page the emailed cancellation link points at (token appended).    |
 | `calendar`           | `object`       | `{ dayStartHour: 9, dayEndHour: 19, step: 15 }` | Schedule calendar display hours and slot step. |
