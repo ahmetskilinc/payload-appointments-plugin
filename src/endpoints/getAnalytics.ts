@@ -6,6 +6,10 @@ import { getAllAnalytics } from '../utilities/analytics';
 
 export const getAnalytics: PayloadHandler = async (req: PayloadRequest) => {
   try {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { startDate, endDate, granularity } = req.query;
 
     const effectiveStartDate =

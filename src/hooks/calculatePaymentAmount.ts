@@ -1,5 +1,7 @@
 import type { CollectionBeforeChangeHook } from 'payload';
 
+import { calculateAmountDue } from '../utilities/deposit';
+
 export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
   data,
   operation,
@@ -21,6 +23,7 @@ export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
     collection: 'services',
     depth: 0,
     limit: 100,
+    req,
     where: {
       id: {
         in: serviceIds,
@@ -48,28 +51,20 @@ export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
       const firstPaidService = services.docs.find((s) => s.paidService && s.paymentRequired);
 
       if (firstPaidService) {
-        const depositType = firstPaidService.depositType || 'full';
-        const depositAmount = firstPaidService.depositAmount || 0;
-
-        switch (depositType) {
-          case 'fixed':
-            amountDue = Math.min(depositAmount, totalPrice);
-            break;
-          case 'percentage':
-            amountDue = (totalPrice * depositAmount) / 100;
-            break;
-          default:
-            amountDue = totalPrice;
-        }
+        amountDue = calculateAmountDue(totalPrice, {
+          depositAmount: firstPaidService.depositAmount,
+          depositType: firstPaidService.depositType,
+        });
       }
     }
 
     data.payment = {
       status: requiresPayment ? 'pending' : 'not-required',
-      amountDue: totalPrice,
+      amountDue,
       amountPaid: 0,
       externalPaymentId: null,
       paidAt: null,
+      totalPrice,
     };
   }
 

@@ -1,12 +1,15 @@
 import type { CollectionConfig } from 'payload';
 
 import { anyone } from '../access/anyone';
+import { authenticated } from '../access/authenticated';
 
 const Waitlist: CollectionConfig = {
   slug: 'waitlist',
   access: {
     create: anyone,
-    read: anyone,
+    delete: authenticated,
+    read: authenticated,
+    update: authenticated,
   },
   admin: {
     defaultColumns: ['service', 'customer', 'status', 'createdAt'],

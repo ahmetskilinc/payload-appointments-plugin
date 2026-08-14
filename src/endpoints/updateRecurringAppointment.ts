@@ -1,6 +1,8 @@
-import type { PayloadHandler, PayloadRequest } from 'payload';
+import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 import moment from 'moment';
+
+import { findAll } from '../utilities/findAll';
 
 export type UpdateRecurringPayload = {
   appointmentId: string;
@@ -8,8 +10,33 @@ export type UpdateRecurringPayload = {
   data: Record<string, unknown>;
 };
 
+/** Only these fields may be updated through this endpoint. */
+const UPDATABLE_FIELDS = [
+  'start',
+  'end',
+  'services',
+  'host',
+  'customerNotes',
+  'internalNotes',
+  'status',
+] as const;
+
+const pickUpdatableFields = (data: Record<string, unknown>): Record<string, unknown> => {
+  const picked: Record<string, unknown> = {};
+  for (const field of UPDATABLE_FIELDS) {
+    if (field in data) {
+      picked[field] = data[field];
+    }
+  }
+  return picked;
+};
+
 export const updateRecurringAppointment: PayloadHandler = async (req: PayloadRequest) => {
   try {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = (await req.json?.()) as UpdateRecurringPayload | undefined;
 
     if (!body || !body.appointmentId || !body.updateType || !body.data) {
@@ -19,12 +46,24 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
       );
     }
 
-    const { appointmentId, updateType, data } = body;
+    const { appointmentId, updateType } = body;
+    const data = pickUpdatableFields(body.data);
+
+    if (Object.keys(data).length === 0) {
+      return Response.json(
+        { error: `No updatable fields provided. Allowed: ${UPDATABLE_FIELDS.join(', ')}` },
+        { status: 400 },
+      );
+    }
 
     const appointment = await req.payload.findByID({
       collection: 'appointments',
       id: appointmentId,
       depth: 0,
+      disableErrors: true,
+      overrideAccess: false,
+      req,
+      user: req.user,
     });
 
     if (!appointment) {
@@ -43,6 +82,9 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
         collection: 'appointments',
         id: appointmentId,
         data,
+        overrideAccess: false,
+        req,
+        user: req.user,
       });
       return Response.json({ success: true, updated: [updated.id] });
     }
@@ -50,29 +92,25 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
     const seriesId = recurrence.seriesId;
     const appointmentStart = moment(appointment.start);
 
-    let whereClause: any = {
-      'recurrence.seriesId': { equals: seriesId },
-    };
+    const conditions: Where[] = [{ 'recurrence.seriesId': { equals: seriesId } }];
 
     if (updateType === 'future') {
-      whereClause = {
-        and: [
-          { 'recurrence.seriesId': { equals: seriesId } },
-          { start: { greater_than_equal: appointmentStart.toISOString() } },
-        ],
-      };
+      conditions.push({ start: { greater_than_equal: appointmentStart.toISOString() } });
     }
 
-    const seriesAppointments = await req.payload.find({
+    const seriesAppointments = await findAll<{ end: string; id: number | string; start: string }>({
       collection: 'appointments',
-      depth: 0,
-      limit: 100,
-      where: whereClause,
+      overrideAccess: false,
+      payload: req.payload,
+      req,
+      user: req.user,
+      where: { and: conditions },
     });
 
     const updatedIds: string[] = [];
+    const failedIds: string[] = [];
 
-    for (const appt of seriesAppointments.docs) {
+    for (const appt of seriesAppointments) {
       try {
         const updateData = { ...data };
 
@@ -96,16 +134,21 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
           collection: 'appointments',
           id: appt.id,
           data: updateData,
+          overrideAccess: false,
+          req,
+          user: req.user,
         });
         updatedIds.push(String(appt.id));
       } catch (error) {
         req.payload.logger.error(`Failed to update appointment ${appt.id}: ${error}`);
+        failedIds.push(String(appt.id));
       }
     }
 
     return Response.json({
-      success: true,
+      success: failedIds.length === 0,
       updated: updatedIds,
+      failed: failedIds,
       total: updatedIds.length,
     });
   } catch (error) {

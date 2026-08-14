@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload';
 
 import { anyone } from '../access/anyone';
+import { authenticated } from '../access/authenticated';
 import { addAdminTitle } from '../hooks/addAdminTitle';
 import { autoCompleteAppointments } from '../hooks/autoCompleteAppointments';
 import { calculatePaymentAmount } from '../hooks/calculatePaymentAmount';
@@ -16,6 +17,9 @@ const Appointments: CollectionConfig = {
   slug: 'appointments',
   access: {
     create: anyone,
+    delete: authenticated,
+    read: authenticated,
+    update: authenticated,
   },
   admin: {
     group: 'Appointments',
@@ -46,6 +50,7 @@ const Appointments: CollectionConfig = {
         position: 'sidebar',
       },
       defaultValue: 'confirmed',
+      index: true,
       label: 'Status',
       options: [
         { label: 'Pending', value: 'pending' },
@@ -79,13 +84,14 @@ const Appointments: CollectionConfig = {
           return false;
         },
       },
-      filterOptions: ({ data }) => {
+      filterOptions: () => {
         return {
           takingAppointments: {
             equals: true,
           },
         };
       },
+      index: true,
       label: 'Host',
       relationTo: 'teamMembers',
       required: true,
@@ -186,6 +192,7 @@ const Appointments: CollectionConfig = {
             },
           },
           defaultValue: new Date(),
+          index: true,
           label: 'Starts at',
           required: true,
         },
@@ -210,6 +217,7 @@ const Appointments: CollectionConfig = {
           hooks: {
             beforeValidate: [setEndDateTime],
           },
+          index: true,
           label: 'Ends at',
           required: true,
         },
@@ -283,9 +291,20 @@ const Appointments: CollectionConfig = {
           type: 'row',
           fields: [
             {
+              name: 'totalPrice',
+              type: 'number',
+              admin: {
+                description: 'Full price of all booked services',
+                readOnly: true,
+              },
+              label: 'Total Price',
+              min: 0,
+            },
+            {
               name: 'amountDue',
               type: 'number',
               admin: {
+                description: 'Amount required at booking time (deposit or full price)',
                 readOnly: true,
               },
               label: 'Amount Due',

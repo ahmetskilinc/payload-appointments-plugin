@@ -1,5 +1,5 @@
 import React from 'react'
-import { Appointment, BigCalendarAppointment } from '../../types'
+import { BigCalendarAppointment } from '../../types'
 import './eventStyles.scss'
 import { useDocumentDrawer } from '@payloadcms/ui'
 

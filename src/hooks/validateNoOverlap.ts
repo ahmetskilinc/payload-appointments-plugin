@@ -1,6 +1,11 @@
-import type { CollectionBeforeValidateHook } from 'payload';
+import { type CollectionBeforeValidateHook, ValidationError } from 'payload';
 
 import moment from 'moment';
+
+const toId = (value: unknown): number | string =>
+  value && typeof value === 'object'
+    ? (value as { id: number | string }).id
+    : (value as number | string);
 
 export const validateNoOverlap: CollectionBeforeValidateHook = async ({
   data,
@@ -8,32 +13,43 @@ export const validateNoOverlap: CollectionBeforeValidateHook = async ({
   originalDoc,
   req,
 }) => {
-  if (!data?.host || !data?.start || data?.appointmentType === 'blockout') {
+  // Merge with the stored doc so partial updates (e.g. only `start` changed)
+  // still validate against the effective values.
+  const appointmentType = data?.appointmentType ?? originalDoc?.appointmentType;
+  const host = data?.host ?? originalDoc?.host;
+  const start = data?.start ?? originalDoc?.start;
+  const status = data?.status ?? originalDoc?.status;
+  const end = data?.end ?? originalDoc?.end;
+  const services = data?.services ?? originalDoc?.services;
+
+  if (!host || !start || appointmentType === 'blockout') {
     return data;
   }
 
-  if (data?.status === 'cancelled') {
+  if (status === 'cancelled') {
     return data;
   }
 
-  const hostId = typeof data.host === 'object' ? data.host.id : data.host;
-  const startTime = moment(data.start);
+  const hostId = toId(host);
+  const startTime = moment(start);
 
   let endTime: moment.Moment;
-  if (data.end) {
-    endTime = moment(data.end);
-  } else if (data.services?.length) {
-    const services = await req.payload.find({
+  if (end) {
+    endTime = moment(end);
+  } else if (services?.length) {
+    const serviceIds = [...new Set((services as unknown[]).map(toId))];
+    const foundServices = await req.payload.find({
       collection: 'services',
       depth: 0,
-      limit: data.services.length,
+      limit: serviceIds.length,
+      req,
       where: {
         id: {
-          in: data.services.map((s: any) => (typeof s === 'object' ? s.id : s)),
+          in: serviceIds,
         },
       },
     });
-    const totalDuration = services.docs.reduce(
+    const totalDuration = foundServices.docs.reduce(
       (total, service) => total + (service.duration || 0),
       0,
     );
@@ -47,21 +63,15 @@ export const validateNoOverlap: CollectionBeforeValidateHook = async ({
   const existingAppointments = await req.payload.find({
     collection: 'appointments',
     depth: 0,
+    limit: 1,
+    req,
     where: {
       and: [
         { host: { equals: hostId } },
         { status: { not_equals: 'cancelled' } },
         ...(currentId ? [{ id: { not_equals: currentId } }] : []),
-        {
-          or: [
-            {
-              and: [
-                { start: { less_than: endTime.toISOString() } },
-                { end: { greater_than: startTime.toISOString() } },
-              ],
-            },
-          ],
-        },
+        { start: { less_than: endTime.toISOString() } },
+        { end: { greater_than: startTime.toISOString() } },
       ],
     },
   });
@@ -70,9 +80,14 @@ export const validateNoOverlap: CollectionBeforeValidateHook = async ({
     const conflicting = existingAppointments.docs[0];
     const conflictStart = moment(conflicting.start).format('HH:mm');
     const conflictEnd = moment(conflicting.end).format('HH:mm');
-    throw new Error(
-      `This time slot overlaps with an existing appointment (${conflictStart} - ${conflictEnd}). Please choose a different time.`,
-    );
+    throw new ValidationError({
+      errors: [
+        {
+          message: `This time slot overlaps with an existing appointment (${conflictStart} - ${conflictEnd}). Please choose a different time.`,
+          path: 'start',
+        },
+      ],
+    });
   }
 
   return data;

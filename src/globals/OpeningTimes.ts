@@ -1,5 +1,7 @@
 import type { GlobalConfig } from 'payload';
 
+import { authenticated } from '../access/authenticated';
+
 const timesOfDay = ['opening', 'closing'];
 const daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
@@ -26,7 +28,10 @@ const commonTimezones = [
 
 const OpeningTimes: GlobalConfig = {
   slug: 'openingTimes',
-  access: { read: () => true },
+  access: {
+    read: () => true,
+    update: authenticated,
+  },
   admin: { group: 'Appointments' },
   fields: [
     {
@@ -52,12 +57,12 @@ const OpeningTimes: GlobalConfig = {
         },
         {
           type: 'row' as const,
-          admin: { condition: (siblingData: any) => siblingData[day]?.isOpen },
+          admin: { condition: (_: unknown, siblingData?: { isOpen?: boolean }) => Boolean(siblingData?.isOpen) },
           fields: timesOfDay.map((time) => ({
             name: `${time}`,
             type: 'date' as const,
             admin: {
-              condition: (siblingData: any) => siblingData[day]?.isOpen,
+              condition: (_: unknown, siblingData?: { isOpen?: boolean }) => Boolean(siblingData?.isOpen),
               date: {
                 displayFormat: 'h:mm a',
                 pickerAppearance: 'timeOnly' as const,
@@ -65,7 +70,14 @@ const OpeningTimes: GlobalConfig = {
               width: '50%',
             },
             label: `${time.charAt(0).toUpperCase() + time.slice(1)}`,
-            required: true,
+            // Only required when the day is marked open — a hard `required: true`
+            // would make the global unsaveable for closed days.
+            validate: (value: unknown, { siblingData }: { siblingData?: { isOpen?: boolean } }) => {
+              if (siblingData?.isOpen && !value) {
+                return `${time.charAt(0).toUpperCase() + time.slice(1)} time is required when open`;
+              }
+              return true;
+            },
           })),
         },
       ],

@@ -1,10 +1,14 @@
 import type { CollectionConfig } from 'payload';
 
+import { authenticated } from '../access/authenticated';
+
 const SentEmails: CollectionConfig = {
   slug: 'sentEmails',
   access: {
     create: () => false,
     delete: () => false,
+    // Sent emails contain customer addresses and full HTML bodies.
+    read: authenticated,
     update: () => false,
   },
   admin: {

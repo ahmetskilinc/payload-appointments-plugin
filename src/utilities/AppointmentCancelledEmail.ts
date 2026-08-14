@@ -1,8 +1,11 @@
+import type { Payload } from 'payload';
+
 import type { Appointment } from '../types';
 
+import { getEmailFromAddress } from './emailFrom';
 import { formatAppointmentDate } from './formatDate';
 
-export const appointmentCancelledEmail = (appointment: Appointment) => {
+export const appointmentCancelledEmail = (appointment: Appointment, payload?: Payload) => {
   const customerEmail = appointment.customer?.email || appointment.guestCustomer?.email;
 
   if (!customerEmail) {
@@ -10,10 +13,10 @@ export const appointmentCancelledEmail = (appointment: Appointment) => {
   }
 
   const formattedDate = formatAppointmentDate(appointment.start);
-  const serviceNames = appointment.services.map((service) => service.title).join(', ');
+  const serviceNames = (appointment.services || []).map((service) => service?.title).join(', ');
 
   return {
-    from: process.env.APPOINTMENT_EMAIL_FROM || 'noreply@yourdomain.com',
+    from: getEmailFromAddress(payload),
     subject: `Appointment Cancelled - ${formattedDate}`,
     text: `Your appointment for ${serviceNames} on ${formattedDate} has been cancelled.`,
     to: customerEmail,

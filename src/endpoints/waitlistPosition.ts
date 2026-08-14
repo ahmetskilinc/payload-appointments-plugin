@@ -1,4 +1,4 @@
-import type { PayloadHandler, PayloadRequest } from 'payload';
+import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 export const waitlistPosition: PayloadHandler = async (req: PayloadRequest) => {
   try {
@@ -21,23 +21,21 @@ export const waitlistPosition: PayloadHandler = async (req: PayloadRequest) => {
     const serviceId = typeof entry.service === 'object' ? entry.service?.id : entry.service;
     const hostId = typeof entry.host === 'object' ? entry.host?.id : entry.host;
 
-    const whereClause: any = {
-      and: [
-        { service: { equals: serviceId } },
-        { status: { equals: 'waiting' } },
-        { createdAt: { less_than: entry.createdAt } },
-      ],
-    };
+    const conditions: Where[] = [
+      { service: { equals: serviceId } },
+      { status: { equals: 'waiting' } },
+      { createdAt: { less_than: entry.createdAt } },
+    ];
 
     if (hostId) {
-      whereClause.and.push({
+      conditions.push({
         or: [{ host: { equals: hostId } }, { host: { exists: false } }],
       });
     }
 
     const aheadCount = await req.payload.count({
       collection: 'waitlist',
-      where: whereClause,
+      where: { and: conditions },
     });
 
     return Response.json({

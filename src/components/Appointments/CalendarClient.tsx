@@ -1,6 +1,6 @@
 'use client';
 
-import type { Components, SlotInfo, View } from 'react-big-calendar';
+import type { Components, View } from 'react-big-calendar';
 
 import { useDocumentDrawer } from '@payloadcms/ui';
 import moment from 'moment';
@@ -75,16 +75,23 @@ export default function CalendarClient({
     const { start, end } = getDateRangeForView(currentDate, view);
 
     const params = new URLSearchParams();
-    params.set('where[start][greater_than_equal]', start.toISOString());
-    params.set('where[end][less_than_equal]', end.toISOString());
+    // Overlap query (start < rangeEnd AND end > rangeStart) so appointments
+    // spanning the range boundaries still show on the calendar.
+    params.set('where[start][less_than_equal]', end.toISOString());
+    params.set('where[end][greater_than_equal]', start.toISOString());
     params.set('limit', '500');
     params.set('depth', '1');
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiRoute}/${collectionSlug}?${params.toString()}`);
+      const res = await fetch(`${apiRoute}/${collectionSlug}?${params.toString()}`, {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        return;
+      }
       const appointmentsRes = await res.json();
-      setAppointments(appointmentsRes.docs);
+      setAppointments(appointmentsRes.docs ?? []);
     } finally {
       setIsLoading(false);
     }
@@ -107,20 +114,27 @@ export default function CalendarClient({
       .map((doc: AppointmentType) => ({
         ...doc,
         end: moment(doc.end).toDate(),
-        hostId: doc.host.id,
+        hostId: typeof doc.host === 'object' ? doc.host?.id : doc.host,
         start: moment(doc.start).toDate(),
       }));
   }, [appointments, statusFilter]);
 
-  const handleSlotSelect = useCallback(
-    (_slotInfo: SlotInfo) => {
-      toggleDrawer();
-    },
-    [toggleDrawer],
-  );
+  const handleSlotSelect = useCallback(() => {
+    toggleDrawer();
+  }, [toggleDrawer]);
 
   const handleEventDrop = useCallback(
-    async ({ end, event, resourceId, start }: any) => {
+    async ({
+      end,
+      event,
+      resourceId,
+      start,
+    }: {
+      end: Date | string;
+      event: { id: number | string };
+      resourceId?: number | string;
+      start: Date | string;
+    }) => {
       const data = {
         end: moment(end).toISOString(),
         host: resourceId,

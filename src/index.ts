@@ -13,12 +13,15 @@ import { getAnalytics } from './endpoints/getAnalytics';
 import { getAppointmentByToken } from './endpoints/getAppointmentByToken';
 import { getAppointmentsForDayAndHost } from './endpoints/getAppointmentsForDayAndHost';
 import { getICalFeed } from './endpoints/getICalFeed';
-import { paymentWebhook } from './endpoints/paymentWebhook';
+import { createPaymentWebhook } from './endpoints/paymentWebhook';
 import { updateRecurringAppointment } from './endpoints/updateRecurringAppointment';
 import { waitlistJoin } from './endpoints/waitlistJoin';
 import { waitlistLeave } from './endpoints/waitlistLeave';
 import { waitlistPosition } from './endpoints/waitlistPosition';
 import OpeningTimes from './globals/OpeningTimes';
+import { createRequestPaymentHook } from './hooks/requestPayment';
+import { autoCompleteTask } from './jobs/autoCompleteTask';
+import { expireWaitlistTask } from './jobs/expireWaitlistTask';
 import { seedAppointmentsData } from './seed';
 
 import type { PaymentHooks } from './types';
@@ -29,6 +32,12 @@ export type AppointmentsPluginConfig = {
   seedData?: boolean;
   showDashboardCards?: boolean;
   showNavItems?: boolean;
+  /**
+   * Shared secret used to verify the HMAC-SHA256 signature of payment webhook
+   * calls (sent in the `x-appointments-signature` header). The webhook endpoint
+   * refuses all requests until this is configured.
+   */
+  webhookSecret?: string;
 };
 
 export const appointmentsPlugin =
@@ -38,11 +47,35 @@ export const appointmentsPlugin =
     seedData = false,
     showDashboardCards = true,
     showNavItems = true,
-  }: AppointmentsPluginConfig) =>
+    webhookSecret,
+  }: AppointmentsPluginConfig = {}) =>
   (config: Config): Config => {
-    if (!config.collections) {
-      config.collections = [];
-    }
+    // Collections and globals are always registered — even when the plugin is
+    // disabled — so that toggling `disabled` never changes the database schema.
+    // (Hooks don't affect the schema, so appending the payment hook here is safe.)
+    const appointmentsCollection = paymentHooks
+      ? {
+          ...Appointments,
+          hooks: {
+            ...Appointments.hooks,
+            afterChange: [
+              ...(Appointments.hooks?.afterChange || []),
+              createRequestPaymentHook(paymentHooks),
+            ],
+          },
+        }
+      : Appointments;
+
+    config.collections = [
+      ...(config.collections || []),
+      appointmentsCollection,
+      GuestCustomers,
+      SentEmails,
+      TeamMembers,
+      Services,
+      Waitlist,
+    ];
+    config.globals = [...(config.globals || []), OpeningTimes];
 
     if (disabled) {
       return config;
@@ -59,17 +92,6 @@ export const appointmentsPlugin =
     if (!config.admin.components) {
       config.admin.components = {};
     }
-
-    config.collections = [
-      ...(config.collections || []),
-      Appointments,
-      GuestCustomers,
-      SentEmails,
-      TeamMembers,
-      Services,
-      Waitlist,
-    ];
-    config.globals = [...(config.globals || []), OpeningTimes];
 
     config.admin = {
       ...config.admin,
@@ -127,7 +149,7 @@ export const appointmentsPlugin =
         path: '/appointments-analytics',
       },
       {
-        handler: paymentWebhook,
+        handler: createPaymentWebhook({ paymentHooks, webhookSecret }),
         method: 'post',
         path: '/appointments-payment-webhook',
       },
@@ -162,6 +184,13 @@ export const appointmentsPlugin =
         path: '/waitlist/position',
       },
     ];
+
+    // Maintenance tasks (run them via the Jobs Queue — autorun or a cron
+    // trigger; see the README).
+    config.jobs = {
+      ...config.jobs,
+      tasks: [...(config.jobs?.tasks || []), autoCompleteTask, expireWaitlistTask],
+    };
 
     const incomingOnInit = config.onInit;
 

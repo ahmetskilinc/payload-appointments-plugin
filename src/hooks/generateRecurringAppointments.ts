@@ -3,53 +3,7 @@ import type { CollectionAfterChangeHook } from 'payload';
 import crypto from 'crypto';
 import moment from 'moment';
 
-const MAX_OCCURRENCES = 52;
-
-type RecurrencePattern = 'weekly' | 'biweekly' | 'monthly';
-
-const getNextDate = (currentDate: moment.Moment, pattern: RecurrencePattern): moment.Moment => {
-  switch (pattern) {
-    case 'weekly':
-      return currentDate.clone().add(1, 'week');
-    case 'biweekly':
-      return currentDate.clone().add(2, 'weeks');
-    case 'monthly':
-      return currentDate.clone().add(1, 'month');
-    default:
-      return currentDate.clone().add(1, 'week');
-  }
-};
-
-const calculateOccurrenceDates = (
-  startDate: moment.Moment,
-  pattern: RecurrencePattern,
-  endType: 'occurrences' | 'endDate',
-  occurrences?: number,
-  endDate?: string,
-): moment.Moment[] => {
-  const dates: moment.Moment[] = [];
-  let currentDate = startDate.clone();
-  let count = 0;
-  const maxCount = Math.min(occurrences || MAX_OCCURRENCES, MAX_OCCURRENCES);
-  const maxEndDate = endDate ? moment(endDate) : startDate.clone().add(1, 'year');
-
-  while (count < maxCount - 1) {
-    currentDate = getNextDate(currentDate, pattern);
-
-    if (endType === 'endDate' && currentDate.isAfter(maxEndDate)) {
-      break;
-    }
-
-    dates.push(currentDate.clone());
-    count++;
-
-    if (endType === 'occurrences' && count >= maxCount - 1) {
-      break;
-    }
-  }
-
-  return dates;
-};
+import { calculateOccurrenceDates, type RecurrencePattern } from '../utilities/recurrence';
 
 export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
   doc,
@@ -99,6 +53,10 @@ export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
   await req.payload.update({
     collection: 'appointments',
     id: doc.id,
+    context: {
+      skipCustomerEmail: true,
+    },
+    req,
     data: {
       recurrence: {
         ...recurrence,
@@ -116,6 +74,12 @@ export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
     try {
       const newAppointment = await req.payload.create({
         collection: 'appointments',
+        // The booking confirmation for the series is the original appointment's
+        // email — don't spam one email per generated occurrence.
+        context: {
+          skipCustomerEmail: true,
+        },
+        req,
         data: {
           appointmentType: doc.appointmentType,
           bookedBy: doc.bookedBy,
@@ -125,7 +89,9 @@ export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
             typeof doc.guestCustomer === 'object' ? doc.guestCustomer?.id : doc.guestCustomer,
           host: typeof doc.host === 'object' ? doc.host?.id : doc.host,
           internalNotes: doc.internalNotes,
-          services: doc.services?.map((s: any) => (typeof s === 'object' ? s.id : s)),
+          services: doc.services?.map((s: { id: number | string } | number | string) =>
+            typeof s === 'object' ? s.id : s,
+          ),
           start: newStart.toISOString(),
           end: newEnd.toISOString(),
           status: doc.status,

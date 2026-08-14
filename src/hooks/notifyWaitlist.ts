@@ -1,8 +1,77 @@
-import type { CollectionAfterChangeHook } from 'payload';
+import type { CollectionAfterChangeHook, Payload, PayloadRequest } from 'payload';
 
 import moment from 'moment';
 
+import { getEmailFromAddress } from '../utilities/emailFrom';
+
 const WAITLIST_EXPIRY_HOURS = 2;
+
+type WaitlistEntryDoc = {
+  customer?: { email?: string; firstName?: string } | number | string | null;
+  guestCustomer?: { email?: string; firstName?: string } | number | string | null;
+  id: number | string;
+  service?: { title?: string } | number | string | null;
+};
+
+const getRecipient = (
+  entry: WaitlistEntryDoc,
+): { email: string; firstName?: string } | null => {
+  for (const person of [entry.customer, entry.guestCustomer]) {
+    if (person && typeof person === 'object' && person.email) {
+      return { email: person.email, firstName: person.firstName };
+    }
+  }
+  return null;
+};
+
+export const notifyWaitlistEntry = async (
+  payload: Payload,
+  entry: WaitlistEntryDoc,
+  req?: PayloadRequest,
+): Promise<void> => {
+  const expiresAt = moment().add(WAITLIST_EXPIRY_HOURS, 'hours').toISOString();
+
+  await payload.update({
+    collection: 'waitlist',
+    id: entry.id,
+    data: {
+      status: 'notified',
+      notifiedAt: new Date().toISOString(),
+      expiresAt,
+    },
+    req,
+  });
+
+  const recipient = getRecipient(entry);
+
+  if (!recipient) {
+    payload.logger.warn(
+      `Waitlist entry ${entry.id} marked as notified but has no email address to notify`,
+    );
+    return;
+  }
+
+  const serviceTitle =
+    entry.service && typeof entry.service === 'object' ? entry.service.title : undefined;
+
+  try {
+    await payload.sendEmail({
+      from: getEmailFromAddress(payload),
+      to: recipient.email,
+      subject: 'A spot has opened up!',
+      text: [
+        `Hi${recipient.firstName ? ` ${recipient.firstName}` : ''},`,
+        '',
+        `Good news — a spot has opened up${serviceTitle ? ` for ${serviceTitle}` : ''}.`,
+        `Please book within ${WAITLIST_EXPIRY_HOURS} hours to keep your place on the waitlist.`,
+      ].join('\n'),
+    });
+  } catch (error) {
+    payload.logger.error(`Failed to send waitlist notification for entry ${entry.id}: ${error}`);
+  }
+
+  payload.logger.info(`Notified waitlist entry ${entry.id}`);
+};
 
 export const notifyWaitlist: CollectionAfterChangeHook = async ({
   doc,
@@ -24,7 +93,10 @@ export const notifyWaitlist: CollectionAfterChangeHook = async ({
     return doc;
   }
 
-  const serviceIds = doc.services?.map((s: any) => (typeof s === 'object' ? s.id : s)) || [];
+  const serviceIds =
+    doc.services?.map((s: { id: number | string } | number | string) =>
+      typeof s === 'object' ? s.id : s,
+    ) || [];
   const hostId = typeof doc.host === 'object' ? doc.host?.id : doc.host;
 
   if (serviceIds.length === 0) {
@@ -34,7 +106,8 @@ export const notifyWaitlist: CollectionAfterChangeHook = async ({
   const waitlistEntries = await req.payload.find({
     collection: 'waitlist',
     depth: 1,
-    limit: 10,
+    limit: 1,
+    req,
     sort: 'createdAt',
     where: {
       and: [
@@ -51,21 +124,10 @@ export const notifyWaitlist: CollectionAfterChangeHook = async ({
     return doc;
   }
 
-  const firstEntry = waitlistEntries.docs[0];
-  const expiresAt = moment().add(WAITLIST_EXPIRY_HOURS, 'hours').toISOString();
-
-  await req.payload.update({
-    collection: 'waitlist',
-    id: String(firstEntry.id),
-    data: {
-      status: 'notified',
-      notifiedAt: new Date().toISOString(),
-      expiresAt,
-    },
-  });
-
-  req.payload.logger.info(
-    `Notified waitlist entry ${firstEntry.id} about cancelled appointment ${doc.id}`,
+  await notifyWaitlistEntry(
+    req.payload,
+    waitlistEntries.docs[0] as unknown as WaitlistEntryDoc,
+    req,
   );
 
   return doc;

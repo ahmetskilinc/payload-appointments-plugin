@@ -1,6 +1,8 @@
-import type { PayloadHandler, PayloadRequest } from 'payload';
+import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 import moment from 'moment';
+
+import { findAll } from '../utilities/findAll';
 
 export type CancelRecurringPayload = {
   appointmentId: string;
@@ -9,6 +11,10 @@ export type CancelRecurringPayload = {
 
 export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadRequest) => {
   try {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = (await req.json?.()) as CancelRecurringPayload | undefined;
 
     if (!body || !body.appointmentId || !body.cancelType) {
@@ -24,6 +30,10 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
       collection: 'appointments',
       id: appointmentId,
       depth: 0,
+      disableErrors: true,
+      overrideAccess: false,
+      req,
+      user: req.user,
     });
 
     if (!appointment) {
@@ -47,6 +57,9 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
           status: 'cancelled',
           cancelledAt: now,
         },
+        overrideAccess: false,
+        req,
+        user: req.user,
       });
       return Response.json({ success: true, cancelled: [appointmentId] });
     }
@@ -54,33 +67,28 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
     const seriesId = recurrence.seriesId;
     const appointmentStart = moment(appointment.start);
 
-    let whereClause: any = {
-      and: [
-        { 'recurrence.seriesId': { equals: seriesId } },
-        { status: { not_equals: 'cancelled' } },
-      ],
-    };
+    const conditions: Where[] = [
+      { 'recurrence.seriesId': { equals: seriesId } },
+      { status: { not_equals: 'cancelled' } },
+    ];
 
     if (cancelType === 'future') {
-      whereClause = {
-        and: [
-          { 'recurrence.seriesId': { equals: seriesId } },
-          { start: { greater_than_equal: appointmentStart.toISOString() } },
-          { status: { not_equals: 'cancelled' } },
-        ],
-      };
+      conditions.push({ start: { greater_than_equal: appointmentStart.toISOString() } });
     }
 
-    const seriesAppointments = await req.payload.find({
+    const seriesAppointments = await findAll<{ id: number | string }>({
       collection: 'appointments',
-      depth: 0,
-      limit: 100,
-      where: whereClause,
+      overrideAccess: false,
+      payload: req.payload,
+      req,
+      user: req.user,
+      where: { and: conditions },
     });
 
     const cancelledIds: string[] = [];
+    const failedIds: string[] = [];
 
-    for (const appt of seriesAppointments.docs) {
+    for (const appt of seriesAppointments) {
       try {
         await req.payload.update({
           collection: 'appointments',
@@ -89,16 +97,21 @@ export const cancelRecurringAppointment: PayloadHandler = async (req: PayloadReq
             status: 'cancelled',
             cancelledAt: now,
           },
+          overrideAccess: false,
+          req,
+          user: req.user,
         });
         cancelledIds.push(String(appt.id));
       } catch (error) {
         req.payload.logger.error(`Failed to cancel appointment ${appt.id}: ${error}`);
+        failedIds.push(String(appt.id));
       }
     }
 
     return Response.json({
-      success: true,
+      success: failedIds.length === 0,
       cancelled: cancelledIds,
+      failed: failedIds,
       total: cancelledIds.length,
     });
   } catch (error) {

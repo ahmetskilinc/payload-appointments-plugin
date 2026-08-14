@@ -2,6 +2,10 @@ import type { PayloadHandler, PayloadRequest } from 'payload';
 
 export const waitlistLeave: PayloadHandler = async (req: PayloadRequest) => {
   try {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
@@ -12,6 +16,10 @@ export const waitlistLeave: PayloadHandler = async (req: PayloadRequest) => {
       collection: 'waitlist',
       id,
       depth: 0,
+      disableErrors: true,
+      overrideAccess: false,
+      req,
+      user: req.user,
     });
 
     if (!entry) {
@@ -31,6 +39,9 @@ export const waitlistLeave: PayloadHandler = async (req: PayloadRequest) => {
       data: {
         status: 'cancelled',
       },
+      overrideAccess: false,
+      req,
+      user: req.user,
     });
 
     return Response.json({

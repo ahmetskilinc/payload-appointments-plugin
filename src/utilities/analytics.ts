@@ -2,6 +2,8 @@ import type { Payload } from 'payload';
 
 import moment from 'moment';
 
+import { findAll } from './findAll';
+
 export type DateRange = {
   startDate: string;
   endDate: string;
@@ -18,7 +20,9 @@ export type AppointmentStats = {
 
 export type RevenueStats = {
   total: number;
+  /** `count` is the number of booked service line-items for that service. */
   byService: { serviceId: string; serviceName: string; revenue: number; count: number }[];
+  /** `count` is the number of appointments for that host. */
   byHost: { hostId: string; hostName: string; revenue: number; count: number }[];
 };
 
@@ -59,27 +63,90 @@ export type AnalyticsData = {
   bookingTrends: BookingTrend[];
 };
 
-export async function getAppointmentStats(
+type AppointmentDoc = {
+  end: string;
+  host?: unknown;
+  services?: unknown;
+  start: string;
+  status?: string | null;
+};
+
+/** Statuses that represent real (or expected) income. */
+const REVENUE_STATUSES = new Set(['completed', 'confirmed']);
+
+const getHostInfo = (host: unknown): { id: string; name: string } | null => {
+  if (!host || typeof host !== 'object') {
+    return null;
+  }
+  const h = host as {
+    firstName?: string;
+    id: number | string;
+    lastName?: string;
+    preferredNameAppointments?: string;
+  };
+  return {
+    id: String(h.id),
+    name:
+      h.preferredNameAppointments ||
+      `${h.firstName || ''} ${h.lastName || ''}`.trim() ||
+      'Unknown Host',
+  };
+};
+
+const getServiceInfo = (
+  service: unknown,
+): { id: string; name: string; price: number } | null => {
+  if (!service || typeof service !== 'object') {
+    return null;
+  }
+  const s = service as {
+    id: number | string;
+    paidService?: boolean;
+    price?: number;
+    title?: string;
+  };
+  return {
+    id: String(s.id),
+    name: s.title || 'Unknown Service',
+    price: s.paidService ? s.price || 0 : 0,
+  };
+};
+
+const appointmentServices = (appointment: AppointmentDoc) =>
+  Array.isArray(appointment.services) ? appointment.services : [];
+
+/**
+ * One paginated fetch of every appointment starting in the range (all
+ * statuses); every computation below derives from this dataset.
+ */
+export async function fetchAppointmentsInRange(
   payload: Payload,
   dateRange: DateRange,
-): Promise<AppointmentStats> {
-  const { startDate, endDate } = dateRange;
-
-  const appointments = await payload.find({
+): Promise<AppointmentDoc[]> {
+  return findAll<AppointmentDoc>({
     collection: 'appointments',
-    depth: 0,
-    limit: 0,
+    depth: 1,
+    payload,
+    select: {
+      end: true,
+      host: true,
+      services: true,
+      start: true,
+      status: true,
+    },
     where: {
       and: [
         { appointmentType: { equals: 'appointment' } },
-        { start: { greater_than_equal: startDate } },
-        { start: { less_than_equal: endDate } },
+        { start: { greater_than_equal: dateRange.startDate } },
+        { start: { less_than_equal: dateRange.endDate } },
       ],
     },
   });
+}
 
+export function computeAppointmentStats(appointments: AppointmentDoc[]): AppointmentStats {
   const stats: AppointmentStats = {
-    total: appointments.totalDocs,
+    total: appointments.length,
     completed: 0,
     cancelled: 0,
     noShow: 0,
@@ -87,133 +154,67 @@ export async function getAppointmentStats(
     confirmed: 0,
   };
 
-  const statusCounts = await Promise.all([
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { equals: 'completed' } },
-        ],
-      },
-    }),
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { equals: 'cancelled' } },
-        ],
-      },
-    }),
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { equals: 'no-show' } },
-        ],
-      },
-    }),
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { equals: 'pending' } },
-        ],
-      },
-    }),
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { equals: 'confirmed' } },
-        ],
-      },
-    }),
-  ]);
-
-  stats.completed = statusCounts[0].totalDocs;
-  stats.cancelled = statusCounts[1].totalDocs;
-  stats.noShow = statusCounts[2].totalDocs;
-  stats.pending = statusCounts[3].totalDocs;
-  stats.confirmed = statusCounts[4].totalDocs;
+  for (const appointment of appointments) {
+    switch (appointment.status) {
+      case 'completed':
+        stats.completed += 1;
+        break;
+      case 'cancelled':
+        stats.cancelled += 1;
+        break;
+      case 'no-show':
+        stats.noShow += 1;
+        break;
+      case 'pending':
+        stats.pending += 1;
+        break;
+      case 'confirmed':
+        stats.confirmed += 1;
+        break;
+    }
+  }
 
   return stats;
 }
 
-export async function getRevenueStats(
-  payload: Payload,
-  dateRange: DateRange,
-): Promise<RevenueStats> {
-  const { startDate, endDate } = dateRange;
-
-  const appointments = await payload.find({
-    collection: 'appointments',
-    depth: 2,
-    limit: 1000,
-    where: {
-      and: [
-        { appointmentType: { equals: 'appointment' } },
-        { start: { greater_than_equal: startDate } },
-        { start: { less_than_equal: endDate } },
-        { status: { not_in: ['cancelled'] } },
-      ],
-    },
-  });
-
+export function computeRevenueStats(appointments: AppointmentDoc[]): RevenueStats {
   const serviceMap = new Map<string, { name: string; revenue: number; count: number }>();
   const hostMap = new Map<string, { name: string; revenue: number; count: number }>();
   let totalRevenue = 0;
 
-  for (const appointment of appointments.docs) {
-    const services = appointment.services as any[];
-    const host = appointment.host as any;
+  for (const appointment of appointments) {
+    if (!REVENUE_STATUSES.has(appointment.status || '')) {
+      continue;
+    }
 
     let appointmentRevenue = 0;
 
-    if (services && Array.isArray(services)) {
-      for (const service of services) {
-        if (service && typeof service === 'object') {
-          const serviceId = service.id;
-          const serviceName = service.title || 'Unknown Service';
-          const price = service.paidService ? service.price || 0 : 0;
-
-          appointmentRevenue += price;
-
-          const existing = serviceMap.get(serviceId) || { name: serviceName, revenue: 0, count: 0 };
-          existing.revenue += price;
-          existing.count += 1;
-          serviceMap.set(serviceId, existing);
-        }
+    for (const rawService of appointmentServices(appointment)) {
+      const service = getServiceInfo(rawService);
+      if (!service) {
+        continue;
       }
+
+      appointmentRevenue += service.price;
+
+      const existing = serviceMap.get(service.id) || {
+        name: service.name,
+        revenue: 0,
+        count: 0,
+      };
+      existing.revenue += service.price;
+      existing.count += 1;
+      serviceMap.set(service.id, existing);
     }
 
     totalRevenue += appointmentRevenue;
 
-    if (host && typeof host === 'object') {
-      const hostId = host.id;
-      const hostName =
-        host.preferredNameAppointments ||
-        `${host.firstName || ''} ${host.lastName || ''}`.trim() ||
-        'Unknown Host';
-
-      const existing = hostMap.get(hostId) || { name: hostName, revenue: 0, count: 0 };
+    const host = getHostInfo(appointment.host);
+    if (host) {
+      const existing = hostMap.get(host.id) || { name: host.name, revenue: 0, count: 0 };
       existing.revenue += appointmentRevenue;
       existing.count += 1;
-      hostMap.set(hostId, existing);
+      hostMap.set(host.id, existing);
     }
   }
 
@@ -234,45 +235,35 @@ export async function getRevenueStats(
   };
 }
 
-export async function getPopularServices(
-  payload: Payload,
-  dateRange: DateRange,
+export function computePopularServices(
+  appointments: AppointmentDoc[],
   limit = 5,
-): Promise<PopularService[]> {
-  const { startDate, endDate } = dateRange;
-
-  const appointments = await payload.find({
-    collection: 'appointments',
-    depth: 2,
-    limit: 1000,
-    where: {
-      and: [
-        { appointmentType: { equals: 'appointment' } },
-        { start: { greater_than_equal: startDate } },
-        { start: { less_than_equal: endDate } },
-        { status: { not_in: ['cancelled'] } },
-      ],
-    },
-  });
-
+): PopularService[] {
   const serviceMap = new Map<string, { name: string; count: number; revenue: number }>();
 
-  for (const appointment of appointments.docs) {
-    const services = appointment.services as any[];
+  for (const appointment of appointments) {
+    if (appointment.status === 'cancelled') {
+      continue;
+    }
 
-    if (services && Array.isArray(services)) {
-      for (const service of services) {
-        if (service && typeof service === 'object') {
-          const serviceId = service.id;
-          const serviceName = service.title || 'Unknown Service';
-          const price = service.paidService ? service.price || 0 : 0;
+    const countsRevenue = REVENUE_STATUSES.has(appointment.status || '');
 
-          const existing = serviceMap.get(serviceId) || { name: serviceName, count: 0, revenue: 0 };
-          existing.count += 1;
-          existing.revenue += price;
-          serviceMap.set(serviceId, existing);
-        }
+    for (const rawService of appointmentServices(appointment)) {
+      const service = getServiceInfo(rawService);
+      if (!service) {
+        continue;
       }
+
+      const existing = serviceMap.get(service.id) || {
+        name: service.name,
+        count: 0,
+        revenue: 0,
+      };
+      existing.count += 1;
+      if (countsRevenue) {
+        existing.revenue += service.price;
+      }
+      serviceMap.set(service.id, existing);
     }
   }
 
@@ -287,25 +278,7 @@ export async function getPopularServices(
     .slice(0, limit);
 }
 
-export async function getHostUtilization(
-  payload: Payload,
-  dateRange: DateRange,
-): Promise<HostUtilization[]> {
-  const { startDate, endDate } = dateRange;
-
-  const appointments = await payload.find({
-    collection: 'appointments',
-    depth: 1,
-    limit: 1000,
-    where: {
-      and: [
-        { appointmentType: { equals: 'appointment' } },
-        { start: { greater_than_equal: startDate } },
-        { start: { less_than_equal: endDate } },
-      ],
-    },
-  });
-
+export function computeHostUtilization(appointments: AppointmentDoc[]): HostUtilization[] {
   const hostMap = new Map<
     string,
     {
@@ -317,41 +290,37 @@ export async function getHostUtilization(
     }
   >();
 
-  for (const appointment of appointments.docs) {
-    const host = appointment.host as any;
+  for (const appointment of appointments) {
+    const host = getHostInfo(appointment.host);
+    if (!host) {
+      continue;
+    }
+
     const start = moment(appointment.start);
     const end = moment(appointment.end);
     const duration = moment.duration(end.diff(start)).asHours();
     const status = appointment.status;
 
-    if (host && typeof host === 'object') {
-      const hostId = host.id;
-      const hostName =
-        host.preferredNameAppointments ||
-        `${host.firstName || ''} ${host.lastName || ''}`.trim() ||
-        'Unknown Host';
+    const existing = hostMap.get(host.id) || {
+      name: host.name,
+      appointmentsCount: 0,
+      hoursBooked: 0,
+      completedCount: 0,
+      cancelledCount: 0,
+    };
 
-      const existing = hostMap.get(hostId) || {
-        name: hostName,
-        appointmentsCount: 0,
-        hoursBooked: 0,
-        completedCount: 0,
-        cancelledCount: 0,
-      };
-
-      existing.appointmentsCount += 1;
-      if (status !== 'cancelled') {
-        existing.hoursBooked += duration;
-      }
-      if (status === 'completed') {
-        existing.completedCount += 1;
-      }
-      if (status === 'cancelled') {
-        existing.cancelledCount += 1;
-      }
-
-      hostMap.set(hostId, existing);
+    existing.appointmentsCount += 1;
+    if (status !== 'cancelled') {
+      existing.hoursBooked += duration;
     }
+    if (status === 'completed') {
+      existing.completedCount += 1;
+    }
+    if (status === 'cancelled') {
+      existing.cancelledCount += 1;
+    }
+
+    hostMap.set(host.id, existing);
   }
 
   return Array.from(hostMap.entries())
@@ -366,88 +335,53 @@ export async function getHostUtilization(
     .sort((a, b) => b.appointmentsCount - a.appointmentsCount);
 }
 
-export async function getNoShowRate(payload: Payload, dateRange: DateRange): Promise<NoShowStats> {
-  const { startDate, endDate } = dateRange;
+/** Rate over appointments that actually reached their date (excludes cancelled/pending). */
+export function computeNoShowRate(appointments: AppointmentDoc[]): NoShowStats {
+  const relevant = appointments.filter(
+    (a) => a.status !== 'cancelled' && a.status !== 'pending',
+  );
+  const noShows = relevant.filter((a) => a.status === 'no-show');
 
-  const [total, noShows] = await Promise.all([
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { not_in: ['cancelled', 'pending'] } },
-        ],
-      },
-    }),
-    payload.count({
-      collection: 'appointments',
-      where: {
-        and: [
-          { appointmentType: { equals: 'appointment' } },
-          { start: { greater_than_equal: startDate } },
-          { start: { less_than_equal: endDate } },
-          { status: { equals: 'no-show' } },
-        ],
-      },
-    }),
-  ]);
-
-  const rate = total.totalDocs > 0 ? (noShows.totalDocs / total.totalDocs) * 100 : 0;
+  const rate = relevant.length > 0 ? (noShows.length / relevant.length) * 100 : 0;
 
   return {
     rate: Math.round(rate * 100) / 100,
-    count: noShows.totalDocs,
-    total: total.totalDocs,
+    count: noShows.length,
+    total: relevant.length,
   };
 }
 
-export async function getBookingTrends(
-  payload: Payload,
+export function computeBookingTrends(
+  appointments: AppointmentDoc[],
   dateRange: DateRange,
   granularity: 'day' | 'week' | 'month' = 'day',
-): Promise<BookingTrend[]> {
-  const { startDate, endDate } = dateRange;
-
-  const appointments = await payload.find({
-    collection: 'appointments',
-    depth: 2,
-    limit: 1000,
-    where: {
-      and: [
-        { appointmentType: { equals: 'appointment' } },
-        { start: { greater_than_equal: startDate } },
-        { start: { less_than_equal: endDate } },
-        { status: { not_in: ['cancelled'] } },
-      ],
-    },
-  });
-
-  const trendMap = new Map<string, { count: number; revenue: number }>();
-
+): BookingTrend[] {
   const formatKey = (date: moment.Moment): string => {
     switch (granularity) {
       case 'week':
-        return date.startOf('week').format('YYYY-MM-DD');
+        return date.clone().startOf('week').format('YYYY-MM-DD');
       case 'month':
-        return date.startOf('month').format('YYYY-MM');
+        return date.clone().startOf('month').format('YYYY-MM');
       default:
         return date.format('YYYY-MM-DD');
     }
   };
 
-  for (const appointment of appointments.docs) {
-    const date = moment(appointment.start);
-    const key = formatKey(date);
+  const trendMap = new Map<string, { count: number; revenue: number }>();
 
-    const services = appointment.services as any[];
+  for (const appointment of appointments) {
+    if (appointment.status === 'cancelled') {
+      continue;
+    }
+
+    const key = formatKey(moment(appointment.start));
+
     let revenue = 0;
-
-    if (services && Array.isArray(services)) {
-      for (const service of services) {
-        if (service && typeof service === 'object' && service.paidService) {
-          revenue += service.price || 0;
+    if (REVENUE_STATUSES.has(appointment.status || '')) {
+      for (const rawService of appointmentServices(appointment)) {
+        const service = getServiceInfo(rawService);
+        if (service) {
+          revenue += service.price;
         }
       }
     }
@@ -458,21 +392,16 @@ export async function getBookingTrends(
     trendMap.set(key, existing);
   }
 
-  const start = moment(startDate);
-  const end = moment(endDate);
-  const results: BookingTrend[] = [];
-  const current = start.clone();
+  // Fill in empty buckets across the range so charts render continuous axes.
+  const end = moment(dateRange.endDate);
+  const results = new Map<string, BookingTrend>();
+  const current = moment(dateRange.startDate);
 
   while (current.isSameOrBefore(end)) {
-    const key = formatKey(current.clone());
-    const data = trendMap.get(key) || { count: 0, revenue: 0 };
-
-    if (!results.find((r) => r.date === key)) {
-      results.push({
-        date: key,
-        count: data.count,
-        revenue: data.revenue,
-      });
+    const key = formatKey(current);
+    if (!results.has(key)) {
+      const data = trendMap.get(key) || { count: 0, revenue: 0 };
+      results.set(key, { date: key, count: data.count, revenue: data.revenue });
     }
 
     switch (granularity) {
@@ -487,7 +416,14 @@ export async function getBookingTrends(
     }
   }
 
-  return results.sort((a, b) => a.date.localeCompare(b.date));
+  // The final partial bucket can be skipped by the increment above.
+  const endKey = formatKey(end);
+  if (!results.has(endKey)) {
+    const data = trendMap.get(endKey) || { count: 0, revenue: 0 };
+    results.set(endKey, { date: endKey, count: data.count, revenue: data.revenue });
+  }
+
+  return Array.from(results.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export async function getAllAnalytics(
@@ -495,28 +431,14 @@ export async function getAllAnalytics(
   dateRange: DateRange,
   granularity: 'day' | 'week' | 'month' = 'day',
 ): Promise<AnalyticsData> {
-  const [
-    appointmentStats,
-    revenueStats,
-    popularServices,
-    hostUtilization,
-    noShowStats,
-    bookingTrends,
-  ] = await Promise.all([
-    getAppointmentStats(payload, dateRange),
-    getRevenueStats(payload, dateRange),
-    getPopularServices(payload, dateRange, 5),
-    getHostUtilization(payload, dateRange),
-    getNoShowRate(payload, dateRange),
-    getBookingTrends(payload, dateRange, granularity),
-  ]);
+  const appointments = await fetchAppointmentsInRange(payload, dateRange);
 
   return {
-    appointmentStats,
-    revenueStats,
-    popularServices,
-    hostUtilization,
-    noShowStats,
-    bookingTrends,
+    appointmentStats: computeAppointmentStats(appointments),
+    revenueStats: computeRevenueStats(appointments),
+    popularServices: computePopularServices(appointments, 5),
+    hostUtilization: computeHostUtilization(appointments),
+    noShowStats: computeNoShowRate(appointments),
+    bookingTrends: computeBookingTrends(appointments, dateRange, granularity),
   };
 }

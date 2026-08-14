@@ -12,18 +12,23 @@ import { appointmentUpdatedEmail } from '../utilities/AppointmentUpdatedEmail';
 type EmailType = 'created' | 'updated' | 'cancelled';
 
 export const sendCustomerEmail: CollectionAfterChangeHook = async ({
+  context,
   doc,
   operation,
   previousDoc,
   req,
 }) => {
-  req.payload.logger.info('1');
   if (doc.appointmentType !== 'appointment') {
     return;
   }
 
+  // Bulk operations (recurring series generation, scheduled jobs) suppress
+  // per-document emails via context.
+  if (context?.skipCustomerEmail) {
+    return;
+  }
+
   try {
-    req.payload.logger.info('2');
     const appointment = (await req.payload.findByID({
       id: doc.id,
       collection: 'appointments',
@@ -31,67 +36,52 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
       req,
     })) as unknown as Appointment;
 
-    req.payload.logger.info('3');
     const openingTimes = await req.payload.findGlobal({
       slug: 'openingTimes',
       depth: 0,
       req,
     });
-    req.payload.logger.info('4');
     const timezone = (openingTimes?.timezone as string) || 'UTC';
 
     let emailData = null;
     let htmlContent = null;
     let emailType: EmailType | null = null;
 
-    req.payload.logger.info('5');
     if (operation === 'create') {
-      emailData = appointmentCreatedEmail(appointment);
-      req.payload.logger.info('6');
+      emailData = appointmentCreatedEmail(appointment, req.payload);
       htmlContent = await AppointmentCreatedRenderedEmail({
         cancelUrl: emailData.cancelUrl,
         doc: appointment,
         timezone,
       });
-      req.payload.logger.info('7');
       emailType = 'created';
     } else if (operation === 'update') {
-      req.payload.logger.info('8');
       const wasCancelled = previousDoc?.status !== 'cancelled' && doc.status === 'cancelled';
-      req.payload.logger.info('9');
       if (wasCancelled) {
-        emailData = appointmentCancelledEmail(appointment);
-        req.payload.logger.info('10');
+        emailData = appointmentCancelledEmail(appointment, req.payload);
         htmlContent = await AppointmentCancelledRenderedEmail({ doc: appointment, timezone });
         emailType = 'cancelled';
       } else if (doc.status !== 'cancelled') {
-        req.payload.logger.info('11');
-        emailData = appointmentUpdatedEmail(appointment);
-        req.payload.logger.info('12');
+        emailData = appointmentUpdatedEmail(appointment, req.payload);
         htmlContent = await AppointmentUpdatedRenderedEmail({
           cancelUrl: emailData.cancelUrl,
           doc: appointment,
           timezone,
         });
-        req.payload.logger.info('13');
         emailType = 'updated';
       }
     }
 
-    req.payload.logger.info('14');
     if (emailData && htmlContent && emailType) {
       let emailSent = false;
 
       try {
-        req.payload.logger.info('15');
         await req.payload.sendEmail({
           ...emailData,
           html: htmlContent,
         });
-        req.payload.logger.info('16');
         emailSent = true;
       } catch (emailError: unknown) {
-        req.payload.logger.info('17');
         const errorString = String(emailError);
         const errorName = emailError instanceof Error ? emailError.name : '';
         const isNotConfigured =
@@ -111,7 +101,6 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
 
       if (emailSent) {
         try {
-          req.payload.logger.info('18');
           await req.payload.create({
             collection: 'sentEmails',
             data: {
@@ -126,9 +115,7 @@ export const sendCustomerEmail: CollectionAfterChangeHook = async ({
             },
             req,
           });
-          req.payload.logger.info('19');
         } catch (logError) {
-          req.payload.logger.info('20');
           req.payload.logger.error(`Error logging sent email: ${logError}`);
         }
       }

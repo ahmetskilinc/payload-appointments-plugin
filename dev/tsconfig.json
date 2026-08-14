@@ -18,8 +18,11 @@
     "paths": {
       "@payload-config": ["./payload.config.ts"],
       "payload-appointments-plugin": ["../src/index.ts"],
-      "payload-appointments-plugin/client": ["../src/exports/client.ts"],
-      "payload-appointments-plugin/rsc": ["../src/exports/rsc.ts"]
+      "payload-appointments-plugin/BeforeDashboard": ["../src/components/BeforeDashboard/index.tsx"],
+      "payload-appointments-plugin/BeforeNavLinks": ["../src/components/BeforeNavLinks/index.tsx"],
+      "payload-appointments-plugin/AppointmentsList": ["../src/views/AppointmentsList/index.tsx"],
+      "payload-appointments-plugin/AnalyticsView": ["../src/views/Analytics/index.tsx"],
+      "payload-appointments-plugin/EmailHtmlPreview": ["../src/components/EmailHtmlPreview/index.tsx"]
     },
     "noEmit": true,
     "emitDeclarationOnly": false

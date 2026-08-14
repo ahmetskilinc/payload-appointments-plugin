@@ -1,6 +1,7 @@
 import type { AdminViewProps } from 'payload';
 
 import { DefaultTemplate } from '@payloadcms/next/templates';
+import { redirect } from 'next/navigation';
 
 import type { Appointment, TeamMember } from '../../types';
 
@@ -14,7 +15,11 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
   params,
   searchParams,
 }) => {
-  const { payload } = initPageResult.req;
+  const { payload, user } = initPageResult.req;
+
+  if (!user) {
+    redirect(`${payload.config.routes.admin}/login`);
+  }
 
   const today = new Date();
   const startOfDay = new Date(today);
@@ -27,16 +32,19 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
       collection: Appointments.slug as 'appointments',
       depth: 1,
       limit: 500,
+      overrideAccess: false,
+      user,
       where: {
         and: [
           {
+            // Include appointments spanning the day's boundaries.
             start: {
-              greater_than_equal: startOfDay.toISOString(),
+              less_than_equal: endOfDay.toISOString(),
             },
           },
           {
             end: {
-              less_than_equal: endOfDay.toISOString(),
+              greater_than_equal: startOfDay.toISOString(),
             },
           },
         ],
@@ -45,6 +53,8 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
     payload.find({
       collection: TeamMembers.slug as 'teamMembers',
       limit: 100,
+      overrideAccess: false,
+      user,
     }),
   ]);
 

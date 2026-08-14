@@ -1,6 +1,7 @@
 import type { AdminViewProps } from 'payload';
 
 import { DefaultTemplate } from '@payloadcms/next/templates';
+import { redirect } from 'next/navigation';
 
 import AnalyticsClient from './index.client';
 
@@ -9,7 +10,11 @@ const AnalyticsView: React.FC<AdminViewProps> = async ({
   params,
   searchParams,
 }) => {
-  const { payload } = initPageResult.req;
+  const { payload, user } = initPageResult.req;
+
+  if (!user) {
+    redirect(`${payload.config.routes.admin}/login`);
+  }
 
   return (
     <DefaultTemplate

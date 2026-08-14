@@ -1,5 +1,6 @@
 'use client';
 
+import { useConfig } from '@payloadcms/ui';
 import * as React from 'react';
 
 import { StatCard } from './StatCard';
@@ -15,7 +16,21 @@ interface AnalyticsDashboardProps {
 
 type Granularity = 'day' | 'week' | 'month';
 
+// Formats a Date as YYYY-MM-DD in the user's local timezone (toISOString would
+// use UTC and can be off by a day near midnight).
+const toLocalDateString = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
+  const {
+    config: {
+      routes: { api: apiRoute },
+    },
+  } = useConfig();
   const [data, setData] = React.useState<AnalyticsData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -25,39 +40,52 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     const start = new Date();
     start.setDate(start.getDate() - 30);
     return {
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
+      startDate: toLocalDateString(start),
+      endDate: toLocalDateString(end),
     };
   });
 
-  const fetchAnalytics = React.useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchAnalytics = React.useCallback(
+    async (signal?: AbortSignal) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const params = new URLSearchParams({
-        startDate: new Date(dateRange.startDate).toISOString(),
-        endDate: new Date(dateRange.endDate + 'T23:59:59').toISOString(),
-        granularity,
-      });
+      try {
+        // Both edges parsed the same way (local time) so the range is symmetric.
+        const params = new URLSearchParams({
+          startDate: new Date(dateRange.startDate + 'T00:00:00').toISOString(),
+          endDate: new Date(dateRange.endDate + 'T23:59:59.999').toISOString(),
+          granularity,
+        });
 
-      const response = await fetch(`/api/appointments-analytics?${params}`);
+        const response = await fetch(`${apiRoute}/appointments-analytics?${params}`, {
+          credentials: 'include',
+          signal,
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
+        if (!response.ok) {
+          throw new Error('Failed to fetch analytics');
+        }
+
+        const result = await response.json();
+        setData(result.data);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          return;
+        }
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
       }
-
-      const result = await response.json();
-      setData(result.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  }, [dateRange, granularity]);
+    },
+    [apiRoute, dateRange, granularity],
+  );
 
   React.useEffect(() => {
-    fetchAnalytics();
+    // Abort superseded requests so rapid filter changes can't land stale data.
+    const controller = new AbortController();
+    fetchAnalytics(controller.signal);
+    return () => controller.abort();
   }, [fetchAnalytics]);
 
   const formatCurrency = (amount: number) => {

@@ -1,5 +1,7 @@
 import type { PayloadHandler, PayloadRequest } from 'payload';
 
+import { toPublicAppointment } from '../utilities/publicAppointment';
+
 export const getAppointmentByToken: PayloadHandler = async (req: PayloadRequest) => {
   try {
     const { token } = req.query;
@@ -8,9 +10,11 @@ export const getAppointmentByToken: PayloadHandler = async (req: PayloadRequest)
       return Response.json({ error: 'Missing or invalid cancellation token' }, { status: 400 });
     }
 
+    // Intentionally privileged: the unguessable cancellation token authorizes
+    // this read. Only a minimal, PII-safe shape is returned below.
     const appointments = await req.payload.find({
       collection: 'appointments',
-      depth: 2,
+      depth: 1,
       limit: 1,
       where: {
         cancellationToken: {
@@ -26,7 +30,7 @@ export const getAppointmentByToken: PayloadHandler = async (req: PayloadRequest)
     const appointment = appointments.docs[0];
 
     return Response.json({
-      appointment,
+      appointment: toPublicAppointment(appointment),
       success: true,
     });
   } catch (error) {

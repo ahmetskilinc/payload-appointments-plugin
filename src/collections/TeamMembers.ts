@@ -100,13 +100,13 @@ const TeamMembers: CollectionConfig = {
           },
           {
             type: 'row',
-            admin: { condition: (_: any, siblingData: any) => siblingData?.isWorking },
+            admin: { condition: (_, siblingData) => Boolean(siblingData?.isWorking) },
             fields: [
               {
                 name: 'start',
                 type: 'date',
                 admin: {
-                  condition: (_: any, siblingData: any) => siblingData?.isWorking,
+                  condition: (_, siblingData) => Boolean(siblingData?.isWorking),
                   date: {
                     displayFormat: 'h:mm a',
                     pickerAppearance: 'timeOnly',
@@ -119,7 +119,7 @@ const TeamMembers: CollectionConfig = {
                 name: 'end',
                 type: 'date',
                 admin: {
-                  condition: (_: any, siblingData: any) => siblingData?.isWorking,
+                  condition: (_, siblingData) => Boolean(siblingData?.isWorking),
                   date: {
                     displayFormat: 'h:mm a',
                     pickerAppearance: 'timeOnly',
@@ -150,6 +150,12 @@ const TeamMembers: CollectionConfig = {
     {
       name: 'icalToken',
       type: 'text',
+      // The team member collection is publicly readable (booking UI needs the
+      // roster), but the feed token grants access to the host's full schedule —
+      // never expose it to unauthenticated reads.
+      access: {
+        read: ({ req }) => Boolean(req.user),
+      },
       admin: {
         condition: (data) => data.takingAppointments === true,
         description: 'Token for subscribing to iCal feed (auto-generated)',

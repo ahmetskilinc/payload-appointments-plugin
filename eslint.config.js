@@ -15,6 +15,7 @@ export const defaultESLintIgnores = [
   '**/tsconfig.tsbuildinfo',
   '**/README.md',
   '**/eslint.config.js',
+  '**/next-env.d.ts',
   '**/payload-types.ts',
   '**/dist/',
   '**/.yarn/',
@@ -24,6 +25,7 @@ export const defaultESLintIgnores = [
 ];
 
 const eslintConfig = defineConfig([
+  { ignores: defaultESLintIgnores },
   ...nextTs,
   {
     rules: {
@@ -37,7 +39,14 @@ const eslintConfig = defineConfig([
         ecmaVersion: 'latest',
         projectService: {
           maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 40,
-          allowDefaultProject: ['scripts/*.ts', '*.js', '*.mjs', '*.spec.ts', '*.d.ts'],
+          allowDefaultProject: [
+            'scripts/*.ts',
+            '*.js',
+            '*.mjs',
+            '*.spec.ts',
+            '*.d.ts',
+            'src/utilities/*.test.ts',
+          ],
         },
         // projectService: true,
         tsconfigRootDir: import.meta.dirname,

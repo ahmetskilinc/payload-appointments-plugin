@@ -31,7 +31,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ appointments, currentDate }) => {
     };
 
     todaysAppointments.forEach((apt) => {
-      if (apt.status) {
+      if (apt.status && apt.status in statusCounts) {
         statusCounts[apt.status]++;
       }
     });

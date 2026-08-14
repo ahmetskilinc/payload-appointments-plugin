@@ -1,5 +1,4 @@
 export interface PluginTypes {
-  overrides?: {};
   showDashboardCards?: boolean;
   showNavItems?: boolean;
 }

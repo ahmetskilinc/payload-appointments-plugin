@@ -4,6 +4,10 @@ import moment from 'moment';
 
 export const cancelAppointment: PayloadHandler = async (req: PayloadRequest) => {
   try {
+    if (!req.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
@@ -14,6 +18,10 @@ export const cancelAppointment: PayloadHandler = async (req: PayloadRequest) => 
       id,
       collection: 'appointments',
       depth: 0,
+      disableErrors: true,
+      overrideAccess: false,
+      req,
+      user: req.user,
     });
 
     if (!appointment) {
@@ -40,6 +48,9 @@ export const cancelAppointment: PayloadHandler = async (req: PayloadRequest) => 
         status: 'cancelled',
       },
       depth: 2,
+      overrideAccess: false,
+      req,
+      user: req.user,
     });
 
     return Response.json({

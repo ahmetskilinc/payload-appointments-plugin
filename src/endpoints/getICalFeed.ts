@@ -8,7 +8,7 @@ import { generateICalFeed } from '../utilities/ical';
 
 export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
   try {
-    const { host, token, months } = req.query;
+    const { token, months } = req.query;
 
     if (!token || typeof token !== 'string') {
       return Response.json({ error: 'Authentication token required' }, { status: 401 });
@@ -27,31 +27,30 @@ export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
       return Response.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    // The token determines whose calendar is served — never trust a host param.
     const tokenHost = feedToken.docs[0];
-    const effectiveHostId = host && typeof host === 'string' ? host : String(tokenHost.id);
+    const effectiveHostId = String(tokenHost.id);
 
-    const monthsAhead = months && typeof months === 'string' ? parseInt(months, 10) : 3;
+    const parsedMonths = months && typeof months === 'string' ? parseInt(months, 10) : 3;
+    const monthsAhead =
+      Number.isFinite(parsedMonths) && parsedMonths > 0 ? Math.min(parsedMonths, 24) : 3;
     const startDate = moment().subtract(1, 'month').startOf('day').toISOString();
     const endDate = moment().add(monthsAhead, 'months').endOf('day').toISOString();
-
-    const whereClause: any = {
-      and: [
-        { appointmentType: { equals: 'appointment' } },
-        { start: { greater_than_equal: startDate } },
-        { start: { less_than_equal: endDate } },
-        { status: { not_in: ['cancelled'] } },
-      ],
-    };
-
-    if (effectiveHostId) {
-      whereClause.and.push({ host: { equals: effectiveHostId } });
-    }
 
     const appointments = await req.payload.find({
       collection: 'appointments',
       depth: 2,
       limit: 500,
-      where: whereClause,
+      sort: 'start',
+      where: {
+        and: [
+          { appointmentType: { equals: 'appointment' } },
+          { start: { greater_than_equal: startDate } },
+          { start: { less_than_equal: endDate } },
+          { status: { not_in: ['cancelled'] } },
+          { host: { equals: effectiveHostId } },
+        ],
+      },
     });
 
     const baseUrl =
