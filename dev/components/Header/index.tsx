@@ -10,12 +10,12 @@ export default async function Header() {
   const isLoggedIn = dashboardData && dashboardData.id;
 
   return (
-    <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-100/80 shadow-sm shadow-gray-900/5">
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link className="shrink-0 flex items-center gap-2.5 group" href="/">
-              <div className="w-9 h-9 rounded-xl bg-gray-900 flex items-center justify-center shadow-lg shadow-gray-900/25 group-hover:shadow-gray-900/40 transition-all duration-300 group-hover:scale-105">
+              <div className="w-9 h-9 rounded-xl bg-gray-900 flex items-center justify-center shadow-sm">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"

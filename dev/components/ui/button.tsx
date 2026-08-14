@@ -20,9 +20,9 @@ const buttonVariants = cva(
       },
       variant: {
         default:
-          'bg-gray-900 text-white hover:bg-gray-800 shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 hover:-translate-y-0.5',
+          'bg-gray-900 text-white hover:bg-gray-800 shadow-sm',
         destructive:
-          'bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 hover:-translate-y-0.5',
+          'bg-red-600 text-white hover:bg-red-500 shadow-sm',
         ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
         link: 'text-gray-900 underline-offset-4 hover:underline',
         outline:

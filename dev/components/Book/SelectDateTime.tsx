@@ -96,11 +96,23 @@ const SelectDateTime: React.FC<{
           value={calendarDate}
         />
       </div>
-      {!loading ? (
-        slots && slots.length > 0 ? (
-          <div className="space-y-8 mt-8">
+      {slots === null ? (
+        loading ? (
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <MoonLoader color="#374151" size={40} />
+            <p className="text-gray-500 font-medium">Loading available times...</p>
+          </div>
+        ) : null
+      ) : (
+        // Keep the previous day's slots on screen (dimmed) while the next day
+        // loads — swapping everything for a spinner makes the page jump.
+        <div
+          className={`transition-opacity duration-200 ${loading ? 'opacity-50 pointer-events-none' : ''}`}
+        >
+          {slots.length > 0 ? (
+            <div className="space-y-8 mt-8">
             {morningSlots.length > 0 && (
-              <div className="animate-fade-in-up">
+              <div className="">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
                     <svg
@@ -135,7 +147,7 @@ const SelectDateTime: React.FC<{
               </div>
             )}
             {afternoonSlots.length > 0 && (
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <div className="">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
                     <svg
@@ -170,7 +182,7 @@ const SelectDateTime: React.FC<{
               </div>
             )}
             {eveningSlots.length > 0 && (
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <div className="">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center">
                     <svg
@@ -205,8 +217,8 @@ const SelectDateTime: React.FC<{
               </div>
             )}
           </div>
-        ) : slots && slots.length === 0 ? (
-          <div className="mt-8 space-y-6 animate-fade-in-up">
+          ) : (
+            <div className="mt-8 space-y-6">
             <div className="text-center py-12 glass-card">
               <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -232,12 +244,8 @@ const SelectDateTime: React.FC<{
               host={chosenStaff}
               selectedDate={selectedDate}
             />
-          </div>
-        ) : null
-      ) : (
-        <div className="flex flex-col items-center justify-center h-64 gap-4 animate-fade-in">
-          <MoonLoader color="#374151" size={40} />
-          <p className="text-gray-500 font-medium">Loading available times...</p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -57,13 +57,13 @@ const Appointments = ({ appointments }: Props) =>
       return (
         <Link href={`/booking/${appointment.id}`} key={appointment.id}>
           <Card
-            className={`border-0 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-gray-900/10 transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm animate-fade-in-up cursor-pointer ${isCancelled ? 'opacity-60' : ''}`}
+            className={`border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 bg-white  cursor-pointer ${isCancelled ? 'opacity-60' : ''}`}
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-14 h-14 rounded-2xl ${statusInfo.iconBg} flex items-center justify-center shadow-lg shadow-gray-900/25`}
+                  className={`w-14 h-14 rounded-2xl ${statusInfo.iconBg} flex items-center justify-center shadow-sm`}
                 >
                   <svg
                     className="w-7 h-7 text-white"
@@ -189,7 +189,7 @@ const Appointments = ({ appointments }: Props) =>
       );
     })
   ) : (
-    <div className="text-center py-16 animate-fade-in-up">
+    <div className="text-center py-16">
       <div className="mx-auto w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mb-5 shadow-lg shadow-gray-900/5">
         <svg
           className="w-10 h-10 text-gray-400"

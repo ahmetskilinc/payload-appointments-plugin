@@ -183,9 +183,9 @@ const BookNow: React.FC<{
 
   if (bookingSuccess) {
     return (
-      <div className="max-w-lg mx-auto text-center py-16 animate-scale-in">
+      <div className="max-w-lg mx-auto text-center py-16">
         <div className="glass-card p-10">
-          <div className="mx-auto w-20 h-20 rounded-full bg-linear-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-8 shadow-2xl shadow-green-500/30 animate-float">
+          <div className="mx-auto w-20 h-20 rounded-full bg-linear-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-8 shadow-sm">
             <svg
               className="w-10 h-10 text-white"
               fill="none"
@@ -204,7 +204,7 @@ const BookNow: React.FC<{
           <Button
             onClick={resetBooking}
             size="lg"
-            className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 transition-all duration-300 hover:-translate-y-0.5"
+            className="bg-gray-900 hover:bg-gray-800 text-white border-0"
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -250,7 +250,7 @@ const BookNow: React.FC<{
               className={cn(
                 'flex items-center gap-2 px-4 py-2 pl-2 rounded-full transition-all duration-300',
                 index === stepIndex
-                  ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/25'
+                  ? 'bg-gray-900 text-white shadow-sm'
                   : index < stepIndex
                     ? 'bg-gray-100 text-gray-900 cursor-pointer hover:bg-gray-200'
                     : 'bg-gray-100 text-gray-400',
@@ -305,9 +305,9 @@ const BookNow: React.FC<{
         <div className="col-span-12 md:col-span-8">
           <div className="flex justify-between items-start mb-6">
             {stepIndex === 0 ? (
-              <div className="animate-fade-in">
+              <div className="">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-gray-900/25">
+                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-sm">
                     1
                   </span>
                   <h2 className="text-xl font-bold text-gray-900">Choose your services</h2>
@@ -317,9 +317,9 @@ const BookNow: React.FC<{
                 </p>
               </div>
             ) : stepIndex === 1 ? (
-              <div className="animate-fade-in">
+              <div className="">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-gray-900/25">
+                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-sm">
                     2
                   </span>
                   <h2 className="text-xl font-bold text-gray-900">Select your host</h2>
@@ -327,9 +327,9 @@ const BookNow: React.FC<{
                 <p className="text-gray-500 ml-11">Choose who you&apos;d like to see</p>
               </div>
             ) : stepIndex === 2 ? (
-              <div className="animate-fade-in">
+              <div className="">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-gray-900/25">
+                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-sm">
                     3
                   </span>
                   <h2 className="text-xl font-bold text-gray-900">Pick a date & time</h2>
@@ -337,9 +337,9 @@ const BookNow: React.FC<{
                 <p className="text-gray-500 ml-11">Select an available slot that works for you</p>
               </div>
             ) : stepIndex === 3 ? (
-              <div className="animate-fade-in">
+              <div className="">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-gray-900/25">
+                  <span className="w-8 h-8 rounded-xl bg-gray-900 text-white text-sm font-bold flex items-center justify-center shadow-sm">
                     4
                   </span>
                   <h2 className="text-xl font-bold text-gray-900">Your details</h2>
@@ -348,7 +348,7 @@ const BookNow: React.FC<{
               </div>
             ) : null}
           </div>
-          <div className={cn(stepIndex === 0 ? 'block animate-fade-in-up' : 'hidden')}>
+          <div className={cn(stepIndex === 0 ? 'block ' : 'hidden')}>
             <ServicesList
               chosenServices={chosenServices}
               services={services}
@@ -356,7 +356,7 @@ const BookNow: React.FC<{
             />
           </div>
 
-          <div className={cn(stepIndex === 1 ? 'block animate-fade-in-up' : 'hidden')}>
+          <div className={cn(stepIndex === 1 ? 'block ' : 'hidden')}>
             <HostList
               chosenStaff={chosenStaff}
               setChosenStaff={setChosenStaff}
@@ -364,7 +364,7 @@ const BookNow: React.FC<{
             />
           </div>
 
-          <div className={cn(stepIndex === 2 ? 'block animate-fade-in-up' : 'hidden')}>
+          <div className={cn(stepIndex === 2 ? 'block ' : 'hidden')}>
             {stepIndex === 2 ? (
               <SelectDateTime
                 chosenServices={chosenServices}
@@ -377,7 +377,7 @@ const BookNow: React.FC<{
               />
             ) : null}
           </div>
-          <div className={cn(stepIndex === 3 ? 'block animate-fade-in-up' : 'hidden')}>
+          <div className={cn(stepIndex === 3 ? 'block ' : 'hidden')}>
             <CustomerDetails
               chosenDateTime={chosenDateTime as Date}
               chosenServices={chosenServices}
@@ -394,7 +394,7 @@ const BookNow: React.FC<{
       <div className="grid grid-cols-12 gap-6 md:gap-10 mt-8">
         <div className="col-span-12 md:col-span-8 md:col-start-5 flex flex-col gap-3">
           {bookingError && (
-            <div className="flex items-center gap-3 text-red-600 text-sm bg-red-50 border border-red-100 rounded-xl p-4 animate-scale-in">
+            <div className="flex items-center gap-3 text-red-600 text-sm bg-red-50 border border-red-100 rounded-xl p-4">
               <svg
                 className="w-5 h-5 shrink-0"
                 fill="none"
@@ -440,7 +440,7 @@ const BookNow: React.FC<{
               <Button
                 disabled={isContinueDisabled()}
                 onClick={nextStep}
-                className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 transition-all duration-300 hover:-translate-y-0.5 disabled:hover:translate-y-0 disabled:opacity-50"
+                className="bg-gray-900 hover:bg-gray-800 text-white border-0 disabled:opacity-50"
               >
                 Continue
                 <svg
@@ -462,7 +462,7 @@ const BookNow: React.FC<{
                 disabled={isBookDisabled() || bookingLoading}
                 onClick={handleBooking}
                 size="lg"
-                className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 transition-all duration-300 hover:-translate-y-0.5 disabled:hover:translate-y-0 disabled:opacity-50"
+                className="bg-gray-900 hover:bg-gray-800 text-white border-0 disabled:opacity-50"
               >
                 {bookingLoading ? (
                   <span className="flex items-center gap-2">

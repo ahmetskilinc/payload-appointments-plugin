@@ -47,17 +47,10 @@ export default function SignupPageClient() {
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 py-10 overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-gray-200/30 rounded-full blur-3xl animate-pulse-soft" />
-        <div
-          className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-slate-200/30 rounded-full blur-3xl animate-pulse-soft"
-          style={{ animationDelay: '1s' }}
-        />
-      </div>
 
-      <Card className="w-full max-w-md border-0 shadow-2xl shadow-gray-900/10 bg-white/80 backdrop-blur-xl animate-fade-in-up">
+      <Card className="w-full max-w-md border border-gray-200 shadow-sm bg-white">
         <CardHeader className="text-center pb-2 pt-8">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gray-900 flex items-center justify-center mb-5 shadow-xl shadow-gray-900/30 animate-float">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-gray-900 flex items-center justify-center mb-5 shadow-sm">
             <svg
               className="w-8 h-8 text-white"
               fill="none"
@@ -147,7 +140,7 @@ export default function SignupPageClient() {
               />
             </div>
             {error && (
-              <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl p-4 animate-scale-in">
+              <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl p-4">
                 <svg
                   className="w-5 h-5 shrink-0"
                   fill="none"
@@ -167,7 +160,7 @@ export default function SignupPageClient() {
           </CardContent>
           <CardFooter className="flex-col gap-4 px-8 pb-8">
             <Button
-              className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 text-base font-medium transition-all duration-300 hover:-translate-y-0.5"
+              className="w-full h-12 bg-gray-900 hover:bg-gray-800 text-white border-0 text-base font-medium"
               type="submit"
               disabled={loading}
             >
