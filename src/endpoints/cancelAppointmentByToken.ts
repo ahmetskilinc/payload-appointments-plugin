@@ -2,6 +2,7 @@ import type { PayloadHandler, PayloadRequest } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
 import { toPublicAppointment } from '../utilities/publicAppointment';
 
 export const cancelAppointmentByToken: PayloadHandler = async (req: PayloadRequest) => {
@@ -14,8 +15,10 @@ export const cancelAppointmentByToken: PayloadHandler = async (req: PayloadReque
 
     // Intentionally privileged (overrideAccess defaults to true): possession of the
     // unguessable cancellation token IS the authorization for this operation.
+    const appointmentsSlug = getSlugs(req.payload.config).appointments;
+
     const appointments = await req.payload.find({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       depth: 1,
       limit: 1,
       where: {
@@ -62,7 +65,7 @@ export const cancelAppointmentByToken: PayloadHandler = async (req: PayloadReque
 
     const updatedAppointment = await req.payload.update({
       id: appointment.id,
-      collection: 'appointments',
+      collection: appointmentsSlug,
       data: {
         cancelledAt: moment().toISOString(),
         status: 'cancelled',

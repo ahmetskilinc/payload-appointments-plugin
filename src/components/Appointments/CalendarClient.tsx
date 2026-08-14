@@ -2,7 +2,7 @@
 
 import type { Components, View } from 'react-big-calendar';
 
-import { useDocumentDrawer } from '@payloadcms/ui';
+import { useConfig, useDocumentDrawer } from '@payloadcms/ui';
 import moment from 'moment';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { momentLocalizer, Calendar as ReactBigCalendar } from 'react-big-calendar';
@@ -15,6 +15,7 @@ import type {
   TeamMember,
 } from '../../types';
 
+import { getClientSettings } from '../../lib/clientSettings';
 import Appointment from './Appointment';
 import Blockout from './Blockout';
 import StatsCard from './StatsCard';
@@ -50,6 +51,8 @@ export default function CalendarClient({
   initialAppointments,
   initialTeamMembers,
 }: CalendarClientProps) {
+  const { config } = useConfig();
+  const { dayEndHour, dayStartHour, step } = getClientSettings(config).calendar;
   const [view, setView] = useState<View>('day');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [appointments, setAppointments] = useState<AppointmentType[]>(initialAppointments);
@@ -166,15 +169,15 @@ export default function CalendarClient({
     () => ({
       event: ({ event }) => {
         if (event.appointmentType === 'appointment') {
-          return <Appointment event={event} />;
+          return <Appointment collectionSlug={collectionSlug} event={event} />;
         }
         if (event.appointmentType === 'blockout') {
-          return <Blockout event={event} />;
+          return <Blockout collectionSlug={collectionSlug} event={event} />;
         }
         return null;
       },
     }),
-    [],
+    [collectionSlug],
   );
 
   return (
@@ -199,8 +202,8 @@ export default function CalendarClient({
           view={view}
           events={remappedAppointments}
           localizer={localizer}
-          max={new Date(1970, 0, 0, 19, 0, 0, 0)}
-          min={new Date(1970, 0, 0, 9, 0, 0, 0)}
+          max={new Date(1970, 0, 0, dayEndHour, 0, 0, 0)}
+          min={new Date(1970, 0, 0, dayStartHour, 0, 0, 0)}
           onEventDrop={handleEventDrop}
           onNavigate={(date) => setCurrentDate(date)}
           onSelectSlot={handleSlotSelect}
@@ -211,7 +214,7 @@ export default function CalendarClient({
           resources={filteredTeamMembers}
           resourceTitleAccessor="preferredNameAppointments"
           selectable
-          step={15}
+          step={step}
           titleAccessor="title"
           views={['week', 'day']}
         />

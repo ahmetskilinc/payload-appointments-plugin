@@ -1,21 +1,25 @@
 import type { TaskConfig } from 'payload';
 
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 
 /**
  * Marks past appointments as completed. Schedule via the Jobs Queue
  * (autorun or a cron trigger) — see the README.
  */
-export const autoCompleteTask: TaskConfig<{
+export const createAutoCompleteTask = (
+  slug = 'appointmentsAutoComplete',
+): TaskConfig<{
   input: object;
   output: { completed: number };
-}> = {
-  slug: 'appointmentsAutoComplete',
+}> => ({
+  slug,
   handler: async ({ req }) => {
     const now = new Date().toISOString();
+    const appointmentsSlug = getSlugs(req.payload.config).appointments;
 
     const pastAppointments = await findAll<{ id: number | string }>({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       payload: req.payload,
       req,
       select: { id: true },
@@ -33,7 +37,7 @@ export const autoCompleteTask: TaskConfig<{
     for (const appointment of pastAppointments) {
       try {
         await req.payload.update({
-          collection: 'appointments',
+          collection: appointmentsSlug,
           id: appointment.id,
           context: {
             skipAutoComplete: true,
@@ -59,4 +63,4 @@ export const autoCompleteTask: TaskConfig<{
       output: { completed },
     };
   },
-};
+});

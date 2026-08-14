@@ -118,6 +118,7 @@ export interface Config {
     tasks: {
       appointmentsAutoComplete: TaskAppointmentsAutoComplete;
       appointmentsExpireWaitlist: TaskAppointmentsExpireWaitlist;
+      appointmentsReminder: TaskAppointmentsReminder;
       inline: {
         input: unknown;
         output: unknown;
@@ -198,6 +199,7 @@ export interface Appointment {
    */
   internalNotes?: string | null;
   adminTitle?: string | null;
+  reminderSentAt?: string | null;
   cancellationToken?: string | null;
   payment?: {
     status?: ('not-required' | 'pending' | 'deposit-paid' | 'paid' | 'refunded' | 'partial-refund') | null;
@@ -353,7 +355,11 @@ export interface Service {
   maxAdvanceBooking?: number | null;
   paidService?: boolean | null;
   /**
-   * Price in your local currency
+   * Flat price per booking, or a rate prorated over the service duration
+   */
+  pricingType?: ('fixed' | 'hourly') | null;
+  /**
+   * Amount in your local currency (per booking for fixed pricing, per hour for hourly)
    */
   price?: number | null;
   /**
@@ -377,7 +383,7 @@ export interface Service {
  */
 export interface SentEmail {
   id: number;
-  emailType: 'created' | 'updated' | 'cancelled';
+  emailType: 'created' | 'updated' | 'cancelled' | 'reminder';
   sentAt: string;
   appointment?: (number | null) | Appointment;
   from: string;
@@ -510,7 +516,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'appointmentsAutoComplete' | 'appointmentsExpireWaitlist';
+        taskSlug: 'inline' | 'appointmentsAutoComplete' | 'appointmentsExpireWaitlist' | 'appointmentsReminder';
         taskID: string;
         input?:
           | {
@@ -543,7 +549,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'appointmentsAutoComplete' | 'appointmentsExpireWaitlist') | null;
+  taskSlug?: ('inline' | 'appointmentsAutoComplete' | 'appointmentsExpireWaitlist' | 'appointmentsReminder') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -671,6 +677,7 @@ export interface AppointmentsSelect<T extends boolean = true> {
   customerNotes?: T;
   internalNotes?: T;
   adminTitle?: T;
+  reminderSentAt?: T;
   cancellationToken?: T;
   payment?:
     | T
@@ -804,6 +811,7 @@ export interface ServicesSelect<T extends boolean = true> {
   minLeadTime?: T;
   maxAdvanceBooking?: T;
   paidService?: T;
+  pricingType?: T;
   price?: T;
   paymentRequired?: T;
   depositType?: T;
@@ -940,39 +948,105 @@ export interface OpeningTime {
     | 'America/Sao_Paulo';
   monday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   tuesday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   wednesday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   thursday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   friday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   saturday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   sunday?: {
     isOpen?: boolean | null;
-    opening?: string | null;
-    closing?: string | null;
+    /**
+     * Bookable time ranges for this day (e.g. morning and afternoon)
+     */
+    intervals?:
+      | {
+          opening: string;
+          closing: string;
+          id?: string | null;
+        }[]
+      | null;
   };
+  /**
+   * Dates the business is closed — no slots are offered on these days
+   */
+  holidays?:
+    | {
+        date: string;
+        name?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -986,50 +1060,92 @@ export interface OpeningTimesSelect<T extends boolean = true> {
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
       };
   tuesday?:
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
       };
   wednesday?:
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
       };
   thursday?:
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
       };
   friday?:
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
       };
   saturday?:
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
       };
   sunday?:
     | T
     | {
         isOpen?: T;
-        opening?: T;
-        closing?: T;
+        intervals?:
+          | T
+          | {
+              opening?: T;
+              closing?: T;
+              id?: T;
+            };
+      };
+  holidays?:
+    | T
+    | {
+        date?: T;
+        name?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1058,6 +1174,14 @@ export interface TaskAppointmentsAutoComplete {
  * via the `definition` "TaskAppointmentsExpireWaitlist".
  */
 export interface TaskAppointmentsExpireWaitlist {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAppointmentsReminder".
+ */
+export interface TaskAppointmentsReminder {
   input?: unknown;
   output?: unknown;
 }

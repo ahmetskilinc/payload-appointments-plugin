@@ -1,6 +1,8 @@
 import type { CollectionBeforeChangeHook } from 'payload';
 
+import { getSlugs } from '../slugs';
 import { calculateAmountDue } from '../utilities/deposit';
+import { getServicePrice, type PriceableService } from '../utilities/servicePrice';
 
 export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
   data,
@@ -20,7 +22,7 @@ export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
   );
 
   const services = await req.payload.find({
-    collection: 'services',
+    collection: getSlugs(req.payload.config).services,
     depth: 0,
     limit: 100,
     req,
@@ -35,8 +37,9 @@ export const calculatePaymentAmount: CollectionBeforeChangeHook = async ({
   let requiresPayment = false;
 
   for (const service of services.docs) {
-    if (service.paidService && service.price) {
-      totalPrice += service.price;
+    const effectivePrice = getServicePrice(service as PriceableService);
+    if (effectivePrice > 0) {
+      totalPrice += effectivePrice;
 
       if (service.paymentRequired) {
         requiresPayment = true;

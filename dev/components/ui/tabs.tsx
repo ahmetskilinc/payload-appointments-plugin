@@ -52,7 +52,7 @@ const TabsContent = ({
 } & React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>) => (
   <TabsPrimitive.Content
     className={cn(
-      'mt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 animate-fade-in',
+      'mt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 ',
       className,
     )}
     ref={ref}

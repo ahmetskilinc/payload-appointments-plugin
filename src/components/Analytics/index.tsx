@@ -10,6 +10,8 @@ import { StatusBreakdownChart } from './StatusBreakdownChart';
 import { HostUtilizationTable } from './HostUtilizationTable';
 import type { AnalyticsData } from '../../utilities/analytics';
 
+import { getClientSettings } from '../../lib/clientSettings';
+
 interface AnalyticsDashboardProps {
   className?: string;
 }
@@ -26,11 +28,9 @@ const toLocalDateString = (date: Date) => {
 };
 
 export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
-  const {
-    config: {
-      routes: { api: apiRoute },
-    },
-  } = useConfig();
+  const { config } = useConfig();
+  const apiRoute = config.routes.api;
+  const analyticsPath = getClientSettings(config).endpoints.analytics;
   const [data, setData] = React.useState<AnalyticsData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -58,7 +58,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
           granularity,
         });
 
-        const response = await fetch(`${apiRoute}/appointments-analytics?${params}`, {
+        const response = await fetch(`${apiRoute}${analyticsPath}?${params}`, {
           credentials: 'include',
           signal,
         });
@@ -78,7 +78,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
         setLoading(false);
       }
     },
-    [apiRoute, dateRange, granularity],
+    [analyticsPath, apiRoute, dateRange, granularity],
   );
 
   React.useEffect(() => {

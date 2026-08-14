@@ -1,5 +1,7 @@
 import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
+import { getSlugs } from '../slugs';
+
 export const waitlistPosition: PayloadHandler = async (req: PayloadRequest) => {
   try {
     const { id } = req.query;
@@ -8,8 +10,10 @@ export const waitlistPosition: PayloadHandler = async (req: PayloadRequest) => {
       return Response.json({ error: 'Missing waitlist entry ID' }, { status: 400 });
     }
 
+    const waitlistSlug = getSlugs(req.payload.config).waitlist;
+
     const entry = await req.payload.findByID({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       id,
       depth: 1,
     });
@@ -34,7 +38,7 @@ export const waitlistPosition: PayloadHandler = async (req: PayloadRequest) => {
     }
 
     const aheadCount = await req.payload.count({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       where: { and: conditions },
     });
 

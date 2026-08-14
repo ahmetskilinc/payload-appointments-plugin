@@ -14,7 +14,7 @@ export default async function FakeBookingPage() {
   if (!session) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] p-8">
-        <div className="glass-card p-8 max-w-md text-center animate-fade-in-up">
+        <div className="glass-card p-8 max-w-md text-center">
           <h1 className="text-2xl font-bold mb-4 text-gray-900">Not Logged In</h1>
           <p className="text-gray-500 mb-6">You need to be logged in to create fake bookings.</p>
           <Button asChild>
@@ -30,7 +30,7 @@ export default async function FakeBookingPage() {
   if (!customer) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] p-8">
-        <div className="glass-card p-8 max-w-md text-center animate-fade-in-up">
+        <div className="glass-card p-8 max-w-md text-center">
           <h1 className="text-2xl font-bold mb-4 text-gray-900">Error</h1>
           <p className="text-gray-500 mb-6">Failed to load user data.</p>
         </div>
@@ -55,7 +55,7 @@ export default async function FakeBookingPage() {
   ]);
 
   return (
-    <div className="w-full flex justify-center py-10 px-4 animate-fade-in-up">
+    <div className="w-full flex justify-center py-10 px-4">
       <div className="w-full max-w-xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">

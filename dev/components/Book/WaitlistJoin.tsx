@@ -95,8 +95,8 @@ const WaitlistJoin: React.FC<WaitlistJoinProps> = ({
 
   if (success) {
     return (
-      <div className="glass-card p-8 text-center animate-scale-in">
-        <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-6 shadow-2xl shadow-blue-500/30">
+      <div className="glass-card p-8 text-center">
+        <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-6 shadow-sm">
           <svg
             className="w-8 h-8 text-white"
             fill="none"
@@ -127,7 +127,7 @@ const WaitlistJoin: React.FC<WaitlistJoinProps> = ({
 
   if (!showForm) {
     return (
-      <div className="glass-card p-6 animate-fade-in-up">
+      <div className="glass-card p-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shrink-0">
             <svg
@@ -172,7 +172,7 @@ const WaitlistJoin: React.FC<WaitlistJoinProps> = ({
   }
 
   return (
-    <div className="glass-card p-6 animate-fade-in-up">
+    <div className="glass-card p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
           <svg

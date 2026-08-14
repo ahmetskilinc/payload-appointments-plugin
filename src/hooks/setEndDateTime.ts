@@ -2,6 +2,8 @@ import type { FieldHook } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
+
 const toServiceId = (service: unknown): number | string =>
   service && typeof service === 'object'
     ? (service as { id: number | string }).id
@@ -26,7 +28,7 @@ export const setEndDateTime: FieldHook = async ({ req, siblingData }) => {
   const serviceIds = [...new Set((siblingData.services as unknown[]).map(toServiceId))];
 
   const services = await req.payload.find({
-    collection: 'services',
+    collection: getSlugs(req.payload.config).services,
     depth: 0,
     limit: serviceIds.length,
     req,

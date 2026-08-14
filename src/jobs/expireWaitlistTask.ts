@@ -1,6 +1,7 @@
 import type { TaskConfig } from 'payload';
 
 import { notifyWaitlistEntry } from '../hooks/notifyWaitlist';
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 
 type WaitlistDoc = {
@@ -16,16 +17,19 @@ const toId = (value: WaitlistDoc['service']): number | string | undefined =>
  * Expires waitlist notifications whose booking window has lapsed, then offers
  * the freed spot to the next waiting entry. Schedule via the Jobs Queue.
  */
-export const expireWaitlistTask: TaskConfig<{
+export const createExpireWaitlistTask = (
+  slug = 'appointmentsExpireWaitlist',
+): TaskConfig<{
   input: object;
   output: { expired: number; notified: number };
-}> = {
-  slug: 'appointmentsExpireWaitlist',
+}> => ({
+  slug,
   handler: async ({ req }) => {
     const now = new Date().toISOString();
+    const waitlistSlug = getSlugs(req.payload.config).waitlist;
 
     const expiredEntries = await findAll<WaitlistDoc>({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       depth: 0,
       payload: req.payload,
       req,
@@ -40,7 +44,7 @@ export const expireWaitlistTask: TaskConfig<{
     for (const entry of expiredEntries) {
       try {
         await req.payload.update({
-          collection: 'waitlist',
+          collection: waitlistSlug,
           id: entry.id,
           data: {
             status: 'expired',
@@ -62,7 +66,7 @@ export const expireWaitlistTask: TaskConfig<{
 
       const hostId = toId(entry.host);
       const nextInLine = await req.payload.find({
-        collection: 'waitlist',
+        collection: waitlistSlug,
         depth: 1,
         limit: 1,
         req,
@@ -98,4 +102,4 @@ export const expireWaitlistTask: TaskConfig<{
       output: { expired, notified },
     };
   },
-};
+});

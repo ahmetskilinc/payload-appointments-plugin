@@ -24,10 +24,16 @@ const statusLabels: Record<string, string> = {
   'no-show': 'No Show',
 };
 
-const Appointment = ({ event }: { event: BigCalendarAppointment }) => {
+const Appointment = ({
+  collectionSlug,
+  event,
+}: {
+  collectionSlug: string;
+  event: BigCalendarAppointment;
+}) => {
   const [DocumentDrawer, DocumentDrawerToggler] = useDocumentDrawer({
     id: Number(event.id),
-    collectionSlug: 'appointments',
+    collectionSlug,
   });
 
   const statusClass = event.status ? statusClasses[event.status] : 'appointment--confirmed';

@@ -2,6 +2,8 @@ import type { CollectionAfterChangeHook } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
+
 export const autoCompleteAppointments: CollectionAfterChangeHook = async ({
   context,
   doc,
@@ -32,7 +34,7 @@ export const autoCompleteAppointments: CollectionAfterChangeHook = async ({
     try {
       await req.payload.update({
         id: doc.id,
-        collection: 'appointments',
+        collection: getSlugs(req.payload.config).appointments,
         context: {
           skipAutoComplete: true,
           skipCustomerEmail: true,

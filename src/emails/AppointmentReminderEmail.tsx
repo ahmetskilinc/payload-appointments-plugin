@@ -1,0 +1,115 @@
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Preview,
+  Section,
+  Tailwind,
+  Text,
+} from '@react-email/components';
+import { render } from '@react-email/render';
+import { Appointment } from '../types';
+import {
+  formatDateInTimezone,
+  formatTimeRangeInTimezone,
+  getTimezoneAbbreviation,
+} from '../utilities/formatDate';
+
+interface Props {
+  cancelUrl?: string;
+  doc?: Appointment;
+  timezone?: string;
+}
+
+export const Email = ({ cancelUrl, doc, timezone = 'UTC' }: Props) => {
+  const customerFirstName = doc?.customer?.firstName || doc?.guestCustomer?.firstName;
+  const customerLastName = doc?.customer?.lastName || doc?.guestCustomer?.lastName;
+  const tzAbbr = doc?.start ? getTimezoneAbbreviation(doc.start, timezone) : '';
+
+  return (
+    <Html>
+      <Head />
+      <Preview>Reminder: your appointment is coming up</Preview>
+      <Tailwind>
+        <Body>
+          <Container className="outline-neutral-300 bg-white outline-[1px] outline">
+            <Section className="p-6">
+              <Text className="my-0">Payload Appointments</Text>
+            </Section>
+            <Hr className="border-neutral-300 my-0" />
+            <Section className="p-6">
+              <Text className="mt-0">Hi {customerFirstName},</Text>
+              <Heading className="text-[18px]">
+                Reminder: your appointment with {doc?.host.firstName} is coming up
+              </Heading>
+              <Container className="bg-neutral-200  p-6 rounded-sm my-6">
+                <Text className="m-0">
+                  Time:{' '}
+                  <span className="font-bold">
+                    {doc?.start && doc?.end
+                      ? `${formatTimeRangeInTimezone(doc.start, doc.end, timezone)} ${tzAbbr}`
+                      : ''}
+                  </span>
+                </Text>
+                <Text>
+                  Date:{' '}
+                  <span className="font-bold">
+                    {doc?.start ? formatDateInTimezone(doc.start, timezone) : ''}
+                  </span>
+                </Text>
+                <Text>
+                  Service:{' '}
+                  <span className="font-bold">
+                    {doc?.services.map((service) => service.title).join(', ')}
+                  </span>
+                </Text>
+                <Text className="m-0">
+                  Host: <span className="font-bold">{doc?.host.preferredNameAppointments}</span>
+                </Text>
+              </Container>
+              {cancelUrl && (
+                <>
+                  <Hr className="border-neutral-300" />
+                  <Text className="text-neutral-600 text-sm">
+                    Can&apos;t make it? Use the link below to cancel your appointment.
+                  </Text>
+                  <Button
+                    href={cancelUrl}
+                    className="bg-neutral-800 text-white px-4 py-2 rounded-md"
+                  >
+                    Cancel Appointment
+                  </Button>
+                </>
+              )}
+              <Hr className="border-neutral-300" />
+              <Text className="mb-0">
+                Regards,
+                <br />
+                Your Payload team
+              </Text>
+            </Section>
+            <Hr className="border-neutral-300 my-0" />
+            <Section className="p-6 bg-neutral-100 text-neutral-500 my-0 text-center">
+              <Text className="m-0 mb-2">
+                This email was intended for {customerFirstName} {customerLastName}. If you are not
+                this person contact us immediately.
+              </Text>
+              <Text className="m-0">
+                Please contact us if you have any questions. (If you reply to this email, we won&apos;t
+                be able to see it.)
+              </Text>
+            </Section>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  );
+};
+
+export const RenderedEmail = (data: Props) => {
+  return render(<Email {...data} />);
+};

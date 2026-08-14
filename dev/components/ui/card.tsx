@@ -9,7 +9,7 @@ const Card = ({
 }: { ref?: React.RefObject<HTMLDivElement | null> } & React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'rounded-2xl border border-gray-100/80 bg-white/90 backdrop-blur-sm text-gray-900 shadow-xl shadow-gray-900/5',
+      'rounded-2xl border border-gray-200 bg-white text-gray-900 shadow-sm',
       className,
     )}
     ref={ref}

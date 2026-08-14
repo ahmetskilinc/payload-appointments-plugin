@@ -1,4 +1,6 @@
-import type { Appointment } from '../types';
+import moment from 'moment';
+
+import type { Appointment, Recurrence } from '../types';
 
 const escapeICalText = (text: string): string => {
   return text
@@ -52,6 +54,10 @@ export type ICalEvent = {
     name: string;
     email?: string;
   };
+  /** RRULE value (without the `RRULE:` prefix) for a recurring master event. */
+  rrule?: string;
+  /** Occurrence start times excluded from the recurrence (cancelled slots). */
+  exdates?: Date[];
 };
 
 const generateVEvent = (event: ICalEvent): string => {
@@ -63,6 +69,14 @@ const generateVEvent = (event: ICalEvent): string => {
     `DTEND:${formatICalDate(event.end)}`,
     `SUMMARY:${escapeICalText(event.summary)}`,
   ];
+
+  if (event.rrule) {
+    lines.push(`RRULE:${event.rrule}`);
+  }
+
+  if (event.exdates && event.exdates.length > 0) {
+    lines.push(`EXDATE:${event.exdates.map(formatICalDate).join(',')}`);
+  }
 
   if (event.description) {
     lines.push(`DESCRIPTION:${escapeICalText(event.description)}`);
@@ -153,14 +167,131 @@ export const appointmentToICalEvent = (appointment: Appointment, baseUrl: string
   };
 };
 
+const FREQ_BY_PATTERN: Record<string, string> = {
+  biweekly: 'FREQ=WEEKLY;INTERVAL=2',
+  monthly: 'FREQ=MONTHLY',
+  weekly: 'FREQ=WEEKLY',
+};
+
+/** RRULE value for a series, or null when no bounded rule can be built. */
+export const rruleForRecurrence = (recurrence: Recurrence | undefined): string | null => {
+  const freq = recurrence?.pattern ? FREQ_BY_PATTERN[recurrence.pattern] : undefined;
+  if (!freq) {
+    return null;
+  }
+  if (recurrence?.endType === 'endDate' && recurrence.endDate) {
+    return `${freq};UNTIL=${formatICalDate(moment(recurrence.endDate).endOf('day').toDate())}`;
+  }
+  if (recurrence?.occurrences) {
+    return `${freq};COUNT=${recurrence.occurrences}`;
+  }
+  return null;
+};
+
+const stepForPattern = (start: moment.Moment, pattern: string): moment.Moment => {
+  switch (pattern) {
+    case 'biweekly':
+      return start.clone().add(2, 'weeks');
+    case 'monthly':
+      return start.clone().add(1, 'month');
+    default:
+      return start.clone().add(1, 'week');
+  }
+};
+
+/**
+ * Collapses one recurring series into a master event with an RRULE, EXDATEs
+ * for expected-but-missing (cancelled) occurrences inside the feed window, and
+ * standalone events for occurrences that were individually rescheduled off the
+ * series pattern.
+ */
+const seriesToEvents = (
+  series: Appointment[],
+  baseUrl: string,
+  window?: { end: Date; start: Date },
+): ICalEvent[] => {
+  const sorted = [...series].sort(
+    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+  );
+  const master = sorted[0];
+  const rrule = rruleForRecurrence(master.recurrence);
+
+  if (!rrule) {
+    return sorted.map((a) => appointmentToICalEvent(a, baseUrl));
+  }
+
+  // Expected occurrence starts, walked from the (earliest fetched) master.
+  const pattern = master.recurrence?.pattern ?? 'weekly';
+  const maxCount = master.recurrence?.occurrences ?? 52;
+  const untilMoment =
+    master.recurrence?.endType === 'endDate' && master.recurrence.endDate
+      ? moment(master.recurrence.endDate).endOf('day')
+      : null;
+  const windowEnd = window ? moment(window.end) : moment(sorted[sorted.length - 1].start);
+
+  const expected: moment.Moment[] = [];
+  let cursor = moment(master.start);
+  while (
+    expected.length < maxCount &&
+    cursor.isSameOrBefore(windowEnd) &&
+    (!untilMoment || cursor.isSameOrBefore(untilMoment))
+  ) {
+    expected.push(cursor.clone());
+    cursor = stepForPattern(cursor, pattern);
+  }
+
+  const byStart = new Map(sorted.map((a) => [new Date(a.start).toISOString(), a]));
+  const matchedIds = new Set<string>();
+  const exdates: Date[] = [];
+
+  for (const time of expected) {
+    const match = byStart.get(time.toISOString());
+    if (match) {
+      matchedIds.add(String(match.id));
+    } else {
+      exdates.push(time.toDate());
+    }
+  }
+
+  // Occurrences moved off the pattern are emitted as their own events.
+  const offPattern = sorted.filter((a) => !matchedIds.has(String(a.id)));
+
+  const masterEvent: ICalEvent = {
+    ...appointmentToICalEvent(master, baseUrl),
+    // A stable series UID so calendar clients treat the rule as one event.
+    uid: `${master.recurrence?.seriesId}@${new URL(baseUrl).hostname}`,
+    rrule,
+    exdates,
+  };
+
+  return [masterEvent, ...offPattern.map((a) => appointmentToICalEvent(a, baseUrl))];
+};
+
 export const generateICalFeed = (
   appointments: Appointment[],
   calendarName: string,
   baseUrl: string,
+  window?: { end: Date; start: Date },
 ): string => {
-  const events = appointments
-    .filter((a) => a.appointmentType === 'appointment')
-    .map((a) => appointmentToICalEvent(a, baseUrl));
+  const relevant = appointments.filter((a) => a.appointmentType === 'appointment');
+
+  const singles: Appointment[] = [];
+  const seriesById = new Map<string, Appointment[]>();
+  for (const appointment of relevant) {
+    const seriesId = appointment.recurrence?.isRecurring
+      ? appointment.recurrence.seriesId
+      : undefined;
+    if (seriesId) {
+      seriesById.set(seriesId, [...(seriesById.get(seriesId) ?? []), appointment]);
+    } else {
+      singles.push(appointment);
+    }
+  }
+
+  const events = [
+    ...singles.map((a) => appointmentToICalEvent(a, baseUrl)),
+    ...[...seriesById.values()].flatMap((series) => seriesToEvents(series, baseUrl, window)),
+  ];
 
   const vcalendar: string[] = [
     'BEGIN:VCALENDAR',

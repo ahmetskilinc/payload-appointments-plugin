@@ -3,10 +3,16 @@ import { BigCalendarAppointment } from '../../types'
 import './eventStyles.scss'
 import { useDocumentDrawer } from '@payloadcms/ui'
 
-const Blockout = ({ event }: { event: BigCalendarAppointment }) => {
+const Blockout = ({
+  collectionSlug,
+  event,
+}: {
+  collectionSlug: string
+  event: BigCalendarAppointment
+}) => {
   const [DocumentDrawer, DocumentDrawerToggler] = useDocumentDrawer({
     id: Number(event.id),
-    collectionSlug: 'appointments',
+    collectionSlug,
   })
   return (
     <>

@@ -2,6 +2,7 @@ import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 
 export type UpdateRecurringPayload = {
@@ -47,6 +48,7 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
     }
 
     const { appointmentId, updateType } = body;
+    const appointmentsSlug = getSlugs(req.payload.config).appointments;
     const data = pickUpdatableFields(body.data);
 
     if (Object.keys(data).length === 0) {
@@ -57,7 +59,7 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
     }
 
     const appointment = await req.payload.findByID({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       id: appointmentId,
       depth: 0,
       disableErrors: true,
@@ -79,7 +81,7 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
 
     if (updateType === 'single' || !recurrence?.seriesId) {
       const updated = await req.payload.update({
-        collection: 'appointments',
+        collection: appointmentsSlug,
         id: appointmentId,
         data,
         overrideAccess: false,
@@ -99,7 +101,7 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
     }
 
     const seriesAppointments = await findAll<{ end: string; id: number | string; start: string }>({
-      collection: 'appointments',
+      collection: appointmentsSlug,
       overrideAccess: false,
       payload: req.payload,
       req,
@@ -131,7 +133,7 @@ export const updateRecurringAppointment: PayloadHandler = async (req: PayloadReq
         }
 
         await req.payload.update({
-          collection: 'appointments',
+          collection: appointmentsSlug,
           id: appt.id,
           data: updateData,
           overrideAccess: false,

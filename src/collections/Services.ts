@@ -1,9 +1,11 @@
 import type { CollectionConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { authenticated } from '../access/authenticated';
 
-const Services: CollectionConfig = {
-  slug: 'services',
+const createServicesCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.services,
   access: {
     create: authenticated,
     delete: authenticated,
@@ -83,11 +85,26 @@ const Services: CollectionConfig = {
           label: 'Paid Service',
         },
         {
+          name: 'pricingType',
+          type: 'select',
+          admin: {
+            condition: (data) => data.paidService === true,
+            description: 'Flat price per booking, or a rate prorated over the service duration',
+          },
+          defaultValue: 'fixed',
+          label: 'Pricing Type',
+          options: [
+            { label: 'Fixed Price', value: 'fixed' },
+            { label: 'Per Hour', value: 'hourly' },
+          ],
+        },
+        {
           name: 'price',
           type: 'number',
           admin: {
             condition: (data) => data.paidService === true,
-            description: 'Price in your local currency',
+            description:
+              'Amount in your local currency (per booking for fixed pricing, per hour for hourly)',
           },
           label: 'Price',
           min: 0,
@@ -143,6 +160,6 @@ const Services: CollectionConfig = {
     singular: 'Service',
   },
   timestamps: true,
-};
+});
 
-export default Services;
+export default createServicesCollection;

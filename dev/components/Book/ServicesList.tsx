@@ -31,7 +31,7 @@ const ServicesList: React.FC<{
                 className={cn(
                   'w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300',
                   isSelected
-                    ? 'bg-gray-900 shadow-lg shadow-gray-900/25'
+                    ? 'bg-gray-900 shadow-sm'
                     : 'bg-gray-100 group-hover:bg-gray-100',
                 )}
               >
@@ -67,7 +67,7 @@ const ServicesList: React.FC<{
               className={cn(
                 'w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300',
                 isSelected
-                  ? 'border-gray-500 bg-gray-900 shadow-lg shadow-gray-900/25'
+                  ? 'border-gray-500 bg-gray-900 shadow-sm'
                   : 'border-gray-300 group-hover:border-gray-300',
               )}
             >

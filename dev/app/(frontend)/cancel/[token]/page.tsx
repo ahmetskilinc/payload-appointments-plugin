@@ -31,12 +31,8 @@ export default async function CancelPage({ params }: { params: Promise<{ token: 
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] py-12 px-6 overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 right-1/4 w-64 h-64 bg-gray-200/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/4 w-64 h-64 bg-slate-200/20 rounded-full blur-3xl" />
-      </div>
 
-      <div className="max-w-2xl mx-auto animate-fade-in-up">
+      <div className="max-w-2xl mx-auto">
         <div className={`glass-card overflow-hidden ${isCancelled ? 'opacity-75' : ''}`}>
           <div className={`p-6 text-white ${isCancelled ? 'bg-gray-600' : 'bg-gray-900'}`}>
             <div className="flex items-start justify-between">

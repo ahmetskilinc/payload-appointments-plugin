@@ -1,9 +1,11 @@
 import type { CollectionConfig } from 'payload';
 
+import type { AppointmentsPluginSlugs } from '../slugs';
+
 import { authenticated } from '../access/authenticated';
 
-const SentEmails: CollectionConfig = {
-  slug: 'sentEmails',
+const createSentEmailsCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.sentEmails,
   access: {
     create: () => false,
     delete: () => false,
@@ -27,6 +29,7 @@ const SentEmails: CollectionConfig = {
         { label: 'Appointment Created', value: 'created' },
         { label: 'Appointment Updated', value: 'updated' },
         { label: 'Appointment Cancelled', value: 'cancelled' },
+        { label: 'Appointment Reminder', value: 'reminder' },
       ],
       required: true,
     },
@@ -48,7 +51,7 @@ const SentEmails: CollectionConfig = {
       admin: {
         position: 'sidebar',
       },
-      relationTo: 'appointments',
+      relationTo: slugs.appointments,
     },
     {
       type: 'row',
@@ -98,6 +101,6 @@ const SentEmails: CollectionConfig = {
     plural: 'Sent Emails',
     singular: 'Sent Email',
   },
-};
+});
 
-export default SentEmails;
+export default createSentEmailsCollection;

@@ -1,7 +1,26 @@
 {
   "name": "payload-appointments-plugin",
-  "version": "3.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "version": "3.1.0",
+  "description": "Appointment scheduling for Payload CMS: bookings, services, team members, availability, waitlist, payments, emails, iCal feeds, and an admin calendar + analytics.",
+  "keywords": [
+    "payload",
+    "payloadcms",
+    "payload-plugin",
+    "appointments",
+    "booking",
+    "scheduling",
+    "calendar",
+    "cms"
+  ],
+  "homepage": "https://github.com/ahmetskilinc/payload-appointments-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/ahmetskilinc/payload-appointments-plugin/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahmetskilinc/payload-appointments-plugin.git"
+  },
+  "author": "Ahmet Kilinc",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -55,6 +74,7 @@
     "generate:types": "pnpm dev:generate-types",
     "lint": "eslint",
     "lint:fix": "eslint ./src --fix",
+    "prepublishOnly": "pnpm clean && pnpm build && pnpm test",
     "test": "vitest run"
   },
   "dependencies": {

@@ -1,10 +1,12 @@
 import type { CollectionConfig } from 'payload'
 
+import type { AppointmentsPluginSlugs } from '../slugs'
+
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
-const GuestCustomers: CollectionConfig = {
-  slug: 'guestCustomers',
+const createGuestCustomersCollection = (slugs: AppointmentsPluginSlugs): CollectionConfig => ({
+  slug: slugs.guestCustomers,
   access: {
     create: anyone,
     delete: authenticated,
@@ -43,7 +45,7 @@ const GuestCustomers: CollectionConfig = {
     {
       name: 'appointments',
       type: 'join',
-      collection: 'appointments',
+      collection: slugs.appointments,
       defaultLimit: 25,
       maxDepth: 2,
       on: 'guestCustomer',
@@ -53,6 +55,6 @@ const GuestCustomers: CollectionConfig = {
     plural: 'Guest Customers',
     singular: 'Guest Customer',
   },
-}
+})
 
-export default GuestCustomers
+export default createGuestCustomersCollection

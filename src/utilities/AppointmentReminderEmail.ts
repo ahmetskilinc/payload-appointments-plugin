@@ -7,11 +7,11 @@ import type { Appointment } from '../types';
 import { getEmailFromAddress } from './emailFrom';
 import { formatAppointmentDate } from './formatDate';
 
-export const appointmentCreatedEmail = (appointment: Appointment, payload?: Payload) => {
+export const appointmentReminderEmail = (appointment: Appointment, payload?: Payload) => {
   const customerEmail = appointment.customer?.email || appointment.guestCustomer?.email;
 
   if (!customerEmail) {
-    throw new Error('Customer email is required for sending appointment confirmation');
+    throw new Error('Customer email is required for sending appointment reminder');
   }
 
   const formattedDate = formatAppointmentDate(appointment.start);
@@ -27,8 +27,8 @@ export const appointmentCreatedEmail = (appointment: Appointment, payload?: Payl
   return {
     cancelUrl,
     from: getEmailFromAddress(payload),
-    subject: `Appointment Confirmation - ${formattedDate}`,
-    text: `Your appointment for ${serviceNames} has been confirmed for ${formattedDate}.${cancelUrl ? ` To cancel, visit: ${cancelUrl}` : ''}`,
+    subject: `Appointment Reminder - ${formattedDate}`,
+    text: `This is a reminder that your appointment for ${serviceNames} is on ${formattedDate}.${cancelUrl ? ` To cancel, visit: ${cancelUrl}` : ''}`,
     to: customerEmail,
   };
 };

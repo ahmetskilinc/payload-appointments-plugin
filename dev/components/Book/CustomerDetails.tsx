@@ -39,7 +39,7 @@ const CustomerDetails: React.FC<{
 
   if (isAuthenticated) {
     return (
-      <div className="flex flex-col gap-6 animate-fade-in-up">
+      <div className="flex flex-col gap-6">
         <div className="glass-card p-6 bg-linear-to-br from-emerald-50 to-green-50 border-emerald-100/50">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
@@ -87,13 +87,13 @@ const CustomerDetails: React.FC<{
   }
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in-up">
+    <div className="flex flex-col gap-6">
       <div className="glass-card p-2 flex gap-2">
         <button
           className={cn(
             'flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300',
             !isGuest
-              ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/25'
+              ? 'bg-gray-900 text-white shadow-sm'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
           )}
           onClick={() => setIsGuest(false)}
@@ -120,7 +120,7 @@ const CustomerDetails: React.FC<{
           className={cn(
             'flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300',
             isGuest
-              ? 'bg-gray-900 text-white shadow-lg shadow-gray-900/25'
+              ? 'bg-gray-900 text-white shadow-sm'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
           )}
           onClick={() => setIsGuest(true)}
@@ -167,7 +167,7 @@ const CustomerDetails: React.FC<{
           <Button
             asChild
             size="lg"
-            className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-lg shadow-gray-900/25 hover:shadow-xl hover:shadow-gray-900/30 transition-all duration-300 hover:-translate-y-0.5"
+            className="bg-gray-900 hover:bg-gray-800 text-white border-0"
           >
             <Link href="/login">
               <svg

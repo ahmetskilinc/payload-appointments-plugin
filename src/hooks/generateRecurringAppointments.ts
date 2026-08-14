@@ -3,6 +3,7 @@ import type { CollectionAfterChangeHook } from 'payload';
 import crypto from 'crypto';
 import moment from 'moment';
 
+import { getSlugs } from '../slugs';
 import { calculateOccurrenceDates, type RecurrencePattern } from '../utilities/recurrence';
 
 export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
@@ -50,8 +51,10 @@ export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
     recurrence.endDate,
   );
 
+  const appointmentsSlug = getSlugs(req.payload.config).appointments;
+
   await req.payload.update({
-    collection: 'appointments',
+    collection: appointmentsSlug,
     id: doc.id,
     context: {
       skipCustomerEmail: true,
@@ -73,7 +76,7 @@ export const generateRecurringAppointments: CollectionAfterChangeHook = async ({
 
     try {
       const newAppointment = await req.payload.create({
-        collection: 'appointments',
+        collection: appointmentsSlug,
         // The booking confirmation for the series is the original appointment's
         // email — don't spam one email per generated occurrence.
         context: {

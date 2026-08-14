@@ -5,7 +5,7 @@
 
 Appointment scheduling for your Payload app:
 
-- **Appointments, Services, Team Members, Guest Customers, Waitlist, Sent Emails** collections and an **Opening Times** global.
+- **Appointments, Services, Team Members, Guest Customers, Waitlist, Sent Emails** collections and an **Opening Times** global (multiple intervals per day + holiday dates).
 - Admin **schedule calendar view** (`/admin/appointments/schedule`) and **analytics dashboard** (`/admin/appointments/analytics`).
 - Availability engine with buffer times, lead times, max-advance booking, per-host custom hours, and business-timezone handling.
 - Recurring appointments (weekly / bi-weekly / monthly series).
@@ -85,10 +85,11 @@ Customer emails use your app's [email adapter](https://payloadcms.com/docs/email
 
 ### 4. Run the maintenance jobs
 
-The plugin registers two [Jobs Queue](https://payloadcms.com/docs/jobs-queue/overview) tasks:
+The plugin registers three [Jobs Queue](https://payloadcms.com/docs/jobs-queue/overview) tasks:
 
 - `appointmentsAutoComplete` — marks past appointments as completed.
 - `appointmentsExpireWaitlist` — expires lapsed waitlist notifications and notifies the next person in line.
+- `appointmentsReminder` — emails customers whose appointment starts within the next `reminderHours` (default 24) and hasn't been reminded yet.
 
 Queue and run them on a schedule, e.g. with autorun:
 
@@ -100,6 +101,7 @@ export default buildConfig({
   onInit: async (payload) => {
     await payload.jobs.queue({ task: 'appointmentsAutoComplete', input: {}, queue: 'default' });
     await payload.jobs.queue({ task: 'appointmentsExpireWaitlist', input: {}, queue: 'default' });
+    await payload.jobs.queue({ task: 'appointmentsReminder', input: {}, queue: 'default' });
   },
 });
 ```
@@ -110,12 +112,115 @@ export default buildConfig({
 
 | Option               | Type           | Default | Description                                                                    |
 | -------------------- | -------------- | ------- | ------------------------------------------------------------------------------ |
+| `collections`        | `object`       | —       | Per-collection overrides, including `slug` renames (see below).                |
+| `globals`            | `object`       | —       | Per-global overrides for `openingTimes`, including `slug`.                     |
+| `adminGroup`         | `string`       | `'Appointments'` | Admin group and nav-section label for all plugin collections/globals. |
+| `endpoints`          | `object`       | —       | Override any API endpoint path (see below).                                    |
+| `views`              | `object`       | —       | Admin view routes and nav labels for the schedule and analytics views.         |
+| `jobs`               | `object`       | —       | Override the Jobs Queue task slugs (`autoComplete`, `expireWaitlist`, `reminder`). |
+| `reminderHours`      | `number`       | `24`    | Reminder emails go out when an appointment starts within this many hours.      |
+| `rateLimit`          | `object`       | `{ max: 60, windowMs: 60000 }` | Per-IP limit for public endpoints and unauthenticated creates. `{ disabled: true }` turns it off. In-memory per server instance — pair with an edge/WAF limiter on serverless. |
+| `emails`             | `object`       | —       | Customize outgoing customer emails per type (see below).                       |
+| `cancelPagePath`     | `string`       | `'/cancel'` | Frontend page the emailed cancellation link points at (token appended).    |
+| `calendar`           | `object`       | `{ dayStartHour: 9, dayEndHour: 19, step: 15 }` | Schedule calendar display hours and slot step. |
+| `waitlistExpiryHours`| `number`       | `2`     | Hours a notified waitlist entry has to book before it expires.                 |
+| `defaultAppointmentDuration` | `number` | `30`  | Fallback appointment length (minutes) when no end time or services are given.  |
 | `disabled`           | `boolean`      | `false` | Disables endpoints/UI/hooks. Collections stay registered so the schema is stable. |
 | `seedData`           | `boolean`      | `false` | Seeds example opening times, services, and team members on init.               |
 | `showDashboardCards` | `boolean`      | `true`  | Show appointment cards on the admin dashboard.                                 |
 | `showNavItems`       | `boolean`      | `true`  | Show schedule/analytics links in the admin nav.                                |
 | `webhookSecret`      | `string`       | —       | HMAC secret for the payment webhook. The webhook rejects all calls without it. |
 | `paymentHooks`       | `PaymentHooks` | —       | Callbacks to integrate a payment provider (see below).                         |
+
+### Collection & slug overrides
+
+Every collection the plugin registers (`appointments`, `guestCustomers`, `sentEmails`,
+`services`, `teamMembers`, `waitlist`) and the `openingTimes` global can be customized:
+
+```ts
+appointmentsPlugin({
+  collections: {
+    // Rename the collection — every internal reference (relationships,
+    // endpoints, hooks, jobs, admin views) follows the new slug.
+    appointments: { slug: 'bookings' },
+    services: {
+      slug: 'treatments',
+      // Extend (or replace) the default fields.
+      fields: ({ defaultFields }) => [...defaultFields, { name: 'color', type: 'text' }],
+      // Merged one level deep with the defaults.
+      access: { read: () => true },
+      admin: { group: 'Booking' },
+      // Appended after the plugin's own hooks, never replacing them.
+      hooks: { afterChange: [myHook] },
+    },
+  },
+  globals: {
+    openingTimes: { slug: 'businessHours' },
+  },
+});
+```
+
+Override semantics:
+
+- `slug` renames the collection/global; all internal references follow it.
+- `access` and `admin` are merged one level deep with the plugin defaults.
+- `hooks` are appended after the plugin's own hooks (the plugin's booking logic
+  keeps working).
+- `fields` is a function receiving `{ defaultFields }` and returning the final
+  field array.
+- Any other property is shallow-merged over the default config.
+
+Customer relationships point at your auth collection: the plugin reads
+`config.admin.user` (default `users`), so no option is needed for that.
+
+### Routes, views, jobs & tunables
+
+Everything structural is overridable — endpoint paths, admin view routes and
+labels, the admin group, job slugs, and scheduling tunables:
+
+```ts
+appointmentsPlugin({
+  adminGroup: 'Bookings',
+  endpoints: {
+    availableSlots: '/slots',
+    analytics: '/booking-analytics',
+    // ...any of: cancelAppointment, appointmentByToken, cancelAppointmentByToken,
+    // paymentWebhook, updateRecurring, cancelRecurring, icalFeed,
+    // waitlistJoin, waitlistLeave, waitlistPosition
+  },
+  views: {
+    schedule: { path: '/bookings/calendar', label: 'Calendar' },
+    analytics: { path: '/bookings/analytics', label: 'Insights' },
+  },
+  jobs: { autoComplete: 'bookingsAutoComplete', expireWaitlist: 'bookingsExpireWaitlist' },
+  cancelPagePath: '/cancel-booking',
+  calendar: { dayStartHour: 8, dayEndHour: 20, step: 30 },
+  waitlistExpiryHours: 4,
+  defaultAppointmentDuration: 45,
+});
+```
+
+Resolved settings are readable at runtime via `getSettings(payload.config)`
+(exported from the plugin).
+
+### Email overrides
+
+Customize the subject, plain text, and/or HTML of each customer email type
+(`created`, `updated`, `cancelled`, `reminder`) without giving up the built-in
+sending/logging pipeline:
+
+```ts
+appointmentsPlugin({
+  emails: {
+    created: {
+      subject: ({ appointment }) => `See you soon, ${appointment.customer?.firstName}!`,
+      html: async ({ appointment, cancelUrl, timezone }) => renderMyEmail({ appointment, cancelUrl, timezone }),
+    },
+    cancelled: { subject: 'Your booking was cancelled' },
+    // 'updated' keeps the defaults
+  },
+});
+```
 
 ### Payment hooks
 
@@ -211,10 +316,10 @@ pnpm build
 
 ## Roadmap
 
-- [ ] Collection/slug overrides via plugin options
-- [ ] Variable service pricing (per hour, etc.)
-- [ ] RRULE-based iCal recurrence
-- [ ] Per-day multiple intervals + holiday dates in opening times
+- [x] Collection/slug overrides via plugin options
+- [x] Variable service pricing (fixed or per-hour)
+- [x] RRULE-based iCal recurrence
+- [x] Per-day multiple intervals + holiday dates in opening times
 - [ ] E2E test suite
 
 Contributions welcome.

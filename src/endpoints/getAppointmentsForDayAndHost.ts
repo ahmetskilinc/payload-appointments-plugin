@@ -2,6 +2,7 @@ import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
 import moment from 'moment-timezone';
 
+import { getSlugs } from '../slugs';
 import { findAll } from '../utilities/findAll';
 import {
   curateSlots,
@@ -74,7 +75,7 @@ const filterSlotsForHost = async (
   }
 
   const existingAppointments = await findAll<StoredAppointment>({
-    collection: 'appointments',
+    collection: getSlugs(req.payload.config).appointments,
     payload: req.payload,
     where: { and: conditions },
   });
@@ -103,10 +104,11 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
     }
 
     const hostId = typeof host === 'string' ? host : undefined;
+    const slugs = getSlugs(req.payload.config);
 
     const servicesArray = [...new Set(services.split(','))];
     const servicesData = await req.payload.find({
-      collection: 'services',
+      collection: slugs.services,
       depth: 0,
       limit: servicesArray.length,
       where: {
@@ -159,7 +161,7 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
 
     // All wall-clock math happens in the business timezone.
     const openingTimes = await req.payload.findGlobal({
-      slug: 'openingTimes',
+      slug: slugs.openingTimes,
       depth: 0,
     });
     const timezone = (openingTimes?.timezone as string) || 'UTC';
@@ -174,17 +176,33 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       });
     }
 
+    // Holidays close the whole day regardless of weekday/custom hours.
+    const holidays = (openingTimes?.holidays ?? []) as { date: string; name?: string | null }[];
+    const requestedDate = requestedDay.format('YYYY-MM-DD');
+    const holiday = holidays.find(
+      (h) => h.date && moment.tz(h.date, timezone).format('YYYY-MM-DD') === requestedDate,
+    );
+    if (holiday) {
+      return Response.json({
+        availableSlots: [],
+        bookingWindow,
+        filteredSlots: [],
+        holiday: holiday.name || true,
+        message: holiday.name ? `Closed for ${holiday.name}` : 'Closed for holiday',
+      });
+    }
+
     const dayOfWeek = dayOfWeekInTimezone(day, timezone) as DayOfWeek;
 
-    let opening: string | null = null;
-    let closing: string | null = null;
-    let isOpen = false;
+    // Wall-clock open ranges for the day: a host's custom hours (one range) or
+    // the business-wide intervals (possibly several, e.g. around lunch).
+    let openRanges: { closing: string; opening: string }[] = [];
     let maxAppointmentsPerDay: number | undefined;
 
     if (hostId) {
       const teamMember = (await req.payload.findByID({
         id: hostId,
-        collection: 'teamMembers',
+        collection: slugs.teamMembers,
         depth: 0,
         disableErrors: true,
       })) as unknown as TeamMember | null;
@@ -192,16 +210,14 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       if (teamMember?.useCustomHours && teamMember?.customHours) {
         const memberDayConfig = teamMember.customHours[dayOfWeek];
         if (memberDayConfig?.isWorking && memberDayConfig?.start && memberDayConfig?.end) {
-          opening = memberDayConfig.start;
-          closing = memberDayConfig.end;
-          isOpen = true;
+          openRanges = [{ closing: memberDayConfig.end, opening: memberDayConfig.start }];
         }
       }
 
       maxAppointmentsPerDay = teamMember?.maxAppointmentsPerDay;
     }
 
-    if (!opening || !closing) {
+    if (openRanges.length === 0) {
       if (!openingTimes || !openingTimes[dayOfWeek]) {
         return Response.json(
           { error: 'Opening times not configured for this day' },
@@ -210,12 +226,11 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       }
 
       const dayConfig = openingTimes[dayOfWeek] as {
-        closing: string | null;
+        intervals?: { closing?: string | null; opening?: string | null }[] | null;
         isOpen: boolean;
-        opening: string | null;
       };
 
-      if (!dayConfig.isOpen || !dayConfig.opening || !dayConfig.closing) {
+      if (!dayConfig.isOpen) {
         return Response.json({
           availableSlots: [],
           bookingWindow,
@@ -223,12 +238,14 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
         });
       }
 
-      opening = dayConfig.opening;
-      closing = dayConfig.closing;
-      isOpen = dayConfig.isOpen;
+      openRanges = (dayConfig.intervals ?? []).flatMap((interval) =>
+        interval?.opening && interval?.closing
+          ? [{ closing: interval.closing, opening: interval.opening }]
+          : [],
+      );
     }
 
-    if (!isOpen || !opening || !closing) {
+    if (openRanges.length === 0) {
       return Response.json({
         availableSlots: [],
         bookingWindow,
@@ -236,12 +253,16 @@ export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadR
       });
     }
 
-    const openingInstant = resolveTimeOnDay(day, opening, timezone);
-    const closingInstant = resolveTimeOnDay(day, closing, timezone);
-
-    const availableSlots = curateSlots(slotDuration, openingInstant, closingInstant, {
-      earliestBookableTime,
-    });
+    const availableSlots = openRanges
+      .flatMap((range) =>
+        curateSlots(
+          slotDuration,
+          resolveTimeOnDay(day, range.opening, timezone),
+          resolveTimeOnDay(day, range.closing, timezone),
+          { earliestBookableTime },
+        ),
+      )
+      .sort();
     const filteredSlots = await filterSlotsForHost(
       req,
       day,

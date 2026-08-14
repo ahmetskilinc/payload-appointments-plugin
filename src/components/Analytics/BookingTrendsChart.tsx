@@ -19,11 +19,11 @@ interface BookingTrendsChartProps {
 const chartConfig = {
   count: {
     label: 'Appointments',
-    color: 'hsl(var(--chart-1))',
+    color: 'var(--chart-1)',
   },
   revenue: {
     label: 'Revenue',
-    color: 'hsl(var(--chart-2))',
+    color: 'var(--chart-2)',
   },
 } satisfies ChartConfig;
 

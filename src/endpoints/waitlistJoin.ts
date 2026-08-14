@@ -1,5 +1,7 @@
 import type { PayloadHandler, PayloadRequest } from 'payload';
 
+import { getSlugs } from '../slugs';
+
 export type WaitlistJoinPayload = {
   serviceId: string;
   hostId?: string;
@@ -28,8 +30,10 @@ export const waitlistJoin: PayloadHandler = async (req: PayloadRequest) => {
       );
     }
 
+    const waitlistSlug = getSlugs(req.payload.config).waitlist;
+
     const existingEntry = await req.payload.find({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       depth: 0,
       limit: 1,
       where: {
@@ -59,7 +63,7 @@ export const waitlistJoin: PayloadHandler = async (req: PayloadRequest) => {
       /^\d+$/.test(value) ? Number(value) : value;
 
     const entry = await req.payload.create({
-      collection: 'waitlist',
+      collection: waitlistSlug,
       data: {
         service: normalizeId(body.serviceId) as number,
         host: body.hostId ? (normalizeId(body.hostId) as number) : undefined,

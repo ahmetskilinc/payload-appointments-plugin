@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import type { Appointment } from '../types';
 
+import { getSlugs } from '../slugs';
 import { generateICalFeed } from '../utilities/ical';
 
 export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
@@ -14,8 +15,10 @@ export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
       return Response.json({ error: 'Authentication token required' }, { status: 401 });
     }
 
+    const slugs = getSlugs(req.payload.config);
+
     const feedToken = await req.payload.find({
-      collection: 'teamMembers',
+      collection: slugs.teamMembers,
       depth: 0,
       limit: 1,
       where: {
@@ -38,7 +41,7 @@ export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
     const endDate = moment().add(monthsAhead, 'months').endOf('day').toISOString();
 
     const appointments = await req.payload.find({
-      collection: 'appointments',
+      collection: slugs.appointments,
       depth: 2,
       limit: 500,
       sort: 'start',
@@ -67,6 +70,7 @@ export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
       appointments.docs as unknown as Appointment[],
       calendarName,
       baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`,
+      { end: new Date(endDate), start: new Date(startDate) },
     );
 
     return new Response(icalContent, {
