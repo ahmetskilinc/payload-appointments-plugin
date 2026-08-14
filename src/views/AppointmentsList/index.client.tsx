@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { useStepNav } from '@payloadcms/ui'
-import { useEffect } from 'react'
+import { useStepNav } from '@payloadcms/ui';
+import { useEffect } from 'react';
 
-import type { Appointment, TeamMember } from '../../types'
+import type { Appointment, TeamMember } from '../../types';
 
-import Calendar from '../../components/Appointments/index'
+import Calendar from '../../components/Appointments/index';
 
 interface AppointmentsListClientProps {
-  apiRoute: string
-  collectionSlug: string
-  initialAppointments: Appointment[]
-  initialTeamMembers: TeamMember[]
+  apiRoute: string;
+  collectionSlug: string;
+  initialAppointments: Appointment[];
+  initialTeamMembers: TeamMember[];
 }
 
 const AppointmentsListClient: React.FC<AppointmentsListClientProps> = ({
@@ -20,15 +20,15 @@ const AppointmentsListClient: React.FC<AppointmentsListClientProps> = ({
   initialAppointments,
   initialTeamMembers,
 }) => {
-  const { setStepNav } = useStepNav()
+  const { setStepNav } = useStepNav();
 
   useEffect(() => {
     setStepNav([
       {
         label: 'Appointments List',
       },
-    ])
-  }, [setStepNav])
+    ]);
+  }, [setStepNav]);
 
   return (
     <div className="collection-list appointments-calendar-view">
@@ -42,7 +42,7 @@ const AppointmentsListClient: React.FC<AppointmentsListClientProps> = ({
         initialTeamMembers={initialTeamMembers}
       />
     </div>
-  )
-}
+  );
+};
 
-export default AppointmentsListClient
+export default AppointmentsListClient;

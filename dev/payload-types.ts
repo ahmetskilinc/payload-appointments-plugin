@@ -70,17 +70,17 @@ export interface Config {
     users: User;
     appointments: Appointment;
     guestCustomers: GuestCustomer;
+    sentEmails: SentEmail;
     teamMembers: TeamMember;
     services: Service;
+    waitlist: Waitlist;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
-    users: {
-      appointments: 'appointments';
-    };
     guestCustomers: {
       appointments: 'appointments';
     };
@@ -89,9 +89,12 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
     guestCustomers: GuestCustomersSelect<false> | GuestCustomersSelect<true>;
+    sentEmails: SentEmailsSelect<false> | SentEmailsSelect<true>;
     teamMembers: TeamMembersSelect<false> | TeamMembersSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
+    waitlist: WaitlistSelect<false> | WaitlistSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -107,11 +110,19 @@ export interface Config {
     openingTimes: OpeningTimesSelect<false> | OpeningTimesSelect<true>;
   };
   locale: null;
-  user: User & {
-    collection: 'users';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      appointmentsAutoComplete: TaskAppointmentsAutoComplete;
+      appointmentsExpireWaitlist: TaskAppointmentsExpireWaitlist;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -142,11 +153,6 @@ export interface User {
   firstName?: string | null;
   lastName?: string | null;
   roles?: ('admin' | 'customer') | null;
-  appointments?: {
-    docs?: (number | Appointment)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -164,6 +170,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -172,6 +179,8 @@ export interface User {
 export interface Appointment {
   id: number;
   appointmentType: 'appointment' | 'blockout';
+  status?: ('pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show') | null;
+  cancelledAt?: string | null;
   host?: (number | null) | TeamMember;
   customer?: (number | null) | User;
   guestCustomer?: (number | null) | GuestCustomer;
@@ -180,7 +189,47 @@ export interface Appointment {
   title?: string | null;
   start?: string | null;
   end?: string | null;
+  /**
+   * Special requests or notes from the customer
+   */
+  customerNotes?: string | null;
+  /**
+   * Internal notes visible only to staff
+   */
+  internalNotes?: string | null;
   adminTitle?: string | null;
+  cancellationToken?: string | null;
+  payment?: {
+    status?: ('not-required' | 'pending' | 'deposit-paid' | 'paid' | 'refunded' | 'partial-refund') | null;
+    /**
+     * Full price of all booked services
+     */
+    totalPrice?: number | null;
+    /**
+     * Amount required at booking time (deposit or full price)
+     */
+    amountDue?: number | null;
+    amountPaid?: number | null;
+    /**
+     * Payment ID from external provider (Stripe, etc.)
+     */
+    externalPaymentId?: string | null;
+    paidAt?: string | null;
+  };
+  recurrence?: {
+    isRecurring?: boolean | null;
+    pattern?: ('weekly' | 'biweekly' | 'monthly') | null;
+    endType?: ('occurrences' | 'endDate') | null;
+    /**
+     * Number of total occurrences (including this one)
+     */
+    occurrences?: number | null;
+    /**
+     * Recurring appointments will be created until this date
+     */
+    endDate?: string | null;
+    seriesId?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -208,6 +257,55 @@ export interface TeamMember {
    * Enable to allow this team member to take appointments
    */
   takingAppointments?: boolean | null;
+  /**
+   * Override global opening times with custom hours for this team member
+   */
+  useCustomHours?: boolean | null;
+  customHours?: {
+    monday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+    tuesday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+    wednesday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+    thursday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+    friday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+    saturday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+    sunday?: {
+      isWorking?: boolean | null;
+      start?: string | null;
+      end?: string | null;
+    };
+  };
+  /**
+   * Maximum number of appointments this team member can take per day (0 = unlimited)
+   */
+  maxAppointmentsPerDay?: number | null;
+  /**
+   * Token for subscribing to iCal feed (auto-generated)
+   */
+  icalToken?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -241,11 +339,105 @@ export interface Service {
    * Duration of the service in minutes
    */
   duration: number;
+  /**
+   * Buffer time after this service before next appointment (minutes)
+   */
+  bufferTime?: number | null;
+  /**
+   * Minimum hours before appointment that booking is allowed (e.g., 2 = must book at least 2 hours ahead)
+   */
+  minLeadTime?: number | null;
+  /**
+   * Maximum days in advance that booking is allowed (e.g., 30 = can only book up to 30 days ahead, 0 = unlimited)
+   */
+  maxAdvanceBooking?: number | null;
   paidService?: boolean | null;
   /**
    * Price in your local currency
    */
   price?: number | null;
+  /**
+   * Require payment at time of booking
+   */
+  paymentRequired?: boolean | null;
+  /**
+   * Full payment or partial deposit
+   */
+  depositType?: ('full' | 'fixed' | 'percentage') | null;
+  /**
+   * Amount or percentage required as deposit
+   */
+  depositAmount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sentEmails".
+ */
+export interface SentEmail {
+  id: number;
+  emailType: 'created' | 'updated' | 'cancelled';
+  sentAt: string;
+  appointment?: (number | null) | Appointment;
+  from: string;
+  to: string;
+  subject: string;
+  /**
+   * Plain text version of the email
+   */
+  text?: string | null;
+  html?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage waitlist entries for fully booked services
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "waitlist".
+ */
+export interface Waitlist {
+  id: number;
+  service: number | Service;
+  /**
+   * Preferred team member (optional)
+   */
+  host?: (number | null) | TeamMember;
+  customer?: (number | null) | User;
+  guestCustomer?: (number | null) | GuestCustomer;
+  /**
+   * Preferred dates for appointment (optional)
+   */
+  preferredDates?:
+    | {
+        date: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Preferred time range (optional)
+   */
+  preferredTimeRange?: {
+    /**
+     * Start time (e.g., "09:00")
+     */
+    start?: string | null;
+    /**
+     * End time (e.g., "17:00")
+     */
+    end?: string | null;
+  };
+  status?: ('waiting' | 'notified' | 'booked' | 'expired' | 'cancelled') | null;
+  notifiedAt?: string | null;
+  /**
+   * When the waitlist notification expires
+   */
+  expiresAt?: string | null;
+  /**
+   * Additional notes from the customer
+   */
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -268,6 +460,98 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'appointmentsAutoComplete' | 'appointmentsExpireWaitlist';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'appointmentsAutoComplete' | 'appointmentsExpireWaitlist') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -286,12 +570,20 @@ export interface PayloadLockedDocument {
         value: number | GuestCustomer;
       } | null)
     | ({
+        relationTo: 'sentEmails';
+        value: number | SentEmail;
+      } | null)
+    | ({
         relationTo: 'teamMembers';
         value: number | TeamMember;
       } | null)
     | ({
         relationTo: 'services';
         value: number | Service;
+      } | null)
+    | ({
+        relationTo: 'waitlist';
+        value: number | Waitlist;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -343,7 +635,6 @@ export interface UsersSelect<T extends boolean = true> {
   firstName?: T;
   lastName?: T;
   roles?: T;
-  appointments?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -367,6 +658,8 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface AppointmentsSelect<T extends boolean = true> {
   appointmentType?: T;
+  status?: T;
+  cancelledAt?: T;
   host?: T;
   customer?: T;
   guestCustomer?: T;
@@ -375,7 +668,30 @@ export interface AppointmentsSelect<T extends boolean = true> {
   title?: T;
   start?: T;
   end?: T;
+  customerNotes?: T;
+  internalNotes?: T;
   adminTitle?: T;
+  cancellationToken?: T;
+  payment?:
+    | T
+    | {
+        status?: T;
+        totalPrice?: T;
+        amountDue?: T;
+        amountPaid?: T;
+        externalPaymentId?: T;
+        paidAt?: T;
+      };
+  recurrence?:
+    | T
+    | {
+        isRecurring?: T;
+        pattern?: T;
+        endType?: T;
+        occurrences?: T;
+        endDate?: T;
+        seriesId?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -394,6 +710,22 @@ export interface GuestCustomersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sentEmails_select".
+ */
+export interface SentEmailsSelect<T extends boolean = true> {
+  emailType?: T;
+  sentAt?: T;
+  appointment?: T;
+  from?: T;
+  to?: T;
+  subject?: T;
+  text?: T;
+  html?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "teamMembers_select".
  */
 export interface TeamMembersSelect<T extends boolean = true> {
@@ -401,6 +733,62 @@ export interface TeamMembersSelect<T extends boolean = true> {
   lastName?: T;
   preferredNameAppointments?: T;
   takingAppointments?: T;
+  useCustomHours?: T;
+  customHours?:
+    | T
+    | {
+        monday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+        tuesday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+        wednesday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+        thursday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+        friday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+        saturday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+        sunday?:
+          | T
+          | {
+              isWorking?: T;
+              start?: T;
+              end?: T;
+            };
+      };
+  maxAppointmentsPerDay?: T;
+  icalToken?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -412,8 +800,42 @@ export interface ServicesSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   duration?: T;
+  bufferTime?: T;
+  minLeadTime?: T;
+  maxAdvanceBooking?: T;
   paidService?: T;
   price?: T;
+  paymentRequired?: T;
+  depositType?: T;
+  depositAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "waitlist_select".
+ */
+export interface WaitlistSelect<T extends boolean = true> {
+  service?: T;
+  host?: T;
+  customer?: T;
+  guestCustomer?: T;
+  preferredDates?:
+    | T
+    | {
+        date?: T;
+        id?: T;
+      };
+  preferredTimeRange?:
+    | T
+    | {
+        start?: T;
+        end?: T;
+      };
+  status?: T;
+  notifiedAt?: T;
+  expiresAt?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -424,6 +846,37 @@ export interface ServicesSelect<T extends boolean = true> {
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -463,6 +916,28 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface OpeningTime {
   id: number;
+  /**
+   * Business timezone - all appointment times will be displayed in this timezone
+   */
+  timezone:
+    | 'UTC'
+    | 'Europe/London'
+    | 'Europe/Paris'
+    | 'Europe/Berlin'
+    | 'Europe/Moscow'
+    | 'Asia/Dubai'
+    | 'Asia/Kolkata'
+    | 'Asia/Singapore'
+    | 'Asia/Hong_Kong'
+    | 'Asia/Tokyo'
+    | 'Australia/Sydney'
+    | 'Pacific/Auckland'
+    | 'America/New_York'
+    | 'America/Chicago'
+    | 'America/Denver'
+    | 'America/Los_Angeles'
+    | 'America/Toronto'
+    | 'America/Sao_Paulo';
   monday?: {
     isOpen?: boolean | null;
     opening?: string | null;
@@ -506,6 +981,7 @@ export interface OpeningTime {
  * via the `definition` "openingTimes_select".
  */
 export interface OpeningTimesSelect<T extends boolean = true> {
+  timezone?: T;
   monday?:
     | T
     | {
@@ -558,6 +1034,32 @@ export interface OpeningTimesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAppointmentsAutoComplete".
+ */
+export interface TaskAppointmentsAutoComplete {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskAppointmentsExpireWaitlist".
+ */
+export interface TaskAppointmentsExpireWaitlist {
+  input?: unknown;
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

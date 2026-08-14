@@ -1,10 +1,10 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from 'payload';
 
 const Users: CollectionConfig = {
   slug: 'users',
   access: {
     admin: ({ req: { user } }) => {
-      return user!.roles === 'admin'
+      return user!.roles === 'admin';
     },
   },
   admin: {
@@ -36,15 +36,15 @@ const Users: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'appointments',
-      type: 'join',
-      collection: 'appointments',
-      defaultLimit: 0,
-      maxDepth: 999,
-      on: 'customer',
-    },
+    // {
+    //   name: 'appointments',
+    //   type: 'join',
+    //   collection: 'appointments',
+    //   defaultLimit: 0,
+    //   maxDepth: 999,
+    //   on: 'customer',
+    // },
   ],
-}
+};
 
-export default Users
+export default Users;

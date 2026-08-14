@@ -1,34 +1,64 @@
-import type { AdminViewProps } from 'payload'
+import type { AdminViewProps } from 'payload';
 
-import { DefaultTemplate } from '@payloadcms/next/templates'
+import { DefaultTemplate } from '@payloadcms/next/templates';
+import { redirect } from 'next/navigation';
 
-import type { Appointment, TeamMember } from '../../types'
+import type { Appointment, TeamMember } from '../../types';
 
-import Appointments from '../../collections/Appointments'
-import TeamMembers from '../../collections/TeamMembers'
-import { AppointmentProvider } from '../../providers/AppointmentsProvider'
-import AppointmentsListClient from './index.client'
+import Appointments from '../../collections/Appointments';
+import TeamMembers from '../../collections/TeamMembers';
+import { AppointmentProvider } from '../../providers/AppointmentsProvider';
+import AppointmentsListClient from './index.client';
 
 const AppointmentsList: React.FC<AdminViewProps> = async ({
   initPageResult,
   params,
   searchParams,
 }) => {
-  const { payload } = initPageResult.req
+  const { payload, user } = initPageResult.req;
+
+  if (!user) {
+    redirect(`${payload.config.routes.admin}/login`);
+  }
+
+  const today = new Date();
+  const startOfDay = new Date(today);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(today);
+  endOfDay.setHours(23, 59, 59, 999);
 
   const [appointmentsRes, teamMembersRes] = await Promise.all([
     payload.find({
       collection: Appointments.slug as 'appointments',
       depth: 1,
-      limit: 1000,
+      limit: 500,
+      overrideAccess: false,
+      user,
+      where: {
+        and: [
+          {
+            // Include appointments spanning the day's boundaries.
+            start: {
+              less_than_equal: endOfDay.toISOString(),
+            },
+          },
+          {
+            end: {
+              greater_than_equal: startOfDay.toISOString(),
+            },
+          },
+        ],
+      },
     }),
     payload.find({
       collection: TeamMembers.slug as 'teamMembers',
-      limit: 1000,
+      limit: 100,
+      overrideAccess: false,
+      user,
     }),
-  ])
+  ]);
 
-  const apiRoute = payload.config.routes.api
+  const apiRoute = payload.config.routes.api;
 
   return (
     <AppointmentProvider>
@@ -50,7 +80,7 @@ const AppointmentsList: React.FC<AdminViewProps> = async ({
         />
       </DefaultTemplate>
     </AppointmentProvider>
-  )
-}
+  );
+};
 
-export default AppointmentsList
+export default AppointmentsList;

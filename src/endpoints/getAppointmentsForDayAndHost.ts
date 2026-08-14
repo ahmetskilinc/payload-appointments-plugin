@@ -1,129 +1,266 @@
-import type { PayloadHandler, PayloadRequest } from 'payload'
+import type { PayloadHandler, PayloadRequest, Where } from 'payload';
 
-import moment from 'moment'
+import moment from 'moment-timezone';
 
-type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
+import { findAll } from '../utilities/findAll';
+import {
+  curateSlots,
+  dayOfWeekInTimezone,
+  filterOverlappingSlots,
+  resolveTimeOnDay,
+} from '../utilities/slots';
 
-const curateSlots = (slotInterval: number, startTime: string, endTime: string): string[] => {
-  const slots: string[] = []
-  const current = moment(startTime)
-  const end = moment(endTime)
+type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
-  while (current.isBefore(end)) {
-    slots.push(current.format('YYYY-MM-DDTHH:mm:ss.SSSZ'))
-    current.add(slotInterval, 'minutes')
-  }
+type TeamMemberCustomHours = {
+  [key in DayOfWeek]?: {
+    end?: string | null;
+    isWorking?: boolean;
+    start?: string | null;
+  };
+};
 
-  return slots
-}
+type TeamMember = {
+  customHours?: TeamMemberCustomHours;
+  maxAppointmentsPerDay?: number;
+  useCustomHours?: boolean;
+};
+
+type BookingWindowConfig = {
+  minLeadTime: number;
+  maxAdvanceBooking: number;
+  earliestBookableTime: string | null;
+  latestBookableDate: string | null;
+};
+
+type StoredAppointment = {
+  appointmentType?: string;
+  end: string;
+  start: string;
+};
 
 const filterSlotsForHost = async (
   req: PayloadRequest,
   day: string,
+  timezone: string,
   availableSlots: string[],
-  slotInterval: number,
+  slotDuration: number,
+  hostId?: string,
+  maxAppointmentsPerDay?: number,
 ): Promise<string[]> => {
-  const startOfDay = moment(day).startOf('day')
-  const endOfDay = moment(day).endOf('day')
+  const startOfDay = moment.tz(day, timezone).startOf('day');
+  const endOfDay = moment.tz(day, timezone).endOf('day');
 
-  const existingAppointments = await req.payload.find({
-    collection: 'appointments',
-    depth: 0,
-    where: {
+  const conditions: Where[] = [
+    {
       start: {
         greater_than_equal: startOfDay.toISOString(),
         less_than_equal: endOfDay.toISOString(),
       },
     },
-  })
+    {
+      status: {
+        not_equals: 'cancelled',
+      },
+    },
+  ];
 
-  const bookedSlots = new Set(
-    existingAppointments.docs.map((appointment) =>
-      moment(appointment.start).format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
-    ),
-  )
+  if (hostId) {
+    conditions.push({
+      host: {
+        equals: hostId,
+      },
+    });
+  }
 
-  return availableSlots.filter((slot) => !bookedSlots.has(slot))
-}
+  const existingAppointments = await findAll<StoredAppointment>({
+    collection: 'appointments',
+    payload: req.payload,
+    where: { and: conditions },
+  });
+
+  if (maxAppointmentsPerDay && maxAppointmentsPerDay > 0) {
+    const appointmentCount = existingAppointments.filter(
+      (a) => a.appointmentType === 'appointment',
+    ).length;
+    if (appointmentCount >= maxAppointmentsPerDay) {
+      return [];
+    }
+  }
+
+  return filterOverlappingSlots(availableSlots, slotDuration, existingAppointments);
+};
 
 export const getAppointmentsForDayAndHost: PayloadHandler = async (req: PayloadRequest) => {
   try {
-    const { day, services } = req.query
+    const { day, host, services } = req.query;
 
     if (!services || !day || typeof services !== 'string' || typeof day !== 'string') {
       return Response.json(
         { error: 'Missing or invalid services or day parameter' },
         { status: 400 },
-      )
+      );
     }
 
-    const servicesArray = services.split(',')
+    const hostId = typeof host === 'string' ? host : undefined;
+
+    const servicesArray = [...new Set(services.split(','))];
     const servicesData = await req.payload.find({
       collection: 'services',
       depth: 0,
+      limit: servicesArray.length,
       where: {
         id: {
           in: servicesArray,
         },
       },
-    })
+    });
 
-    const slotInterval = servicesData.docs.reduce(
+    if (servicesData.docs.length === 0) {
+      return Response.json({ error: 'No matching services found' }, { status: 400 });
+    }
+
+    const totalDuration = servicesData.docs.reduce(
       (total, service) => total + (service.duration || 0),
       0,
-    )
+    );
 
+    const maxBufferTime = servicesData.docs.reduce(
+      (max, service) => Math.max(max, service.bufferTime || 0),
+      0,
+    );
+
+    const slotDuration = totalDuration + maxBufferTime;
+
+    const maxMinLeadTime = servicesData.docs.reduce(
+      (max, service) => Math.max(max, service.minLeadTime || 0),
+      0,
+    );
+
+    const nonZeroMaxAdvance = servicesData.docs
+      .map((s) => s.maxAdvanceBooking || 0)
+      .filter((v) => v > 0);
+    const effectiveMaxAdvance = nonZeroMaxAdvance.length > 0 ? Math.min(...nonZeroMaxAdvance) : 0;
+
+    const now = moment();
+    const earliestBookableTime =
+      maxMinLeadTime > 0 ? now.clone().add(maxMinLeadTime, 'hours').toISOString() : null;
+    const latestBookableDate =
+      effectiveMaxAdvance > 0
+        ? now.clone().add(effectiveMaxAdvance, 'days').endOf('day').toISOString()
+        : null;
+
+    const bookingWindow: BookingWindowConfig = {
+      minLeadTime: maxMinLeadTime,
+      maxAdvanceBooking: effectiveMaxAdvance,
+      earliestBookableTime,
+      latestBookableDate,
+    };
+
+    // All wall-clock math happens in the business timezone.
     const openingTimes = await req.payload.findGlobal({
       slug: 'openingTimes',
       depth: 0,
-    })
+    });
+    const timezone = (openingTimes?.timezone as string) || 'UTC';
 
-    const dayOfWeek = moment(day).format('dddd').toLowerCase() as DayOfWeek
-
-    if (!openingTimes || !openingTimes[dayOfWeek]) {
-      return Response.json({ error: 'Opening times not configured for this day' }, { status: 400 })
-    }
-
-    const dayConfig = openingTimes[dayOfWeek] as {
-      isOpen: boolean
-      opening: string | null
-      closing: string | null
-    }
-
-    if (!dayConfig.isOpen || !dayConfig.opening || !dayConfig.closing) {
+    const requestedDay = moment.tz(day, timezone).startOf('day');
+    if (latestBookableDate && requestedDay.isAfter(moment(latestBookableDate))) {
       return Response.json({
         availableSlots: [],
+        bookingWindow,
         filteredSlots: [],
-      })
+        message: `Cannot book more than ${effectiveMaxAdvance} days in advance`,
+      });
     }
 
-    const { closing, opening } = dayConfig
+    const dayOfWeek = dayOfWeekInTimezone(day, timezone) as DayOfWeek;
 
-    const openingMoment = moment(opening)
-    const closingMoment = moment(closing)
+    let opening: string | null = null;
+    let closing: string | null = null;
+    let isOpen = false;
+    let maxAppointmentsPerDay: number | undefined;
 
-    const startTime = moment(day).set({
-      hour: openingMoment.hour(),
-      millisecond: 0,
-      minute: openingMoment.minute(),
-      second: 0,
-    })
-    const endTime = moment(day).set({
-      hour: closingMoment.hour(),
-      millisecond: 0,
-      minute: closingMoment.minute(),
-      second: 0,
-    })
+    if (hostId) {
+      const teamMember = (await req.payload.findByID({
+        id: hostId,
+        collection: 'teamMembers',
+        depth: 0,
+        disableErrors: true,
+      })) as unknown as TeamMember | null;
 
-    const availableSlots = curateSlots(slotInterval, startTime.toISOString(), endTime.toISOString())
-    const filteredSlots = await filterSlotsForHost(req, day, availableSlots, slotInterval)
+      if (teamMember?.useCustomHours && teamMember?.customHours) {
+        const memberDayConfig = teamMember.customHours[dayOfWeek];
+        if (memberDayConfig?.isWorking && memberDayConfig?.start && memberDayConfig?.end) {
+          opening = memberDayConfig.start;
+          closing = memberDayConfig.end;
+          isOpen = true;
+        }
+      }
+
+      maxAppointmentsPerDay = teamMember?.maxAppointmentsPerDay;
+    }
+
+    if (!opening || !closing) {
+      if (!openingTimes || !openingTimes[dayOfWeek]) {
+        return Response.json(
+          { error: 'Opening times not configured for this day' },
+          { status: 400 },
+        );
+      }
+
+      const dayConfig = openingTimes[dayOfWeek] as {
+        closing: string | null;
+        isOpen: boolean;
+        opening: string | null;
+      };
+
+      if (!dayConfig.isOpen || !dayConfig.opening || !dayConfig.closing) {
+        return Response.json({
+          availableSlots: [],
+          bookingWindow,
+          filteredSlots: [],
+        });
+      }
+
+      opening = dayConfig.opening;
+      closing = dayConfig.closing;
+      isOpen = dayConfig.isOpen;
+    }
+
+    if (!isOpen || !opening || !closing) {
+      return Response.json({
+        availableSlots: [],
+        bookingWindow,
+        filteredSlots: [],
+      });
+    }
+
+    const openingInstant = resolveTimeOnDay(day, opening, timezone);
+    const closingInstant = resolveTimeOnDay(day, closing, timezone);
+
+    const availableSlots = curateSlots(slotDuration, openingInstant, closingInstant, {
+      earliestBookableTime,
+    });
+    const filteredSlots = await filterSlotsForHost(
+      req,
+      day,
+      timezone,
+      availableSlots,
+      slotDuration,
+      hostId,
+      maxAppointmentsPerDay,
+    );
 
     return Response.json({
       availableSlots,
+      bookingWindow,
+      bufferTime: maxBufferTime,
       filteredSlots,
-    })
+      slotDuration,
+    });
   } catch (error) {
-    req.payload.logger.error(`Error getting appointments: ${error}`)
-    return Response.json({ error: 'Internal server error' }, { status: 500 })
+    req.payload.logger.error(`Error getting appointments: ${error}`);
+    return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+};

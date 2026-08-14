@@ -8,6 +8,40 @@ import type { Service, TeamMember } from '../../../../payload-types';
 
 import { Button } from '../../../../components/ui/button';
 import { formatPrice } from '../../../../lib/formatPrice';
+import { CancelButton } from './page.client';
+
+type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show';
+
+const statusConfig: Record<
+  AppointmentStatus,
+  { label: string; bgColor: string; textColor: string; icon?: string }
+> = {
+  pending: {
+    label: 'Pending',
+    bgColor: 'bg-amber-500',
+    textColor: 'text-white',
+  },
+  confirmed: {
+    label: 'Confirmed',
+    bgColor: 'bg-blue-500',
+    textColor: 'text-white',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    bgColor: 'bg-gray-500',
+    textColor: 'text-white',
+  },
+  completed: {
+    label: 'Completed',
+    bgColor: 'bg-emerald-500',
+    textColor: 'text-white',
+  },
+  'no-show': {
+    label: 'No Show',
+    bgColor: 'bg-red-500',
+    textColor: 'text-white',
+  },
+};
 
 export default async function BookingPage({ params }: { params: Promise<{ bookingId: string }> }) {
   const { bookingId } = await params;
@@ -30,8 +64,15 @@ export default async function BookingPage({ params }: { params: Promise<{ bookin
 
   const startDate = moment(appointment.start);
   const endDate = moment(appointment.end);
+  const status = (appointment.status as AppointmentStatus) || 'confirmed';
+  const isCancelled = status === 'cancelled';
+  const isCompleted = status === 'completed';
+  const isNoShow = status === 'no-show';
   const isPast = startDate.isBefore(moment());
   const isToday = startDate.isSame(moment(), 'day');
+  const canCancel = !isCancelled && !isCompleted && !isNoShow && !isPast;
+
+  const statusInfo = statusConfig[status];
 
   return (
     <div className="relative min-h-[calc(100vh-4rem)] py-12 px-6 overflow-hidden">
@@ -57,54 +98,23 @@ export default async function BookingPage({ params }: { params: Promise<{ bookin
           Back to appointments
         </Link>
 
-        <div className="glass-card overflow-hidden">
-          <div className="bg-gray-900 p-6 text-white">
+        <div className={`glass-card overflow-hidden ${isCancelled ? 'opacity-75' : ''}`}>
+          <div className={`p-6 text-white ${isCancelled ? 'bg-gray-600' : 'bg-gray-900'}`}>
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  {isPast ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      Completed
-                    </span>
-                  ) : isToday ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500 text-white">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.textColor}`}
+                  >
+                    {status === 'confirmed' && isToday && (
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
                       </span>
-                      Today
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-700 text-gray-300">
-                      <svg
-                        className="w-3 h-3"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      Upcoming
-                    </span>
-                  )}
+                    )}
+                    {statusInfo.label}
+                    {status === 'confirmed' && isToday && ' - Today'}
+                  </span>
                 </div>
                 <h1 className="text-2xl font-bold mb-1">
                   {startDate.format('dddd, MMMM Do YYYY')}
@@ -202,14 +212,16 @@ export default async function BookingPage({ params }: { params: Promise<{ bookin
               </div>
             </div>
 
-            {appointment.title && (
+            {appointment.customerNotes && (
               <>
                 <div className="h-px bg-gray-100" />
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
                     Notes
                   </p>
-                  <p className="text-gray-700 bg-gray-50 rounded-xl p-4">{appointment.title}</p>
+                  <p className="text-gray-700 bg-gray-50 rounded-xl p-4">
+                    {appointment.customerNotes}
+                  </p>
                 </div>
               </>
             )}
@@ -220,9 +232,37 @@ export default async function BookingPage({ params }: { params: Promise<{ bookin
               <p>Booking ID: #{appointment.id}</p>
               <p>Booked {moment(appointment.createdAt).fromNow()}</p>
             </div>
+
+            {isCancelled && appointment.cancelledAt && (
+              <>
+                <div className="h-px bg-gray-100" />
+                <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-xl text-gray-600">
+                  <svg
+                    className="w-5 h-5 text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                    />
+                  </svg>
+                  <div>
+                    <p className="font-medium">This appointment was cancelled</p>
+                    <p className="text-sm text-gray-500">
+                      Cancelled {moment(appointment.cancelledAt).fromNow()}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="p-6 pt-0">
+          <div className="p-6 pt-0 space-y-3">
+            {canCancel && <CancelButton appointmentId={appointment.id} />}
             <Button asChild className="w-full" size="lg">
               <Link href="/book">Book Another Appointment</Link>
             </Button>

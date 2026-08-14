@@ -5,22 +5,66 @@ import type { Appointment, Service } from '../../payload-types';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
+type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no-show';
+
 type Props = {
   appointments: Appointment[];
+};
+
+const statusConfig: Record<
+  AppointmentStatus,
+  { label: string; bgColor: string; textColor: string; iconBg: string }
+> = {
+  pending: {
+    label: 'Pending',
+    bgColor: 'bg-amber-100',
+    textColor: 'text-amber-700',
+    iconBg: 'bg-amber-500',
+  },
+  confirmed: {
+    label: 'Confirmed',
+    bgColor: 'bg-blue-100',
+    textColor: 'text-blue-700',
+    iconBg: 'bg-gray-900',
+  },
+  cancelled: {
+    label: 'Cancelled',
+    bgColor: 'bg-gray-100',
+    textColor: 'text-gray-500',
+    iconBg: 'bg-gray-400',
+  },
+  completed: {
+    label: 'Completed',
+    bgColor: 'bg-emerald-100',
+    textColor: 'text-emerald-700',
+    iconBg: 'bg-emerald-500',
+  },
+  'no-show': {
+    label: 'No Show',
+    bgColor: 'bg-red-100',
+    textColor: 'text-red-700',
+    iconBg: 'bg-red-500',
+  },
 };
 
 const Appointments = ({ appointments }: Props) =>
   appointments && appointments.length ? (
     appointments.map((appointment: Appointment, index: number) => {
+      const status = (appointment.status as AppointmentStatus) || 'confirmed';
+      const isCancelled = status === 'cancelled';
+      const statusInfo = statusConfig[status];
+
       return (
         <Link href={`/booking/${appointment.id}`} key={appointment.id}>
           <Card
-            className="border-0 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-gray-900/10 transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm animate-fade-in-up cursor-pointer"
+            className={`border-0 shadow-lg shadow-gray-900/5 hover:shadow-xl hover:shadow-gray-900/10 transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm animate-fade-in-up cursor-pointer ${isCancelled ? 'opacity-60' : ''}`}
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gray-900 flex items-center justify-center shadow-lg shadow-gray-900/25">
+                <div
+                  className={`w-14 h-14 rounded-2xl ${statusInfo.iconBg} flex items-center justify-center shadow-lg shadow-gray-900/25`}
+                >
                   <svg
                     className="w-7 h-7 text-white"
                     fill="none"
@@ -36,10 +80,21 @@ const Appointments = ({ appointments }: Props) =>
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg font-bold text-gray-900">
-                    {moment(appointment.start).format('dddd, MMM Do')}
-                  </CardTitle>
-                  <CardDescription className="text-gray-900 font-semibold flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CardTitle
+                      className={`text-lg font-bold ${isCancelled ? 'text-gray-500 line-through' : 'text-gray-900'}`}
+                    >
+                      {moment(appointment.start).format('dddd, MMM Do')}
+                    </CardTitle>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.textColor}`}
+                    >
+                      {statusInfo.label}
+                    </span>
+                  </div>
+                  <CardDescription
+                    className={`font-semibold flex items-center gap-2 mt-0.5 ${isCancelled ? 'text-gray-400' : 'text-gray-900'}`}
+                  >
                     <svg
                       className="w-4 h-4"
                       fill="none"

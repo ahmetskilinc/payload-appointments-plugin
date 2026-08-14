@@ -1,5 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres';
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import nodemailer from 'nodemailer';
 import { appointmentsPlugin } from 'payload-appointments-plugin';
 import path from 'path';
 import { buildConfig } from 'payload';
@@ -7,6 +9,7 @@ import sharp from 'sharp';
 import { fileURLToPath } from 'url';
 
 import Users from './collections/Users';
+import { consoleEmailAdapter } from './lib/consoleEmailAdapter';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -29,11 +32,23 @@ const buildConfigWithMemoryDB = async () => {
       },
     }),
     editor: lexicalEditor(),
-    plugins: [
-      appointmentsPlugin({
-        seedData: true,
-      }),
-    ],
+    plugins: [appointmentsPlugin({})],
+    // Emails print to the console by default; set EMAIL_MODE=smtp (with
+    // working SMTP_USER/SMTP_PASS) to send real emails.
+    email:
+      process.env.EMAIL_MODE === 'smtp'
+        ? nodemailerAdapter({
+            defaultFromAddress: 'akx9@icloud.com',
+            defaultFromName: 'Booking App',
+            transport: nodemailer.createTransport({
+              service: 'iCloud',
+              auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+              },
+            }),
+          })
+        : consoleEmailAdapter,
     secret: process.env.PAYLOAD_SECRET || 'test-secret_key',
     sharp,
     typescript: {
