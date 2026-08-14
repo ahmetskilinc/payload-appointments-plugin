@@ -29,6 +29,7 @@ const createSentEmailsCollection = (slugs: AppointmentsPluginSlugs): CollectionC
         { label: 'Appointment Created', value: 'created' },
         { label: 'Appointment Updated', value: 'updated' },
         { label: 'Appointment Cancelled', value: 'cancelled' },
+        { label: 'Appointment Reminder', value: 'reminder' },
       ],
       required: true,
     },

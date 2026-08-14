@@ -30,6 +30,7 @@ export type AppointmentsPluginViewSettings = {
 export type AppointmentsPluginJobSlugs = {
   autoComplete: string;
   expireWaitlist: string;
+  reminder: string;
 };
 
 export type AppointmentsPluginCalendarSettings = {
@@ -64,6 +65,8 @@ export type AppointmentsPluginSettings = {
     analytics: AppointmentsPluginViewSettings;
     schedule: AppointmentsPluginViewSettings;
   };
+  /** Reminder emails go out when an appointment starts within this window. */
+  reminderHours: number;
   /** Hours a notified waitlist entry has to book before it expires. */
   waitlistExpiryHours: number;
 };
@@ -94,8 +97,10 @@ export const defaultSettings: AppointmentsPluginSettings = {
   jobs: {
     autoComplete: 'appointmentsAutoComplete',
     expireWaitlist: 'appointmentsExpireWaitlist',
+    reminder: 'appointmentsReminder',
   },
   slugs: defaultSlugs,
+  reminderHours: 24,
   views: {
     analytics: { label: 'Analytics', path: '/appointments/analytics' },
     schedule: { label: 'Appointments Schedule', path: '/appointments/schedule' },

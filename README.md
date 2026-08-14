@@ -85,10 +85,11 @@ Customer emails use your app's [email adapter](https://payloadcms.com/docs/email
 
 ### 4. Run the maintenance jobs
 
-The plugin registers two [Jobs Queue](https://payloadcms.com/docs/jobs-queue/overview) tasks:
+The plugin registers three [Jobs Queue](https://payloadcms.com/docs/jobs-queue/overview) tasks:
 
 - `appointmentsAutoComplete` — marks past appointments as completed.
 - `appointmentsExpireWaitlist` — expires lapsed waitlist notifications and notifies the next person in line.
+- `appointmentsReminder` — emails customers whose appointment starts within the next `reminderHours` (default 24) and hasn't been reminded yet.
 
 Queue and run them on a schedule, e.g. with autorun:
 
@@ -100,6 +101,7 @@ export default buildConfig({
   onInit: async (payload) => {
     await payload.jobs.queue({ task: 'appointmentsAutoComplete', input: {}, queue: 'default' });
     await payload.jobs.queue({ task: 'appointmentsExpireWaitlist', input: {}, queue: 'default' });
+    await payload.jobs.queue({ task: 'appointmentsReminder', input: {}, queue: 'default' });
   },
 });
 ```
@@ -115,7 +117,8 @@ export default buildConfig({
 | `adminGroup`         | `string`       | `'Appointments'` | Admin group and nav-section label for all plugin collections/globals. |
 | `endpoints`          | `object`       | —       | Override any API endpoint path (see below).                                    |
 | `views`              | `object`       | —       | Admin view routes and nav labels for the schedule and analytics views.         |
-| `jobs`               | `object`       | —       | Override the Jobs Queue task slugs (`autoComplete`, `expireWaitlist`).         |
+| `jobs`               | `object`       | —       | Override the Jobs Queue task slugs (`autoComplete`, `expireWaitlist`, `reminder`). |
+| `reminderHours`      | `number`       | `24`    | Reminder emails go out when an appointment starts within this many hours.      |
 | `emails`             | `object`       | —       | Customize outgoing customer emails per type (see below).                       |
 | `cancelPagePath`     | `string`       | `'/cancel'` | Frontend page the emailed cancellation link points at (token appended).    |
 | `calendar`           | `object`       | `{ dayStartHour: 9, dayEndHour: 19, step: 15 }` | Schedule calendar display hours and slot step. |
@@ -202,7 +205,8 @@ Resolved settings are readable at runtime via `getSettings(payload.config)`
 ### Email overrides
 
 Customize the subject, plain text, and/or HTML of each customer email type
-without giving up the built-in sending/logging pipeline:
+(`created`, `updated`, `cancelled`, `reminder`) without giving up the built-in
+sending/logging pipeline:
 
 ```ts
 appointmentsPlugin({

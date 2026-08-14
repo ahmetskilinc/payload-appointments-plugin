@@ -23,6 +23,7 @@ import { createRequestPaymentHook } from './hooks/requestPayment';
 import { createSendCustomerEmailHook } from './hooks/sendCustomerEmail';
 import { createAutoCompleteTask } from './jobs/autoCompleteTask';
 import { createExpireWaitlistTask } from './jobs/expireWaitlistTask';
+import { createReminderTask } from './jobs/reminderTask';
 import { seedAppointmentsData } from './seed';
 import { defaultSettings } from './settings';
 import { defaultSlugs } from './slugs';
@@ -140,7 +141,13 @@ export type AppointmentsPluginConfig = {
   /**
    * Override the Jobs Queue task slugs.
    */
-  jobs?: { autoComplete?: string; expireWaitlist?: string };
+  jobs?: { autoComplete?: string; expireWaitlist?: string; reminder?: string };
+  /**
+   * Reminder emails go out when an appointment starts within this many hours
+   * (checked by the reminder job task).
+   * @default 24
+   */
+  reminderHours?: number;
   paymentHooks?: PaymentHooks;
   seedData?: boolean;
   showDashboardCards?: boolean;
@@ -232,6 +239,7 @@ export const appointmentsPlugin =
     globals: globalOverrides,
     jobs: jobOverrides,
     paymentHooks,
+    reminderHours = defaultSettings.reminderHours,
     seedData = false,
     showDashboardCards = true,
     showNavItems = true,
@@ -259,6 +267,7 @@ export const appointmentsPlugin =
       defaultAppointmentDuration,
       endpoints: { ...defaultSettings.endpoints, ...endpointOverrides },
       jobs: { ...defaultSettings.jobs, ...jobOverrides },
+      reminderHours,
       slugs,
       views: {
         analytics: { ...defaultSettings.views.analytics, ...viewOverrides?.analytics },
@@ -464,6 +473,7 @@ export const appointmentsPlugin =
         ...(config.jobs?.tasks || []),
         createAutoCompleteTask(settings.jobs.autoComplete),
         createExpireWaitlistTask(settings.jobs.expireWaitlist),
+        createReminderTask(settings.jobs.reminder, emails),
       ],
     };
 

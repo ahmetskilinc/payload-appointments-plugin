@@ -10,8 +10,8 @@ import { appointmentCancelledEmail } from '../utilities/AppointmentCancelledEmai
 import { appointmentCreatedEmail } from '../utilities/AppointmentCreatedEmail';
 import { appointmentUpdatedEmail } from '../utilities/AppointmentUpdatedEmail';
 
-export type AppointmentEmailType = 'created' | 'updated' | 'cancelled';
-type EmailType = AppointmentEmailType;
+export type AppointmentEmailType = 'created' | 'updated' | 'cancelled' | 'reminder';
+type EmailType = Exclude<AppointmentEmailType, 'reminder'>;
 
 export type AppointmentEmailRenderArgs = {
   appointment: Appointment;

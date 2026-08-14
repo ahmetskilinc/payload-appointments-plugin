@@ -257,6 +257,19 @@ const createAppointmentsCollection = (
       },
     },
     {
+      name: 'reminderSentAt',
+      type: 'date',
+      admin: {
+        condition: (data, siblingData) => siblingData.appointmentType === 'appointment',
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        position: 'sidebar',
+        readOnly: true,
+      },
+      label: 'Reminder Sent At',
+    },
+    {
       name: 'cancellationToken',
       type: 'text',
       admin: {
