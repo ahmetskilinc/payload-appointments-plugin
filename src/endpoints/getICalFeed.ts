@@ -70,6 +70,7 @@ export const getICalFeed: PayloadHandler = async (req: PayloadRequest) => {
       appointments.docs as unknown as Appointment[],
       calendarName,
       baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`,
+      { end: new Date(endDate), start: new Date(startDate) },
     );
 
     return new Response(icalContent, {

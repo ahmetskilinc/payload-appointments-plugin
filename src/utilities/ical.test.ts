@@ -60,3 +60,119 @@ describe('generateICalFeed', () => {
     expect(feed).toMatch(/DTEND:20260601T100000Z/);
   });
 });
+
+describe('generateICalFeed recurrence (RRULE)', () => {
+  const seriesAppointment = (
+    id: string,
+    start: string,
+    end: string,
+    recurrence: Record<string, unknown> = {},
+  ) =>
+    makeAppointment({
+      id,
+      start,
+      end,
+      recurrence: {
+        isRecurring: true,
+        pattern: 'weekly',
+        endType: 'occurrences',
+        occurrences: 4,
+        seriesId: 'series-1',
+        ...recurrence,
+      },
+    } as never);
+
+  const window = {
+    start: new Date('2026-06-01T00:00:00.000Z'),
+    end: new Date('2026-06-30T00:00:00.000Z'),
+  };
+
+  it('collapses a weekly series into one master VEVENT with an RRULE', () => {
+    const feed = generateICalFeed(
+      [
+        seriesAppointment('a1', '2026-06-01T09:00:00.000Z', '2026-06-01T10:00:00.000Z'),
+        seriesAppointment('a2', '2026-06-08T09:00:00.000Z', '2026-06-08T10:00:00.000Z'),
+        seriesAppointment('a3', '2026-06-15T09:00:00.000Z', '2026-06-15T10:00:00.000Z'),
+        seriesAppointment('a4', '2026-06-22T09:00:00.000Z', '2026-06-22T10:00:00.000Z'),
+      ],
+      'Cal',
+      'https://example.com',
+      window,
+    );
+
+    expect(feed.match(/BEGIN:VEVENT/g)?.length).toBe(1);
+    expect(feed).toContain('RRULE:FREQ=WEEKLY;COUNT=4');
+    expect(feed).toContain('UID:series-1@example.com');
+    expect(feed).not.toContain('EXDATE');
+  });
+
+  it('emits EXDATE for a cancelled occurrence inside the window', () => {
+    const feed = generateICalFeed(
+      [
+        seriesAppointment('a1', '2026-06-01T09:00:00.000Z', '2026-06-01T10:00:00.000Z'),
+        // 8 June cancelled (absent from the feed data)
+        seriesAppointment('a3', '2026-06-15T09:00:00.000Z', '2026-06-15T10:00:00.000Z'),
+        seriesAppointment('a4', '2026-06-22T09:00:00.000Z', '2026-06-22T10:00:00.000Z'),
+      ],
+      'Cal',
+      'https://example.com',
+      window,
+    );
+
+    expect(feed).toContain('EXDATE:20260608T090000Z');
+  });
+
+  it('emits rescheduled off-pattern occurrences as standalone events', () => {
+    const feed = generateICalFeed(
+      [
+        seriesAppointment('a1', '2026-06-01T09:00:00.000Z', '2026-06-01T10:00:00.000Z'),
+        // moved from 8 June 09:00 to 9 June 11:00
+        seriesAppointment('a2', '2026-06-09T11:00:00.000Z', '2026-06-09T12:00:00.000Z'),
+      ],
+      'Cal',
+      'https://example.com',
+      window,
+    );
+
+    expect(feed.match(/BEGIN:VEVENT/g)?.length).toBe(2);
+    expect(feed).toContain('EXDATE:20260608T090000Z');
+    expect(feed).toContain('DTSTART:20260609T110000Z');
+  });
+
+  it('uses UNTIL for endDate-bounded series and biweekly interval', () => {
+    const feed = generateICalFeed(
+      [
+        seriesAppointment('a1', '2026-06-01T09:00:00.000Z', '2026-06-01T10:00:00.000Z', {
+          pattern: 'biweekly',
+          endType: 'endDate',
+          endDate: '2026-07-13',
+          occurrences: undefined,
+        }),
+      ],
+      'Cal',
+      'https://example.com',
+      window,
+    );
+
+    expect(feed).toContain('RRULE:FREQ=WEEKLY;INTERVAL=2;UNTIL=');
+  });
+
+  it('falls back to per-occurrence events when no bounded rule exists', () => {
+    const feed = generateICalFeed(
+      [
+        seriesAppointment('a1', '2026-06-01T09:00:00.000Z', '2026-06-01T10:00:00.000Z', {
+          pattern: undefined,
+        }),
+        seriesAppointment('a2', '2026-06-08T09:00:00.000Z', '2026-06-08T10:00:00.000Z', {
+          pattern: undefined,
+        }),
+      ],
+      'Cal',
+      'https://example.com',
+      window,
+    );
+
+    expect(feed.match(/BEGIN:VEVENT/g)?.length).toBe(2);
+    expect(feed).not.toContain('RRULE');
+  });
+});

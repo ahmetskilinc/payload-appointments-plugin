@@ -313,7 +313,7 @@ pnpm build
 
 - [x] Collection/slug overrides via plugin options
 - [x] Variable service pricing (fixed or per-hour)
-- [ ] RRULE-based iCal recurrence
+- [x] RRULE-based iCal recurrence
 - [x] Per-day multiple intervals + holiday dates in opening times
 - [ ] E2E test suite
 
