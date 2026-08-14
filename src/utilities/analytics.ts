@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import { getSlugs } from '../slugs';
 import { findAll } from './findAll';
+import { getServicePrice } from './servicePrice';
 
 export type DateRange = {
   startDate: string;
@@ -101,15 +102,17 @@ const getServiceInfo = (
     return null;
   }
   const s = service as {
+    duration?: number;
     id: number | string;
     paidService?: boolean;
     price?: number;
+    pricingType?: string;
     title?: string;
   };
   return {
     id: String(s.id),
     name: s.title || 'Unknown Service',
-    price: s.paidService ? s.price || 0 : 0,
+    price: getServicePrice(s),
   };
 };
 

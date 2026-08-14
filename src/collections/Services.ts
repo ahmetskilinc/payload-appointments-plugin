@@ -85,11 +85,26 @@ const createServicesCollection = (slugs: AppointmentsPluginSlugs): CollectionCon
           label: 'Paid Service',
         },
         {
+          name: 'pricingType',
+          type: 'select',
+          admin: {
+            condition: (data) => data.paidService === true,
+            description: 'Flat price per booking, or a rate prorated over the service duration',
+          },
+          defaultValue: 'fixed',
+          label: 'Pricing Type',
+          options: [
+            { label: 'Fixed Price', value: 'fixed' },
+            { label: 'Per Hour', value: 'hourly' },
+          ],
+        },
+        {
           name: 'price',
           type: 'number',
           admin: {
             condition: (data) => data.paidService === true,
-            description: 'Price in your local currency',
+            description:
+              'Amount in your local currency (per booking for fixed pricing, per hour for hourly)',
           },
           label: 'Price',
           min: 0,

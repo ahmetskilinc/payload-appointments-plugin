@@ -312,7 +312,7 @@ pnpm build
 ## Roadmap
 
 - [x] Collection/slug overrides via plugin options
-- [ ] Variable service pricing (per hour, etc.)
+- [x] Variable service pricing (fixed or per-hour)
 - [ ] RRULE-based iCal recurrence
 - [x] Per-day multiple intervals + holiday dates in opening times
 - [ ] E2E test suite
